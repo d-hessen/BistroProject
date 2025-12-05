@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 
 import java.util.Vector;
 import server.BistroServer;
-
+//
 public class ServerUI extends Application {
 	final public static int DEFAULT_PORT = 5555;
 
