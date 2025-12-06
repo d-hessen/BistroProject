@@ -29,8 +29,8 @@
                <children>
                   <Label fx:id="port" text="Port:" />
                   <TextField fx:id="portField" prefWidth="80.0" text="5555" />
-                  <Button fx:id="btnStart" mnemonicParsing="false" onAction="#startServer" style="-fx-background-color: #2ecc71; -fx-text-fill: white;" text="Start Server" />
-                  <Button fx:id="btnStop" disable="true" mnemonicParsing="false" onAction="#stopServer" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Stop Server" />
+                  <Button fx:id="btnStart" mnemonicParsing="false" onAction="#onClickStart" style="-fx-background-color: #2ecc71; -fx-text-fill: white;" text="Start Server" />
+                  <Button fx:id="btnStop" disable="true" mnemonicParsing="false" onAction="#onClickStop" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" text="Stop Server" />
                </children>
             </HBox>
             <Label fx:id="statusLabel" text="Status: Disconnected" textFill="RED">

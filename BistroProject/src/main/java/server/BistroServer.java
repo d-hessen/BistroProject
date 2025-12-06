@@ -6,6 +6,7 @@ package server;
 import java.io.*;
 
 import dataLayer.Reservation;
+import gui.ServerFrameController;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,11 +43,13 @@ public class BistroServer extends AbstractServer
    * @param port The port number to connect on.
    * 
    */
- private static Connection conn;
+ private static Connection conn; //Connection to DB
+ private ServerFrameController controller; // Reference to the GUI Controller
 
-  public BistroServer(int port) 
+  public BistroServer(int port, ServerFrameController controller) 
   {
     super(port);
+    this.controller = controller;
   }
 
   //Instance methods ************************************************
@@ -73,19 +76,18 @@ public class BistroServer extends AbstractServer
 	                		,rs.getInt("verification_code")
 	                		,rs.getString("date_of_placing_order")
 	                		,rs.getInt("member_id"));
-					System.out.println("Reservation found");
+					controller.addToConsole("Reservation found for ID: " + id);
 					client.sendToClient(reservation);
 				} 
 				else {
-					System.out.println("Reservation not found");
-					String errorReservation = "Error";
-					client.sendToClient(errorReservation);
+					controller.addToConsole("Reservation not found for ID: " + id);
+					client.sendToClient("Error");
 				}
 			}
 			
 			else if (msg instanceof Reservation) {
 				Reservation updatedReservation = (Reservation) msg;
-				System.out.println("Updating Reservation: " + updatedReservation.getReservationId());
+				controller.addToConsole("Updating Reservation: " + updatedReservation.getReservationId());
 
 				PreparedStatement ps = conn.prepareStatement(
 					"UPDATE reservation SET reservation_date = ?, number_of_guests = ? WHERE reservation_number = ?"
@@ -107,21 +109,22 @@ public class BistroServer extends AbstractServer
    * This method overrides the one in the superclass.  Called
    * when the server starts listening for connections.
    */
+  @Override
   protected void serverStarted()
   {
 	  try {
 			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false", "root", "danhessen");
 			//Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.3.68/test","root","Root");
-			System.out.println("SQL connection succeed");
-			
+			controller.addToConsole("SQL connection succeed");
+			controller.addToConsole("Server listening for connections on port " + getPort());
+			controller.serverStatusChanged(true); 
 		  }
 		  catch(SQLException ex) {
 			  System.out.println("SQLException: " + ex.getMessage());
 	          System.out.println("SQLState: " + ex.getSQLState());
 	          System.out.println("VendorError: " + ex.getErrorCode());
 		  }
-	  System.out.println ("Server listening for connections on port " + getPort());
-  }
+	   }
   
   public Reservation getReservation(int reservationNumber) {
 	    String sql = "SELECT * FROM reservation WHERE reservation_number = ?";
@@ -150,14 +153,34 @@ public class BistroServer extends AbstractServer
    * This method overrides the one in the superclass.  Called
    * when the server stops listening for connections.
    */
+  @Override
   protected void serverStopped()  {
-    System.out.println ("Server has stopped listening for connections.");
+	controller.serverStatusChanged(false); // Update GUI to Red
+	controller.addToConsole("Server has stopped listening for connections.");
     try {
         if (conn != null)
             conn.close();
     } catch (SQLException e) {
         e.printStackTrace();
     }
-  }  
+  }
+  /**
+   * This method overrides the one in the superclass.  
+   * Called when client connects to server.
+   */
+  @Override
+  protected void clientConnected(ConnectionToClient client) {
+      controller.addToConsole("Client connected: " + client.getInetAddress());
+      controller.updateClientList(client, "Connected");
+  }
+  /**
+   * This method overrides the one in the superclass.  
+   * Called when client disconnects from server.
+   */
+  @Override
+  synchronized protected void clientDisconnected(ConnectionToClient client) {
+      controller.addToConsole("Client disconnected: " + client.getInetAddress());
+      controller.updateClientList(client, "Disconnected");
+  }
 }
 //End of EchoServer class
