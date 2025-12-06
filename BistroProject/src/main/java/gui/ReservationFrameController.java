@@ -40,11 +40,11 @@ public class ReservationFrameController {
 	}
 	
 	public void Find_Reservation(ActionEvent event) throws Exception {
-		String orderNumber, subscriberID;
+		String orderNumber, memberID;
 		FXMLLoader loader = new FXMLLoader();
 		
 		orderNumber = getOrderNumber();
-		subscriberID = getSubscriberID();
+		memberID = getSubscriberID();
 		
 		if(orderNumber.trim().isEmpty())
 		{
@@ -52,21 +52,21 @@ public class ReservationFrameController {
 			System.out.println("You must enter an order number");	
 		}
 		else {
-			if(subscriberID.trim().isEmpty())
+			if(memberID.trim().isEmpty())
 			{
 
 				System.out.println("You must enter your subscriber ID");	
 			}
 			else {
 				ClientUI.chat.accept(orderNumber);
-				ClientUI.chat.accept(subscriberID);
+				ClientUI.chat.accept(memberID);
 				
 				if(BistroClient.r1.getReservationId() != Integer.parseInt(orderNumber))
 				{
 					System.out.println("Reservation ID Not Found");
 				}
 				else {
-					if(BistroClient.r1.getMemberId() != Integer.parseInt(subscriberID))
+					if(BistroClient.r1.getMemberId() != Integer.parseInt(memberID))
 					{
 						System.out.println("Member ID Not Found");
 					}
