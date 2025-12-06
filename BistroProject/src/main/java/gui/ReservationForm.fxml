@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ReservationFormController">
+
+    <padding>
+        <Insets bottom="25" left="25" right="25" top="25" />
+    </padding>
+
+    <Label fx:id="ReservationDetailsLabel" style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Reservation Details" />
+
+    <GridPane fx:id="OrderDateLabel" hgap="15" vgap="15">
+
+        <Label fx:id="OrderNumberLabel" text="Order Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <Label fx:id="orderNumberLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+        <Label text="Order Date:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <DatePicker fx:id="orderDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <Label fx:id="NumberOfGuestLabel" text="Number of Guests:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextField fx:id="numberOfGuestsField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <Label fx:id="ConfirmationCodeLabel" text="Confirmation Code:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <Label fx:id="confirmationCodeLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <Label fx:id="SubIdLabel" text="Subscriber ID:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <Label fx:id="subscriberIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+        <Label fx:id="DateOfPlacingOrder" text="Date of Placing Order:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label fx:id="placingOrderDateLabel" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <columnConstraints>
+         <ColumnConstraints />
+         <ColumnConstraints />
+      </columnConstraints>
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
+
+    </GridPane>
+
+    <HBox alignment="CENTER" spacing="20">
+        <Button fx:id="saveButton" onAction="#onSaveChanges" style="-fx-font-size: 14px; -fx-padding: 10 20;" text="Save Changes" />
+
+        <Button fx:id="backButton" onAction="#onBack" style="-fx-font-size: 14px; -fx-padding: 10 20;" text="Back" />
+    </HBox>
+
+</VBox>
