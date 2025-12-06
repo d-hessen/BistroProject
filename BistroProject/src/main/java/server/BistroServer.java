@@ -63,8 +63,8 @@ public class BistroServer extends AbstractServer
    */
   public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 		try {
-			if (msg instanceof Integer) {
-				Integer id = (Integer) msg;
+			if (msg instanceof String) {
+				Integer id = Integer.parseInt((String) msg);
 				PreparedStatement ps = conn.prepareStatement("SELECT * FROM reservation WHERE reservation_number = ?");
 				ps.setInt(1, id);
 				ResultSet rs = ps.executeQuery();
@@ -74,7 +74,7 @@ public class BistroServer extends AbstractServer
 	                		,rs.getString("reservation_date")
 	                		,rs.getInt("number_of_guests")
 	                		,rs.getInt("verification_code")
-	                		,rs.getString("date_of_placing_order")
+	                		,rs.getString("date_of_placing_reservation")
 	                		,rs.getInt("member_id"));
 					controller.addToConsole("Reservation found for ID: " + id);
 					client.sendToClient(reservation);
@@ -95,7 +95,7 @@ public class BistroServer extends AbstractServer
 				
 				ps.setString(1, updatedReservation.getReservationDate());
 				ps.setInt(2, updatedReservation.getNumberOfGuests());
-
+				ps.setInt(3, updatedReservation.getReservationId());
 				int result = ps.executeUpdate();
 				System.out.println("Update Result: " + result); 
 				client.sendToClient("Updated");
@@ -113,7 +113,7 @@ public class BistroServer extends AbstractServer
   protected void serverStarted()
   {
 	  try {
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false", "root", "Oriko12321");
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false", "root", "danhessen");
 			//Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.3.68/test","root","Root");
 			controller.addToConsole("SQL connection succeed");
 			controller.addToConsole("Server listening for connections on port " + getPort());

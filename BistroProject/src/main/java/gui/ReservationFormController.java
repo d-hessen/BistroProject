@@ -34,9 +34,12 @@ public class ReservationFormController {
 	private Button btnSave_Changes;
     @FXML
     private Button btnBack;
+    
+    private Reservation reservation;
 
 
 	public void loadReservation(Reservation reservation) {
+		this.reservation = reservation;
 		if(reservation == null) {
 			return;
 		}
@@ -70,24 +73,20 @@ public class ReservationFormController {
 	}
 	
 	public void save(ActionEvent event) {
-		Reservation res = new Reservation(null,null,null,null,null,null);
-            Integer guests;
-            if(numberOfGuestsField.getText().trim().isEmpty()) {
-            	System.out.println("Guest Number can not be null");
-            	return;
+        Integer guests = Integer.parseInt(numberOfGuestsField.getText().trim());
+        if(guests.equals(null)) {
+            System.out.println("Guest Number can not be null");
+            return;
+        }
+        reservation.setNumberOfGuests(guests);
+        try {
+            if (reservation.getReservationDate() != null && !reservation.getReservationDate().isEmpty()) {
+            	orderDatePicker.setValue(LocalDate.parse(reservation.getReservationDate()));
             }
-            guests = Integer.parseInt(numberOfGuestsField.getText().trim());
-            res.setNumberOfGuests(guests);
-            
-        String reservationInfo =
-                res.getReservationId() + " " +
-                res.getReservationDate() + " " +
-                res.getNumberOfGuests() + " " +
-                res.getVerificationCode() + " " +
-                res.getDateOfPlacingReservation() + " " +
-                res.getMemberId();
-
-        ClientUI.chat.accept(reservationInfo);
+        } catch (Exception e) {
+        	orderDatePicker.setValue(null); // if string not in yyyy-MM-dd
+        }
+        ClientUI.chat.accept(reservation);
 		
 	}
 }

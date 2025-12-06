@@ -35,7 +35,7 @@ public class Reservation implements Serializable {
 	}
 
 	public void setReservationId(Integer reservationId) {
-		this.reservationId = reservationCounter++;
+		this.reservationId = reservationId;
 	}
 
 	public int getMemberId() {
@@ -83,6 +83,6 @@ public class Reservation implements Serializable {
 	}
 
 	public String toString(){
-		return String.format("%s %s %s %s %s\n",reservationId,reservationDate,numberOfGuests,verificationCode,dateOfPlacingReservation,memberId);
+		return String.format("%s %s %s %s %s %s\n",reservationId,reservationDate,numberOfGuests,verificationCode,dateOfPlacingReservation,memberId);
 	}
 }
