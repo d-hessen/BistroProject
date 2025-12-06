@@ -5,6 +5,8 @@ import javafx.stage.Stage;
 
 
 import java.util.Vector;
+
+import gui.ServerFrameController;
 import server.BistroServer;
 //
 public class ServerUI extends Application {
@@ -18,9 +20,9 @@ public class ServerUI extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		// TODO Auto-generated method stub				  		
-		ServerPortFrameController aFrame = new ServerPortFrameController(); // create StudentFrame
+		ServerFrameController serverFrame = new ServerFrameController(); // create StudentFrame
 		 
-		aFrame.start(primaryStage);
+		serverFrame.start(primaryStage);
 	}
 	
 	public static void runServer(String p)
@@ -37,7 +39,7 @@ public class ServerUI extends Application {
 	        	System.out.println("ERROR - Could not connect!");
 	        }
 	    	
-	        EchoServer sv = new EchoServer(port);
+	        BistroServer sv = new BistroServer(port);
 	        
 	        try 
 	        {
