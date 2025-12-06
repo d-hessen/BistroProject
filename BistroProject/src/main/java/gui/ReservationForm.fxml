@@ -54,9 +54,9 @@
     </GridPane>
 
     <HBox alignment="CENTER" spacing="20">
-        <Button fx:id="saveButton" onAction="#onSaveChanges" style="-fx-font-size: 14px; -fx-padding: 10 20;" text="Save Changes" />
+        <Button fx:id="saveButton" onAction="#save" style="-fx-font-size: 14px; -fx-padding: 10 20;" text="Save Changes" />
 
-        <Button fx:id="backButton" onAction="#onBack" style="-fx-font-size: 14px; -fx-padding: 10 20;" text="Back" />
+        <Button fx:id="backButton" onAction="#buttonBack" style="-fx-font-size: 14px; -fx-padding: 10 20;" text="Back" />
     </HBox>
 
 </VBox>
