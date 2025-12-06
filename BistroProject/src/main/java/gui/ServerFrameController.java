@@ -3,6 +3,7 @@ package gui;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import client.ClientController;
 import server.BistroServer;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -133,13 +134,16 @@ public class ServerFrameController implements Initializable {
         private String ip;
         private String host;
         private String status;
+        private ConnectionToClient client;
 
-        public ClientInfo(String ip, String host, String status) {
+        public ClientInfo(ConnectionToClient client,String ip, String host, String status) {
             this.ip = ip;
             this.host = host;
             this.status = status;
+            this.client = client;
         }
-
+        
+        public ConnectionToClient getClient() {return client;}
         public String getIp() { return ip; }
         public String getHost() { return host; }
         public String getStatus() { return status; }
@@ -147,31 +151,30 @@ public class ServerFrameController implements Initializable {
     }
 	
 	//Function that will update clients
-	public void updateClientList(ConnectionToClient client, String status) {
+    public void updateClientList(ConnectionToClient client, String status) {
         Platform.runLater(() -> {
-            String ip = client.getInetAddress().getHostAddress();
-            String host = client.getInetAddress().getHostName();
-            
-            // Check if client is already in the table to avoid duplicates
-            ClientInfo existing = null;
-            for(ClientInfo c : clientList) {
-                if(c.getIp().equals(ip)) {
-                    existing = c;
-                    break;
-                }
-            }
-            
-            if(status.equals("Connected")) {
-                if(existing == null) {
-                    clientList.add(new ClientInfo(ip, host, status));
-                } else {
-                    existing.setStatus(status);
-                    clientsTable.refresh();
-                }
+
+            if ("Connected".equals(status)) {
+                String ip = client.getInetAddress().getHostAddress();
+                String host = client.getInetAddress().getHostName();
+                clientList.add(new ClientInfo(client, ip, host, status));   // <-- CHANGED
             } else {
-                //Remove client if disconnected
-                 clientList.remove(existing); 
+                ClientInfo toRemove = null;
+
+                // Find the matching row by object reference (client == client)
+                for (ClientInfo info : clientList) {
+                    if (info.getClient() == client) {     // <-- match exact connection
+                        toRemove = info;
+                        break;
+                    }
+                }
+
+                if (toRemove != null) {
+                    clientList.remove(toRemove);          // <-- remove only that row
+                }
             }
+
+            clientsTable.refresh();
         });
     }
     // Initialize method is called automatically after FXML loading

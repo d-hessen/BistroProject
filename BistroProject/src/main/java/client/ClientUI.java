@@ -12,12 +12,13 @@ public class ClientUI extends Application {
 
 	public static void main( String args[] ) throws Exception
 	   { 
+			chat = new ClientController(args[0], 5555);
 		    launch(args);  
 	   } // end main
 	 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		 chat= new ClientController("localhost", 5555);
+		 
 		// TODO Auto-generated method stub
 						  		
 		ReservationFrameController reservationFrame = new ReservationFrameController(); // create StudentFrame

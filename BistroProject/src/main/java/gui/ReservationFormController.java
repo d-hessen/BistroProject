@@ -60,6 +60,9 @@ public class ReservationFormController {
     }
 	
 	public void buttonBack(ActionEvent event) throws IOException {
+		 if (ClientUI.chat != null) {
+		        ClientUI.chat.disconnectClient();
+		    }
 		FXMLLoader loader = new FXMLLoader();
 		((Node)event.getSource()).getScene().getWindow().hide(); //hiding primary window
 		Stage primaryStage = new Stage();
@@ -67,7 +70,6 @@ public class ReservationFormController {
 	
 		Scene scene = new Scene(root);			
 		primaryStage.setTitle("Reservation Finder");
-
 		primaryStage.setScene(scene);		
 		primaryStage.show();
 	}
@@ -79,13 +81,7 @@ public class ReservationFormController {
             return;
         }
         reservation.setNumberOfGuests(guests);
-        try {
-            if (reservation.getReservationDate() != null && !reservation.getReservationDate().isEmpty()) {
-            	orderDatePicker.setValue(LocalDate.parse(reservation.getReservationDate()));
-            }
-        } catch (Exception e) {
-        	orderDatePicker.setValue(null); // if string not in yyyy-MM-dd
-        }
+        reservation.setReservationDate(orderDatePicker.getValue().toString());
         ClientUI.chat.accept(reservation);
 		
 	}

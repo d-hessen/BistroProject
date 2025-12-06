@@ -10,8 +10,6 @@ public class Reservation implements Serializable {
 	private String dateOfPlacingReservation;
 	private String reservationDate;
 	
-	private int reservationCounter;
-	
 	/**
 	 * @param reservationId
 	 * @param reservationDate
@@ -22,7 +20,7 @@ public class Reservation implements Serializable {
 	 */
 	public Reservation(Integer reservationId, String reservationDate, Integer numberOfGuests, Integer verificationCode, String dateOfPlacingReservation, Integer memberId) {
 		super();
-		setReservationId(reservationId);
+		this.reservationId = reservationId;
 		this.reservationDate = reservationDate;
 		this.numberOfGuests = numberOfGuests;
 		this.verificationCode = verificationCode;
@@ -76,10 +74,6 @@ public class Reservation implements Serializable {
 
 	public void setReservationDate(String reservationDate) {
 		this.reservationDate = reservationDate;
-	}
-
-	public int getReservationCounter() {
-		return reservationCounter;
 	}
 
 	public String toString(){

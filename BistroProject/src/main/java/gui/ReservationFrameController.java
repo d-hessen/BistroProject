@@ -98,6 +98,7 @@ public class ReservationFrameController {
 	
 	public void getExitBtn(ActionEvent event) throws Exception {
 		System.out.println("exit Reservation Finder");
+		
 		Platform.exit();
 		
 	}

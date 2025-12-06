@@ -103,6 +103,18 @@ public class BistroClient extends AbstractClient
       quit();
     }
   }
+  
+  public void disconnect() {
+	  try {
+		closeConnection();
+		if(!isConnected()) {
+			
+		}
+	  } catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	  }
+  }
 
   
   /**

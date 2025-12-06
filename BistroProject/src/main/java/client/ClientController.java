@@ -53,6 +53,10 @@ public class ClientController implements ChatIF
       System.exit(1);
     }
   }
+  
+  public void disconnectClient() {
+	  client.disconnect();
+  }
 
   
   //Instance methods ************************************************
