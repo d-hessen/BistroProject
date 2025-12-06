@@ -60,10 +60,18 @@ public class BistroClient extends AbstractClient
   public void handleMessageFromServer(Object msg) 
   {
 	  System.out.println("--> handleMessageFromServer");
-     
+	  
 	  awaitResponse = false;
 	  String st;
 	  st=msg.toString();
+	  if(st.equals("Error")) {
+		  try {
+			sendToServer("#disconnect");
+		  } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		  }
+	  }
 	  String[] result = st.split("\\s");
 	  r1.setReservationId(Integer.valueOf(result[0]));
 	  r1.setReservationDate(result[1]);
@@ -84,7 +92,12 @@ public class BistroClient extends AbstractClient
   {
     try
     {
-    	openConnection();//in order to send more than one message
+    	if (obj instanceof String && "#disconnect".equals(obj)) {
+    		if(isConnected())
+    			sendToServer(obj);   // tell server to close the connection
+            return;
+        }
+    	openConnection();
        	awaitResponse = true;
     	sendToServer(obj);
 		// wait for response
@@ -103,19 +116,6 @@ public class BistroClient extends AbstractClient
       quit();
     }
   }
-  
-  public void disconnect() {
-	  try {
-		closeConnection();
-		if(!isConnected()) {
-			
-		}
-	  } catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	  }
-  }
-
   
   /**
    * This method terminates the client.

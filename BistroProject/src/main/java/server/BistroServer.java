@@ -64,6 +64,15 @@ public class BistroServer extends AbstractServer
   public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 		try {
 			if (msg instanceof String) {
+				if ("#disconnect".equals(msg)) { //For disconnect message from client
+	                controller.addToConsole("Client " + client.getInetAddress() + " disconnect");
+	                try {
+	                    client.close();
+	                } catch (IOException e) {
+	                    e.printStackTrace();
+	                }
+	                return;
+	            }
 				Integer id = Integer.parseInt((String) msg);
 				PreparedStatement ps = conn.prepareStatement("SELECT * FROM reservation WHERE reservation_number = ?");
 				ps.setInt(1, id);
@@ -98,7 +107,7 @@ public class BistroServer extends AbstractServer
 				ps.setInt(3, updatedReservation.getReservationId());
 				int result = ps.executeUpdate();
 				System.out.println("Update Result: " + result); 
-				client.sendToClient("Updated");
+				client.sendToClient(updatedReservation);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -179,7 +188,6 @@ public class BistroServer extends AbstractServer
    */
   @Override
   synchronized protected void clientDisconnected(ConnectionToClient client) {
-      controller.addToConsole("Client disconnected: " + client.getInetAddress());
       controller.updateClientList(client, "Disconnected");
   }
 }

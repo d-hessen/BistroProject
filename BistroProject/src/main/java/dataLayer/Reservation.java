@@ -28,7 +28,7 @@ public class Reservation implements Serializable {
 		this.memberId = memberId;
 	}
 	
-	public int getReservationId() {
+	public Integer getReservationId() {
 		return reservationId;
 	}
 
@@ -36,7 +36,7 @@ public class Reservation implements Serializable {
 		this.reservationId = reservationId;
 	}
 
-	public int getMemberId() {
+	public Integer getMemberId() {
 		return memberId;
 	}
 

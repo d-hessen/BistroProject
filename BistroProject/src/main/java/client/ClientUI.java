@@ -26,5 +26,14 @@ public class ClientUI extends Application {
 		reservationFrame.start(primaryStage);
 	}
 	
+	@Override
+	public void stop() throws Exception {
+	    if (chat != null) {
+	        chat.accept("#disconnect");   
+	    }
+
+	    super.stop();
+	}
+	
 	
 }

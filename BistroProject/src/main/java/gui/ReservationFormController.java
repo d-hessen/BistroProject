@@ -35,7 +35,7 @@ public class ReservationFormController {
     @FXML
     private Button btnBack;
     
-    private Reservation reservation;
+    private Reservation reservation; //reservation for controller
 
 
 	public void loadReservation(Reservation reservation) {
@@ -60,9 +60,6 @@ public class ReservationFormController {
     }
 	
 	public void buttonBack(ActionEvent event) throws IOException {
-		 if (ClientUI.chat != null) {
-		        ClientUI.chat.disconnectClient();
-		    }
 		FXMLLoader loader = new FXMLLoader();
 		((Node)event.getSource()).getScene().getWindow().hide(); //hiding primary window
 		Stage primaryStage = new Stage();
@@ -72,17 +69,20 @@ public class ReservationFormController {
 		primaryStage.setTitle("Reservation Finder");
 		primaryStage.setScene(scene);		
 		primaryStage.show();
+		ClientUI.chat.accept("#disconnect");
 	}
 	
 	public void save(ActionEvent event) {
         Integer guests = Integer.parseInt(numberOfGuestsField.getText().trim());
-        if(guests.equals(null)) {
+        if(guests.equals(null) || guests == 0) { //If user tries to set guest number as 0
             System.out.println("Guest Number can not be null");
+            numberOfGuestsField.setText(String.valueOf(reservation.getNumberOfGuests()));
             return;
         }
-        reservation.setNumberOfGuests(guests);
-        reservation.setReservationDate(orderDatePicker.getValue().toString());
-        ClientUI.chat.accept(reservation);
-		
+        else {
+        	reservation.setNumberOfGuests(guests);
+            reservation.setReservationDate(orderDatePicker.getValue().toString());
+            ClientUI.chat.accept(reservation);
+        }
 	}
 }

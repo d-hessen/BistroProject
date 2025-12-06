@@ -155,25 +155,28 @@ public class ServerFrameController implements Initializable {
         Platform.runLater(() -> {
 
             if ("Connected".equals(status)) {
-                String ip = client.getInetAddress().getHostAddress();
+                // When a client connects: add or update row
+                String ip   = client.getInetAddress().getHostAddress();
                 String host = client.getInetAddress().getHostName();
-                clientList.add(new ClientInfo(client, ip, host, status));   // <-- CHANGED
-            } else {
-                ClientInfo toRemove = null;
 
-                // Find the matching row by object reference (client == client)
-                for (ClientInfo info : clientList) {
-                    if (info.getClient() == client) {     // <-- match exact connection
-                        toRemove = info;
+                ClientInfo existing = null;
+                for (ClientInfo c : clientList) {
+                    if (c.getClient() == client) {
+                        existing = c;
                         break;
                     }
                 }
 
-                if (toRemove != null) {
-                    clientList.remove(toRemove);          // <-- remove only that row
+                if (existing == null) {
+                    clientList.add(new ClientInfo(client, ip, host, "Connected")); 
+                } else {
+                    existing.setStatus("Connected");
                 }
+            } else {
+                // When a client disconnects: remove that row
+                clientList.removeIf(c -> c.getClient() == client);
             }
-
+            //Tableview refresh
             clientsTable.refresh();
         });
     }

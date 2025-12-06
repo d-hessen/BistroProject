@@ -45,46 +45,52 @@ public class ReservationFrameController {
 		orderNumber = getOrderNumber();
 		memberID = getMemberID();
 		
-		if(orderNumber.trim().isEmpty())
-		{
-
-			System.out.println("You must enter an order number");	
-		}
-		else {
-			if(memberID.trim().isEmpty())
+		try {
+			if(orderNumber.trim().isEmpty())
 			{
-
-				System.out.println("You must enter your subscriber ID");	
+				System.out.println("You must enter an order number");	
 			}
 			else {
-				ClientUI.chat.accept(orderNumber);
-				
-				if(BistroClient.r1.getReservationId() != Integer.parseInt(orderNumber))
+				if(memberID.trim().isEmpty())
 				{
-					System.out.println("Reservation ID Not Found");
+
+					System.out.println("You must enter your member ID");	
 				}
 				else {
-					if(BistroClient.r1.getMemberId() != Integer.parseInt(memberID))
+					ClientUI.chat.accept(orderNumber);
+					
+					if(BistroClient.r1.getReservationId() != Integer.parseInt(orderNumber))
 					{
-						System.out.println("Member ID Not Found");
+						System.out.println("Reservation ID Not Found");
+						notFound();
 					}
 					else {
-						System.out.println("Reservation Found");
-						((Node)event.getSource()).getScene().getWindow().hide();
-						Stage primaryStage = new Stage();
-						Pane root = loader.load(getClass().getResource("/gui/ReservationForm.fxml").openStream());
-						ReservationFormController reservationFormController = loader.getController();		
-						reservationFormController.loadReservation(BistroClient.r1);
-					
-						Scene scene = new Scene(root);			
-						primaryStage.setTitle("Reservation Managment");
-			
-						primaryStage.setScene(scene);		
-						primaryStage.show();
+						if(BistroClient.r1.getMemberId() != Integer.parseInt(memberID))
+						{
+							System.out.println("Member ID Not Found");
+							notFound();
+						}
+						else {
+							System.out.println("Reservation Found");
+							((Node)event.getSource()).getScene().getWindow().hide();
+							Stage primaryStage = new Stage();
+							Pane root = loader.load(getClass().getResource("/gui/ReservationForm.fxml").openStream());
+							ReservationFormController reservationFormController = loader.getController();		
+							reservationFormController.loadReservation(BistroClient.r1);
+						
+							Scene scene = new Scene(root);			
+							primaryStage.setTitle("Reservation Managment");
+				
+							primaryStage.setScene(scene);		
+							primaryStage.show();
+						}
 					}
 				}
 			}
+		}catch(NullPointerException ex) {
+			notFound();
 		}
+		
 	}
 	public void start(Stage primaryStage) throws Exception {	
 		Parent root = FXMLLoader.load(getClass().getResource("/gui/ReservationFrame.fxml"));
@@ -101,6 +107,12 @@ public class ReservationFrameController {
 		
 		Platform.exit();
 		
+	}
+	
+	public void notFound() {
+		System.out.println("Reservation Not Found");
+		orderNumberField.setText("");
+		memberIdField.setText("");
 	}
 	
 	public void loadReservation(Reservation r1) {
