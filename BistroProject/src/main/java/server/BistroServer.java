@@ -113,7 +113,7 @@ public class BistroServer extends AbstractServer
   protected void serverStarted()
   {
 	  try {
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false", "root", "danhessen");
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false", "root", "Oriko12321");
 			//Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.3.68/test","root","Root");
 			controller.addToConsole("SQL connection succeed");
 			controller.addToConsole("Server listening for connections on port " + getPort());
