@@ -12,7 +12,7 @@ public class ClientUI extends Application {
 
 	public static void main( String args[] ) throws Exception
 	   { 
-			chat = new ClientController(args[0], 5555);
+			chat = new ClientController("localhost", 5555);
 		    launch(args);  
 	   } // end main
 	 
