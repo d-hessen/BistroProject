@@ -5,7 +5,6 @@
 package client;
 
 import ocsf.client.*;
-import client.*;
 import common.ChatIF;
 import dataLayer.Reservation;
 

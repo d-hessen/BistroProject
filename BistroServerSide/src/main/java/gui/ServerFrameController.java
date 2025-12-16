@@ -3,7 +3,6 @@ package gui;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import client.ClientController;
 import server.BistroServer;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;

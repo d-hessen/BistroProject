@@ -3,8 +3,6 @@ import javafx.application.Application;
 
 import javafx.stage.Stage;
 
-import java.util.Vector;
-import client.ClientController;
 import gui.ReservationFrameController;
 
 public class ClientUI extends Application {
@@ -12,7 +10,7 @@ public class ClientUI extends Application {
 
 	public static void main( String args[] ) throws Exception
 	   { 
-			chat = new ClientController("localhost", 5555);
+			chat = new ClientController(args[0], 5555);
 		    launch(args);  
 	   } // end main
 	 
