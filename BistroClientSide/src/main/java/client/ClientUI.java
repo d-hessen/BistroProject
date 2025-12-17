@@ -5,24 +5,32 @@ import javafx.stage.Stage;
 import common.Action;
 import common.BistroMessage;
 import gui.ReservationFrameController;
+import gui.MainPageController;
+
 
 public class ClientUI extends Application {
 	public static ClientController chat; 
 
-	public static void main( String args[] ) throws Exception
-	   { 
-			chat = new ClientController(args[0], 5555);
-		    launch(args);  
-	   } // end main
+	public static void main(String[] args)
+	{
+	    String host = "localhost";
+
+	    if (args.length > 0) {
+	        host = args[0];
+	    }
+
+	    chat = new ClientController(host, 5555);
+	    launch(args);
+	}
 	 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		 
 		// TODO Auto-generated method stub
 						  		
-		ReservationFrameController reservationFrame = new ReservationFrameController(); // create StudentFrame
+		MainPageController mainPage = new MainPageController(); 
 		 
-		reservationFrame.start(primaryStage);
+		mainPage.start(primaryStage);
 	}
 	
 	@Override

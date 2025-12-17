@@ -30,7 +30,7 @@ public final class dbController {
 		try {
 			String dbUrl = "jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false";
             String dbUser = "root";
-            String dbPass = "danhessen"; 
+            String dbPass = "Oriko12321"; 
 
             conn = DriverManager.getConnection(dbUrl, dbUser, dbPass);
             return true;

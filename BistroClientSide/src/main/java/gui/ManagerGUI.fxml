@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20"
+      alignment="CENTER"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="gui.ManagerGUIController">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <Label text="Manager Dashboard"
+           style="-fx-font-size: 22px; -fx-font-weight: bold;" />
+
+    <Label text="View Activity Reports"
+           style="-fx-font-size: 16px;" />
+
+    <HBox spacing="10" alignment="CENTER">
+        <Label text="Month:" />
+        <ComboBox fx:id="monthComboBox"
+                  promptText="Select month"
+                  prefWidth="160"/>
+    </HBox>
+
+    <Button text="View Report"
+            onAction="#viewActivityReports"/>
+
+</VBox>
