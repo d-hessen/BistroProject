@@ -1,10 +1,5 @@
 package dataLayer;
 
-import java.io.Serializable;
-import java.util.List;
-
-import dataLayer.Visit;
-
 
 public class Member extends Guest {
 	private String userName;

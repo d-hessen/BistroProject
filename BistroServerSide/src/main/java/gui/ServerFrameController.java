@@ -105,10 +105,12 @@ public class ServerFrameController implements Initializable {
 	public void onClickStop(ActionEvent event) throws Exception {
 		if (server != null) {
             try {
-                server.close(); // Stops listening and closes connections
+            	server.close(); // Stops listening and closes connections
                 btnStart.setDisable(false);
                 btnStop.setDisable(true);
                 portField.setEditable(true);
+                consoleArea.setText("");
+                
             } catch (Exception e) {
                 addToConsole("Error stopping server: " + e.getMessage());
             }

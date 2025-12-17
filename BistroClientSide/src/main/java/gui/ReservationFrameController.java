@@ -2,6 +2,8 @@ package gui;
 
 import client.BistroClient;
 import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
 import dataLayer.Reservation;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -48,26 +50,25 @@ public class ReservationFrameController {
 		try {
 			if(orderNumber.trim().isEmpty())
 			{
-				System.out.println("You must enter an order number");	
+				ClientUI.chat.display("You must enter an order number");
 			}
 			else {
 				if(memberID.trim().isEmpty())
 				{
-
-					System.out.println("You must enter your member ID");	
+					ClientUI.chat.display("You must enter your member ID");
 				}
 				else {
-					ClientUI.chat.accept(orderNumber);
+					ClientUI.chat.accept(new BistroMessage(Action.GET_RESERVATION, orderNumber));
 					
-					if(BistroClient.r1.getReservationId() != Integer.parseInt(orderNumber))
+					if(BistroClient.reservationInstance.getReservationId() != Integer.parseInt(orderNumber))
 					{
-						System.out.println("Reservation ID Not Found");
+						ClientUI.chat.display("Reservation ID Not Found");
 						notFound();
 					}
 					else {
-						if(BistroClient.r1.getMemberId() != Integer.parseInt(memberID))
+						if(BistroClient.reservationInstance.getMemberId() != Integer.parseInt(memberID))
 						{
-							System.out.println("Member ID Not Found");
+							ClientUI.chat.display("Member ID Not Found");
 							notFound();
 						}
 						else {
@@ -76,7 +77,7 @@ public class ReservationFrameController {
 							Stage primaryStage = new Stage();
 							Pane root = loader.load(getClass().getResource("/gui/ReservationForm.fxml").openStream());
 							ReservationFormController reservationFormController = loader.getController();		
-							reservationFormController.loadReservation(BistroClient.r1);
+							reservationFormController.loadReservation(BistroClient.reservationInstance);
 						
 							Scene scene = new Scene(root);			
 							primaryStage.setTitle("Reservation Managment");
@@ -88,6 +89,7 @@ public class ReservationFrameController {
 				}
 			}
 		}catch(NullPointerException ex) {
+			ex.printStackTrace();
 			notFound();
 		}
 		
@@ -103,20 +105,20 @@ public class ReservationFrameController {
 	}
 	
 	public void getExitBtn(ActionEvent event) throws Exception {
-		System.out.println("exit Reservation Finder");
-		
+		ClientUI.chat.display("exit Reservation Finder");
 		Platform.exit();
 		
 	}
 	
 	public void notFound() {
-		System.out.println("Reservation Not Found");
+		ClientUI.chat.display("Some details are wrong(Reservation ID or Member ID)");
 		orderNumberField.setText("");
 		memberIdField.setText("");
+		ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT,""));
 	}
 	
-	public void loadReservation(Reservation r1) {
-		this.rfc.loadReservation(r1);
+	public void loadReservation(Reservation reservation) {
+		this.rfc.loadReservation(reservation);
 	}	
 	
 }

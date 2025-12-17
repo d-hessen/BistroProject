@@ -2,7 +2,8 @@ package client;
 import javafx.application.Application;
 
 import javafx.stage.Stage;
-
+import common.Action;
+import common.BistroMessage;
 import gui.ReservationFrameController;
 
 public class ClientUI extends Application {
@@ -27,7 +28,7 @@ public class ClientUI extends Application {
 	@Override
 	public void stop() throws Exception {
 	    if (chat != null) {
-	        chat.accept("#disconnect");   
+	        chat.accept(new BistroMessage(Action.DISCONNECT,""));  
 	    }
 
 	    super.stop();

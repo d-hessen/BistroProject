@@ -3,6 +3,8 @@ package gui;
 import java.io.IOException;
 import java.time.LocalDate;
 import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -69,7 +71,7 @@ public class ReservationFormController {
 		primaryStage.setTitle("Reservation Finder");
 		primaryStage.setScene(scene);		
 		primaryStage.show();
-		ClientUI.chat.accept("#disconnect");
+		ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT,""));
 	}
 	
 	public void save(ActionEvent event) {
@@ -82,7 +84,7 @@ public class ReservationFormController {
         else {
         	reservation.setNumberOfGuests(guests);
             reservation.setReservationDate(orderDatePicker.getValue().toString());
-            ClientUI.chat.accept(reservation);
+            ClientUI.chat.accept(new BistroMessage(Action.UPDATE_RESERVATION,reservation));
         }
 	}
 }
