@@ -2,26 +2,22 @@ package dataLayer;
 
 
 public class Member extends Guest {
-	private String userName;
+	private String fullName;
 	private String password;
 	private Integer memberId;
-	//private List<Visit> visitHistory;
 	
-	private int memberCounter;
-	
-	public Member (Integer phoneNumber, String email, String userName, String password, Integer memberId) {
-		super(phoneNumber, email);
-		this.userName = userName;
+	public Member (Integer phoneNumber, String email, String fullName, String password, Integer memberId) {
+		super(phoneNumber, email, fullName);
 		this.password = password;
 		setMemberId(memberId);
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getFullName() {
+		return fullName;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
 	}
 
 	public String getPassword() {
@@ -38,13 +34,5 @@ public class Member extends Guest {
 
 	public void setMemberId(Integer memberId) {
 		this.memberId = memberId;
-	}
-
-	public int getMemberCounter() {
-		return memberCounter;
-	}
-
-	public void setMemberCounter(int memberCounter) {
-		this.memberCounter = memberCounter;
 	}
 }

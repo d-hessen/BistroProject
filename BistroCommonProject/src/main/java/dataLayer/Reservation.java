@@ -19,7 +19,6 @@ public class Reservation implements Serializable {
 	 * @param memberId
 	 */
 	public Reservation(Integer reservationId, String reservationDate, Integer numberOfGuests, Integer verificationCode, String dateOfPlacingReservation, Integer memberId) {
-		super();
 		this.reservationId = reservationId;
 		this.reservationDate = reservationDate;
 		this.numberOfGuests = numberOfGuests;
@@ -74,9 +73,5 @@ public class Reservation implements Serializable {
 
 	public void setReservationDate(String reservationDate) {
 		this.reservationDate = reservationDate;
-	}
-
-	public String toString(){
-		return String.format("%s %s %s %s %s %s\n",reservationId,reservationDate,numberOfGuests,verificationCode,dateOfPlacingReservation,memberId);
 	}
 }
