@@ -26,7 +26,7 @@ public class ReservationController {
                         rs.getString("reservation_date"),
                         rs.getInt("number_of_guests"),
                         rs.getInt("verification_code"),
-                        rs.getString("date_of_placing_reservation"),
+                        rs.getString("created_at"),
                         rs.getInt("member_id")
                     );
                 }

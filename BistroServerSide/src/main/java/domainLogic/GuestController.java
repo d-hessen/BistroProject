@@ -10,18 +10,20 @@ import databaseController.dbController;
 
 public class GuestController {
 	
+	//Get guest by phone number
 	public Guest getGuest(int phone) {
         Connection conn = dbController.getInstance().getConnection();
         
-        String sql = "SELECT * FROM guest WHERE phone_number = ?";
+        String sql = "SELECT guest_full_name,email FROM reservation WHERE guest_phone = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, phone);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new Guest(
-                        rs.getInt("phone_number"),
-                        rs.getString("email")
+                        rs.getInt("guest_phone"),
+                        rs.getString("email"),
+                        rs.getString("guest_full_name")
                     );
                 }
             }
