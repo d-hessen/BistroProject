@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="500.0" prefWidth="350.0" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ClientDashboardController">
+   <padding>
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+   </padding>
+   <children>
+      <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Bistro Services" />
+      
+      <Label fx:id="welcomeLabel" style="-fx-font-size: 16px; -fx-text-fill: #555555;" text="Logged in as: Guest" />
+      
+      <Separator prefWidth="200.0" />
+
+      <VBox alignment="CENTER" spacing="15.0">
+         <children>
+            <Button onAction="#handleCurrentVisit" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="Current Visit" />
+            <Button onAction="#handleGetTableNow" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="Get Table Now" />
+            <Button onAction="#handleNewReservation" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="New Reservation" />
+         </children>
+      </VBox>
+
+      <VBox fx:id="guestSection" alignment="CENTER" spacing="15.0">
+         <children>
+            <Button onAction="#handleFindReservation" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="Find Reservation" />
+         </children>
+      </VBox>
+
+      <VBox fx:id="memberSection" alignment="CENTER" spacing="15.0">
+         <children>
+            <Button onAction="#handleMyReservations" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="My Reservations" />
+            <Button onAction="#handleMyVisits" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="My Visits" />
+         </children>
+      </VBox>
+      
+      <Separator prefWidth="200.0" />
+
+      <Button onAction="#handleLogout" prefWidth="100.0" style="-fx-background-color: #ffcccc;" text="Logout" />
+   </children>
+</VBox>
