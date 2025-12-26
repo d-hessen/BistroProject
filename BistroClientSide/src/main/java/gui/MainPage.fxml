@@ -4,18 +4,14 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="316.0" prefWidth="275.0" spacing="15" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainPageController">
+<VBox alignment="CENTER" prefHeight="316.0" prefWidth="275.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainPageController">
 
     <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Welcome to the Bistro" />
 
-    <Label style="-fx-font-size: 16px;" text="Sign in please:" />
+    <Label style="-fx-font-size: 16px;" text="Select your role:" />
 
-    <Button onAction="#openGuestUI" text="Guest" />
+    <Button onAction="#openClientOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Join for Clients" />
 
-    <Button onAction="#openMemberUI" text="Member" />
-
-    <Button onAction="#openStaffUI" text="Staff" />
-
-    <Button onAction="#openManagerUI" text="Manager" />
+    <Button onAction="#openStaffOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Join for Staff" />
 
 </VBox>
