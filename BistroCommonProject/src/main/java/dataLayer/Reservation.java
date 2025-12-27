@@ -1,62 +1,29 @@
 package dataLayer;
-//
+
 import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import common.Status;
 
 public class Reservation implements Serializable {
-	private Integer reservationId;
-	private Integer memberId;
-	private Integer numberOfGuests;
-	private Integer verificationCode;
+	private Integer reservationId; 
+	private Integer memberId; 
+	private Integer numberOfGuests; //Can be updated
+	private Integer verificationCode; 
+	private DateTime reservationDate;
 	private String dateOfPlacingReservation;
-	private String reservationDate;
+	private Status status; //Can be updated
+	private Guest guest; //for fields fullName, phone, email
 	
-	/**
-	 * @param reservationId
-	 * @param reservationDate
-	 * @param numberOfGuests
-	 * @param verificationCode
-	 * @param dateOfPlacingReservation
-	 * @param memberId
-	 */
-	public Reservation(Integer reservationId, String reservationDate, Integer numberOfGuests, Integer verificationCode, String dateOfPlacingReservation, Integer memberId) {
-		this.reservationId = reservationId;
+	public Reservation(Integer reservationId, DateTime reservationDate, Integer numberOfGuests, Integer memberId, Guest guest) {
 		this.reservationDate = reservationDate;
 		this.numberOfGuests = numberOfGuests;
-		this.verificationCode = verificationCode;
-		this.dateOfPlacingReservation = dateOfPlacingReservation;
 		this.memberId = memberId;
-	}
-	
-	public Integer getReservationId() {
-		return reservationId;
-	}
-
-	public void setReservationId(Integer reservationId) {
-		this.reservationId = reservationId;
-	}
-
-	public Integer getMemberId() {
-		return memberId;
-	}
-
-	public void setMemberId(int memberId) {
-		this.memberId = memberId;
-	}
-
-	public int getNumberOfGuests() {
-		return numberOfGuests;
-	}
-
-	public void setNumberOfGuests(int numberOfGuests) {
-		this.numberOfGuests = numberOfGuests;
-	}
-
-	public int getVerificationCode() {
-		return verificationCode;
-	}
-
-	public void setVerificationCode(int verificationCode) {
-		this.verificationCode = verificationCode;
+		this.guest = guest;
+		setDateOfPlacingReservation(dateOfPlacingReservation);
+		setReservationId(reservationId);
+		setVerificationCode(verificationCode);
+		setStatus(status);
 	}
 
 	public String getDateOfPlacingReservation() {
@@ -64,14 +31,71 @@ public class Reservation implements Serializable {
 	}
 
 	public void setDateOfPlacingReservation(String dateOfPlacingReservation) {
+		if(dateOfPlacingReservation == null) {
+			LocalDateTime currentDateTime = LocalDateTime.now();
+			this.dateOfPlacingReservation = currentDateTime.toString();
+		}
 		this.dateOfPlacingReservation = dateOfPlacingReservation;
 	}
 
-	public String getReservationDate() {
+	public Integer getReservationId() {
+		return reservationId;
+	}
+
+	private void setReservationId(Integer reservationId) {
+		this.reservationId = reservationId;
+	}
+
+	public Integer getMemberId() {
+		return memberId;
+	}
+
+	public void setMemberId(Integer memberId) {
+		this.memberId = memberId;
+	}
+
+	public Integer getNumberOfGuests() {
+		return numberOfGuests;
+	}
+
+	public void setNumberOfGuests(Integer numberOfGuests) {
+		this.numberOfGuests = numberOfGuests;
+	}
+
+	public Integer getVerificationCode() {
+		return verificationCode;
+	}
+
+	private void setVerificationCode(Integer verificationCode) {
+		this.verificationCode = verificationCode;
+	}
+
+	public DateTime getReservationDate() {
 		return reservationDate;
 	}
 
-	public void setReservationDate(String reservationDate) {
+	public void setReservationDate(DateTime reservationDate) {
 		this.reservationDate = reservationDate;
 	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		if(status != null) {
+			this.status = status;
+		}
+		
+	}
+
+	public Guest getGuest() {
+		return guest;
+	}
+
+	public void setGuest(Guest guest) {
+		this.guest = guest;
+	}
+	
+	
 }

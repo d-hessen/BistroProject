@@ -1,8 +1,8 @@
 package server;
 
+import domainLogic.ServerFrameController;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import gui.ServerFrameController;
 
 public class ServerUI extends Application {
     

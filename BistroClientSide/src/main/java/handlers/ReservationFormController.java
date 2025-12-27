@@ -1,4 +1,4 @@
-package gui;
+package handlers;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import dataLayer.DateTime;
 import dataLayer.Reservation;
 import javafx.scene.control.DatePicker;
 
@@ -36,6 +37,8 @@ public class ReservationFormController {
 	private Button btnSave_Changes;
     @FXML
     private Button btnBack;
+    @FXML
+    private Label statusLabel;
     
     private Reservation reservation; //reservation for controller
 
@@ -46,6 +49,7 @@ public class ReservationFormController {
 			return;
 		}
 		orderNumberLabel.setText(String.valueOf(reservation.getReservationId()));
+		statusLabel.setText(reservation.getStatus().name());
 		confirmationCodeLabel.setText(String.valueOf(reservation.getVerificationCode()));
 		MemberLabel.setText(String.valueOf(reservation.getMemberId()));
 		placingOrderDateLabel.setText(reservation.getDateOfPlacingReservation());
@@ -53,8 +57,8 @@ public class ReservationFormController {
 		
 		//converts the String date to LocalDate
         try {
-            if (reservation.getReservationDate() != null && !reservation.getReservationDate().isEmpty()) {
-            	orderDatePicker.setValue(LocalDate.parse(reservation.getReservationDate()));
+            if (reservation.getReservationDate() != null && !reservation.getReservationDate().getDate().isEmpty()) {
+            	orderDatePicker.setValue(LocalDate.parse(reservation.getReservationDate().getDate()));
             }
         } catch (Exception e) {
         	orderDatePicker.setValue(null); // if string not in yyyy-MM-dd
@@ -71,7 +75,7 @@ public class ReservationFormController {
 		primaryStage.setTitle("Reservation Finder");
 		primaryStage.setScene(scene);		
 		primaryStage.show();
-		ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT,""));
+		ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT,null));
 	}
 	
 	public void save(ActionEvent event) {
@@ -83,7 +87,7 @@ public class ReservationFormController {
         }
         else {
         	reservation.setNumberOfGuests(guests);
-            reservation.setReservationDate(orderDatePicker.getValue().toString());
+            reservation.setReservationDate(new DateTime (orderDatePicker.getValue().toString(), null));
             ClientUI.chat.accept(new BistroMessage(Action.UPDATE_RESERVATION,reservation));
         }
 	}

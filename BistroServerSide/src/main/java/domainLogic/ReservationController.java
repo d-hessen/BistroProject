@@ -1,62 +1,23 @@
 package domainLogic;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import common.Action;
+import common.BistroMessage;
 import dataLayer.Reservation;
-import databaseController.dbController;
-import gui.ServerFrameController;
+import databaseController.GetCommands;
+import databaseController.UpdateCommands;
 
+//RESERVATION LOGIC 
 public class ReservationController {
+	public static BistroMessage getReservation(Integer reservationID, ServerFrameController guiController) {
+		Reservation recieved = GetCommands.getReservation(reservationID, guiController);
+		if(recieved != null) {
+			return new BistroMessage(Action.GET_RESERVATION, recieved);
+		}
+		return new BistroMessage(Action.RESERVATION_NOT_FOUND, recieved);
+	}
 	
-	// Retrieve a reservation by ID
-    public Reservation getReservation(int id, ServerFrameController guiController) {
-        Connection conn = dbController.getInstance().getConnection();
-        
-        String sql = "SELECT * FROM reservation WHERE reservation_number = ?";
-        
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new Reservation(
-                        rs.getInt("reservation_number"),
-                        rs.getString("reservation_date"),
-                        rs.getInt("number_of_guests"),
-                        rs.getInt("verification_code"),
-                        rs.getString("created_at"),
-                        rs.getInt("member_id")
-                    );
-                }
-                else {
-					guiController.addToConsole("Reservation not found for ID: " + id);
-					return null;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error fetching reservation: " + e.getMessage());
-        }
-        return null;
-    }
-    
- // Update an existing reservation
-    public boolean updateReservation(Reservation res) {
-        Connection conn = dbController.getInstance().getConnection();
-        String sql = "UPDATE reservation SET reservation_date = ?, number_of_guests = ? WHERE reservation_number = ?";
-        
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, res.getReservationDate());
-            ps.setInt(2, res.getNumberOfGuests());
-            ps.setInt(3, res.getReservationId());
-            
-            int result = ps.executeUpdate();
-            return result > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating reservation: " + e.getMessage());
-            return false;
-        }
-    }
-
+	public static BistroMessage updateReservation(Reservation reservationToUpdate) {
+		boolean success = UpdateCommands.updateReservation(reservationToUpdate);
+		return new BistroMessage(Action.UPDATE_RESERVATION, success);
+	}
 }

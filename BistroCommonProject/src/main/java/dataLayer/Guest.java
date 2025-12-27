@@ -3,12 +3,12 @@ package dataLayer;
 import java.io.Serializable;
 
 public class Guest implements Serializable {
-	private Integer phoneNumber;
+	private String phoneNumber;
 	private String fullName;
 	private String email;
 	
-	
-	public Guest (Integer phoneNumber, String email, String fullName) {
+	//Guest can insert phone number/email/both
+	public Guest (String fullName, String phoneNumber, String email) {
 		super();
 		this.phoneNumber = phoneNumber;
 		this.fullName = fullName;
@@ -23,11 +23,11 @@ public class Guest implements Serializable {
 		this.email = email;
 	}
 
-	public Integer getPhoneNumber() {
+	public String getPhoneNumber() {
 		return phoneNumber;
 	}
 
-	public void setPhoneNumber(Integer phoneNumber) {
+	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
 

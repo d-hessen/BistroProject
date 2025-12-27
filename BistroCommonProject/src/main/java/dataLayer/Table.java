@@ -1,17 +1,17 @@
 package dataLayer;
 
 public class Table {
-	private int tableNumber;
-	private int tableCapacity;
+	private Integer tableNumber;
+	private Integer tableCapacity;
 	private boolean isActive = false;
 	
-	public Table(int tableNumber, int tableCapacity, boolean isActive) {
+	public Table(Integer tableNumber, Integer tableCapacity, boolean isActive) {
 		this.isActive = isActive;
 		this.tableNumber = tableNumber;
 		this.tableCapacity = tableCapacity;
 	}
 
-	public int getTableNumber() {
+	public Integer getTableNumber() {
 		return tableNumber;
 	}
 
@@ -19,7 +19,7 @@ public class Table {
 		this.tableNumber = tableNumber;
 	}
 
-	public int getTableCapacity() {
+	public Integer getTableCapacity() {
 		return tableCapacity;
 	}
 

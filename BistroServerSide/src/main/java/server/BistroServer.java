@@ -4,7 +4,7 @@ import java.io.*;
 
 import databaseController.dbController;
 import domainLogic.ReservationController;
-import gui.ServerFrameController;
+import domainLogic.ServerFrameController;
 import common.Action;
 import common.BistroMessage;
 import dataLayer.Reservation;
@@ -13,14 +13,12 @@ import ocsf.server.*;
 public class BistroServer extends AbstractServer 
 {
  private ServerFrameController guiController; // Reference to the GUI Controller
- private ReservationController resController;
 
 
   public BistroServer(int port, ServerFrameController controller) 
   {
     super(port);
     this.guiController = controller;
-    this.resController = new ReservationController();
     
   }
   @Override
@@ -41,21 +39,16 @@ public class BistroServer extends AbstractServer
               // --- RESERVATION ROUTES ---
               case GET_RESERVATION:
                   // Data is an Integer (ID)
-                  int resId = Integer.parseInt((String)request.getData()); 
-                  Reservation result = resController.getReservation(resId, guiController);
-                  if(result == null) {
-                	  client.sendToClient(new BistroMessage(Action.RESERVATION_NOT_FOUND,resId));
-                  } else {
-                	  client.sendToClient(new BistroMessage(Action.GET_RESERVATION, result));
-                  }
+                  Integer resId = Integer.parseInt((String)request.getData()); 
+                  BistroMessage reservation = ReservationController.getReservation(resId, guiController);
+                  client.sendToClient(reservation);
                   break;
 
               case UPDATE_RESERVATION:
                   //Data is a Reservation Object
-                  dataLayer.Reservation resToUpdate = (dataLayer.Reservation) request.getData();
-                  boolean success = resController.updateReservation(resToUpdate);
+                  Reservation resToUpdate = (Reservation) request.getData();
                   // Send back success/failure
-                  client.sendToClient(new BistroMessage(Action.UPDATE_RESERVATION, success)); 
+                  client.sendToClient(ReservationController.updateReservation(resToUpdate)); 
                   break;
 
               default:
