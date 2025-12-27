@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="450.0" prefWidth="380.0" spacing="15.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.VisitIdentificationController">
+   <padding>
+      <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+   </padding>
+   <children>
+      <Label style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Visit Identification" />
+      
+      <Label style="-fx-text-fill: #666666;" text="Please enter your visit code:" />
+
+      <VBox alignment="CENTER" spacing="5.0">
+         <children>
+            <TextField fx:id="visitCodeField" prefHeight="40.0" promptText="Enter Code (e.g. Order #)" style="-fx-alignment: CENTER; -fx-font-size: 16px;" />
+            
+            <Hyperlink onAction="#handleForgotPassword" style="-fx-font-size: 12px; -fx-text-fill: #1976d2;" text="Forgot my code - Send to Email/SMS" />
+         </children>
+      </VBox>
+
+      <Button fx:id="identifyButton" onAction="#handleIdentification" prefHeight="45.0" prefWidth="200.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;" text="Identify Visit" />
+
+      <Button onAction="#handleBack" prefWidth="100.0" style="-fx-background-color: transparent; -fx-border-color: #cccccc;" text="Back" />
+      
+      <Label fx:id="statusLabel" alignment="CENTER" prefWidth="300.0" text="" textAlignment="CENTER" wrapText="true" />
+   </children>
+</VBox>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<VBox alignment="CENTER" prefHeight="450.0" prefWidth="400.0" spacing="25.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ClientWaitingController">
+   <padding>
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+   </padding>
+   <children>
+      <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #f57c00;" text="Almost There!" />
+      
+      <ProgressIndicator prefHeight="80.0" prefWidth="80.0" />
+
+      <TextFlow textAlignment="CENTER">
+         <children>
+            <Text style="-fx-font-size: 16px;" text="We are currently preparing a table for you.&#10;Please have a seat in our waiting area." />
+         </children>
+      </TextFlow>
+
+      <VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #fff3e0; -fx-padding: 15; -fx-background-radius: 10; -fx-border-color: #ffe0b2; -fx-border-radius: 10;">
+         <children>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: #e65100;" text="Notification Settings" />
+            <Label prefHeight="49.0" prefWidth="251.0" style="-fx-font-size: 12px;" text="You will receive an SMS and an app notification&#10;the moment your table is ready." textAlignment="CENTER" />
+         </children>
+      </VBox>
+
+      <VBox alignment="CENTER" spacing="15.0">
+         <children>
+            <Label fx:id="estimatedWaitLabel" style="-fx-font-style: italic; -fx-text-fill: #757575;" text="Estimated wait time: Calculating..." />
+            
+            <Button onAction="#handleCancelWaiting" prefHeight="35.0" prefWidth="180.0" style="-fx-background-color: transparent; -fx-text-fill: #d32f2f; -fx-border-color: #d32f2f; -fx-border-radius: 5;" text="Cancel Waiting" />
+         </children>
+      </VBox>
+   </children>
+</VBox>
