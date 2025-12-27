@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ReservationFormController">
+<VBox alignment="CENTER" prefHeight="450.0" prefWidth="356.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ReservationFormController">
 
     <padding>
         <Insets bottom="25" left="25" right="25" top="25" />
@@ -19,30 +19,33 @@
 
     <Label fx:id="ReservationDetailsLabel" style="-fx-font-size: 22px; -fx-font-weight: bold;" text="Reservation Details" />
 
-    <GridPane fx:id="OrderDateLabel" hgap="15" vgap="15">
-
-        <Label fx:id="OrderNumberLabel" text="Order Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+    <GridPane fx:id="OrderDateLabel" hgap="15" prefHeight="206.0" prefWidth="319.0" vgap="15">
+   
+        <Label fx:id="OrderNumberLabel" text="Reservation Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <Label fx:id="orderNumberLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-        <Label text="Order Date:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <DatePicker fx:id="orderDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-        <Label fx:id="NumberOfGuestLabel" text="Number of Guests:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <TextField fx:id="numberOfGuestsField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-        <Label fx:id="ConfirmationCodeLabel" text="Confirmation Code:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <Label fx:id="confirmationCodeLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-        <Label fx:id="infoMemberLabel" text="Member ID" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <Label fx:id="MemberLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-        <Label fx:id="DateOfPlacingOrder" text="Date of Placing Order:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-        <Label fx:id="placingOrderDateLabel" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      	<Label fx:id="statusLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      	<Label text="Status:" GridPane.rowIndex="1" />
+   
+        <Label text="Reservation Date:" GridPane.rowIndex="2" />
+        <DatePicker fx:id="orderDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+   
+        <Label fx:id="NumberOfGuestLabel" text="Number of Guests:" GridPane.rowIndex="3" />
+        <TextField fx:id="numberOfGuestsField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+   
+        <Label fx:id="ConfirmationCodeLabel" text="Verification Code:" GridPane.rowIndex="4" />
+        <Label fx:id="confirmationCodeLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+   
+        <Label fx:id="infoMemberLabel" text="Member ID" GridPane.rowIndex="5" />
+        <Label fx:id="MemberLabel" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+   
+        <Label fx:id="DateOfPlacingOrder" text="Date of Placing Order:" GridPane.rowIndex="6" />
+        <Label fx:id="placingOrderDateLabel" GridPane.columnIndex="1" GridPane.rowIndex="6" />
       <columnConstraints>
          <ColumnConstraints />
          <ColumnConstraints />
       </columnConstraints>
       <rowConstraints>
+         <RowConstraints />
          <RowConstraints />
          <RowConstraints />
          <RowConstraints />

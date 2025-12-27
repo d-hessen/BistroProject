@@ -10,7 +10,8 @@ import java.io.*;
 public class BistroClient extends AbstractClient
 {
   ChatIF clientUI; 
-  public static Reservation  reservationInstance = new Reservation(null,null,null,null,null,null);
+  public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
+  public static Integer wantedReservationId = null;
   public static boolean awaitResponse = false;
 	 
   public BistroClient(String host, int port, ChatIF clientUI) 
@@ -33,6 +34,7 @@ public class BistroClient extends AbstractClient
 		  switch(answer.getAction()) {
 		  		case GET_RESERVATION:
 		  			reservationInstance = (Reservation)answer.getData();
+		  			wantedReservationId = reservationInstance.getReservationId();
 		  			break;
 		  		case UPDATE_RESERVATION:
 		  			if((boolean) answer.getData()) System.out.println("Update succeeded");
@@ -41,7 +43,7 @@ public class BistroClient extends AbstractClient
 		  			}
 		  			break;
 		  		case RESERVATION_NOT_FOUND:
-		  			reservationInstance = new Reservation((Integer)answer.getData(),null,null,null,null,null);
+		  			wantedReservationId = (Integer)answer.getData();
 		  			break;
 		  		default:
 	                  System.out.println("Unknown Action: " + answer.getAction());

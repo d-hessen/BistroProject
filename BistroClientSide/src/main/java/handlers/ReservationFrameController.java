@@ -1,4 +1,4 @@
-package gui;
+package handlers;
 
 import client.BistroClient;
 import client.ClientUI;
@@ -60,7 +60,7 @@ public class ReservationFrameController {
 				else {
 					ClientUI.chat.accept(new BistroMessage(Action.GET_RESERVATION, orderNumber));
 					
-					if(BistroClient.reservationInstance.getReservationId() != Integer.parseInt(orderNumber))
+					if(BistroClient.wantedReservationId != Integer.parseInt(orderNumber))
 					{
 						ClientUI.chat.display("Reservation ID Not Found");
 						notFound();

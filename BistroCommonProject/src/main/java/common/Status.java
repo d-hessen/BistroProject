@@ -1,11 +1,11 @@
 package common;
 
 public enum Status {
-	PENDING,
-	APPROVED,
-	SEATED,
-	CANCELLED,
-	NO_SHOW,
-	WAITING,
-	NOTIFIED
+	pending,
+	approved,
+	seated,
+	cancelled,
+	no_show,
+	waiting,
+	notified
 }

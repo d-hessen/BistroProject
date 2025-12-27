@@ -1,14 +1,14 @@
 package dataLayer;
 
 public class Visit {
-	private int tableId;
-	private int reservationId;
-	private int waitingId;
+	private Integer tableId;
+	private Integer reservationId;
+	private Integer waitingId;
 	private String startTime;
 	private String endTime;
 	private boolean isActive;
 	
-	public Visit(int tableId, int reservationId, int waitingId, String startTime, String endTime, boolean isActive) {
+	public Visit(Integer tableId, Integer reservationId, Integer waitingId, String startTime, String endTime, boolean isActive) {
 		this.tableId = tableId;
 		this.reservationId = reservationId;
 		this.waitingId = waitingId;
@@ -16,27 +16,27 @@ public class Visit {
 		this.endTime = endTime;
 		this.isActive = isActive;
 	}
-	public int getTableId() {
+	public Integer getTableId() {
 		return tableId;
 	}
 
-	public void setTableId(int tableId) {
+	public void setTableId(Integer tableId) {
 		this.tableId = tableId;
 	}
 
-	public int getReservationId() {
+	public Integer getReservationId() {
 		return reservationId;
 	}
 
-	public void setReservationId(int reservationId) {
+	public void setReservationId(Integer reservationId) {
 		this.reservationId = reservationId;
 	}
 
-	public int getWaitingId() {
+	public Integer getWaitingId() {
 		return waitingId;
 	}
 
-	public void setWaitingId(int waitingId) {
+	public void setWaitingId(Integer waitingId) {
 		this.waitingId = waitingId;
 	}
 

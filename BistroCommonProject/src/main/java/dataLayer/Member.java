@@ -2,22 +2,23 @@ package dataLayer;
 
 
 public class Member extends Guest {
-	private String fullName;
 	private String password;
 	private Integer memberId;
+	private String cardCode;
 	
-	public Member (Integer phoneNumber, String email, String fullName, String password, Integer memberId) {
-		super(phoneNumber, email, fullName);
+	public Member (String fullName, String phoneNumber, String email, String password) {
+		super(fullName, phoneNumber, email);
 		this.password = password;
 		setMemberId(memberId);
+		setCardCode(cardCode);
 	}
 
-	public String getFullName() {
-		return fullName;
+	public String getCardCode() {
+		return cardCode;
 	}
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
+	private void setCardCode(String cardCode) {
+		this.cardCode = cardCode;
 	}
 
 	public String getPassword() {
@@ -32,7 +33,7 @@ public class Member extends Guest {
 		return memberId;
 	}
 
-	public void setMemberId(Integer memberId) {
+	private void setMemberId(Integer memberId) {
 		this.memberId = memberId;
 	}
 }

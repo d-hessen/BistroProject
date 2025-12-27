@@ -4,8 +4,8 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import common.Action;
 import common.BistroMessage;
-import gui.ReservationFrameController;
-import gui.MainPageController;
+import handlers.MainPageController;
+import handlers.ReservationFrameController;
 
 
 public class ClientUI extends Application {
@@ -28,9 +28,12 @@ public class ClientUI extends Application {
 		 
 		// TODO Auto-generated method stub
 						  		
-		MainPageController mainPage = new MainPageController(); 
-		 
-		mainPage.start(primaryStage);
+		//MainPageController mainPage = new MainPageController(); 
+		ReservationFrameController rfc = new ReservationFrameController();
+		
+		
+		rfc.start(primaryStage); 
+		//mainPage.start(primaryStage);
 	}
 	
 	@Override

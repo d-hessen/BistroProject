@@ -6,6 +6,7 @@ public enum Action {
     UPDATE_RESERVATION,
     CANCEL_RESERVATION,
     RESERVATION_NOT_FOUND,
+    SEND_VERIFICATION_CODE,
     
     // Guest Actions
     GET_GUEST,
@@ -13,4 +14,6 @@ public enum Action {
     
     // Connection Actions
     DISCONNECT
+    
+    
 }
