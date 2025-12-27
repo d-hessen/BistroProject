@@ -28,12 +28,12 @@ public class ClientUI extends Application {
 		 
 		// TODO Auto-generated method stub
 						  		
-		//MainPageController mainPage = new MainPageController(); 
-		ReservationFrameController rfc = new ReservationFrameController();
+		MainPageController mainPage = new MainPageController(); 
+		//ReservationFrameController rfc = new ReservationFrameController();
 		
 		
-		rfc.start(primaryStage); 
-		//mainPage.start(primaryStage);
+		//rfc.start(primaryStage); 
+		mainPage.start(primaryStage);
 	}
 	
 	@Override

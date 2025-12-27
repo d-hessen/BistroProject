@@ -5,15 +5,17 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/21" fx:controller="handlers.IsMemberController">
    <children>
       <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="316.0" prefWidth="275.0" spacing="20">
          <children>
             <Label prefHeight="35.0" prefWidth="220.0" style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Have Membership?" />
+            
             <Button onAction="#openClientOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Log In" />
+            
             <Button onAction="#openStaffOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Sign Up" />
-            <Label style="-fx-font-size: 16px;" text="Join As Guest" />
+            
+            <Button onAction="#openGuestOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Join As Guest" />
          </children>
       </VBox>
    </children>

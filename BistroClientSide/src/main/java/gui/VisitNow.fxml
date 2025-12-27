@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" prefHeight="500.0" prefWidth="400.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.VisitNowController">
+   <padding>
+      <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+   </padding>
+   <children>
+      <Label style="-fx-font-weight: bold;" text="Get a Table Now">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+      
+      <Label text="Enter your details to receive a visit code" textFill="#666666" />
+      
+      <Separator prefWidth="200.0" />
+
+      <VBox spacing="15.0">
+         <children>
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="Phone Number or Email:" />
+                  <TextField fx:id="contactField" prefHeight="35.0" promptText="e.g. 0501234567 or mail@example.com" />
+               </children>
+            </VBox>
+            
+            <VBox spacing="5.0">
+               <children>
+                  <Label text="Number of Diners:" />
+                  <TextField fx:id="dinersField" prefHeight="35.0" promptText="Enter number of guests" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+
+      <Button fx:id="generateCodeBtn" onAction="#handleGenerateCode" prefHeight="40.0" prefWidth="200.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" text="Get Confirmation Code" />
+
+      <VBox fx:id="confirmationArea" alignment="CENTER" spacing="10.0" visible="false">
+         <children>
+            <Separator prefWidth="200.0" />
+            <Label text="Your Visit Code:" />
+            <Label fx:id="generatedCodeLabel" style="-fx-text-fill: #1976d2; -fx-font-weight: bold;" text="XXXXXX">
+               <font>
+                  <Font size="32.0" />
+               </font>
+            </Label>
+            <Label style="-fx-font-style: italic;" text="Please present this code at the entrance" textAlignment="CENTER" wrapText="true" />
+         </children>
+      </VBox>
+
+      <Button onAction="#handleBack" prefWidth="100.0" style="-fx-background-color: transparent; -fx-border-color: #cccccc;" text="Back" />
+   </children>
+</VBox>

@@ -4,7 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="316.0" prefWidth="275.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.MainPageController">
+<VBox alignment="CENTER" prefHeight="316.0" prefWidth="275.0" spacing="20" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.MainPageController">
 
     <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Welcome to the Bistro" />
 

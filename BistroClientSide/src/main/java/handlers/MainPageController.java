@@ -4,52 +4,32 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.scene.Parent;
+import java.io.IOException;
 
+/**
+ * Controller for the Main Page where users select their role (Client or Staff).
+ */
 public class MainPageController {
 
-	@FXML
-	private void openGuestUI(ActionEvent event) {
-	    openUI(event, "GuestLoginGUI.fxml", "Guest Login");
-	}
 
-	@FXML
-	private void openMemberUI(ActionEvent event) {
-	    openUI(event, "MemberLoginGUI.fxml", "Member Login");
-	}
-
-	@FXML
-	private void openStaffUI(ActionEvent event) {
-	    openUI(event, "StaffLoginGUI.fxml", "Staff Login");
-	}
-
-	@FXML
-	private void openManagerUI(ActionEvent event) {
-	    openUI(event, "ManagerLoginGUI.fxml", "Manager Login");
-	}
-
-
-    private void openUI(ActionEvent event, String fxmlFile, String title) {
-        try {
-            Parent root = FXMLLoader.load(
-                    getClass().getResource("/gui/" + fxmlFile)
-            );
-
-            Stage stage = new Stage();
-            stage.setTitle(title + " Screen");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-            ((Node) event.getSource()).getScene().getWindow().hide();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+     // Handles the action when "Join for Clients" button is clicked.
+    @FXML
+    private void openClientOptions(ActionEvent event) {
+    	 SceneLoader.loadScene(event, "/gui/IsMemberGUI.fxml", "Client Login Options");
     }
+
+
+     // Handles the action when "Join for Staff" button is clicked.
+    @FXML
+    private void openStaffOptions(ActionEvent event) {
+        SceneLoader.loadScene(event, "/gui/StaffLoginGUI.fxml", "Staff Login");
+    }
+
 	public void start(Stage primaryStage) throws Exception {	
-		Parent root = FXMLLoader.load(getClass().getResource("/gui/mainPage.fxml"));
+		Parent root = FXMLLoader.load(getClass().getResource("/gui/MainPage.fxml"));
 				
 		Scene scene = new Scene(root);
 		primaryStage.setTitle("Main Page");
