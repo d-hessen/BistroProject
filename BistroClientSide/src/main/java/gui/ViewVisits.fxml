@@ -26,6 +26,6 @@
         </columns>
       </TableView>
 
-      <Button onAction="#handleBack" prefWidth="120.0" style="-fx-font-size: 14px;" text="Back to Dashboard" />
+      <Button onAction="#handleBack" prefHeight="30.0" prefWidth="145.0" style="-fx-font-size: 14px;" text="Back to Dashboard" />
    </children>
 </VBox>

@@ -11,12 +11,12 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="500.0" prefWidth="450.0" spacing="25.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ReservationDetailsController">
+<VBox alignment="CENTER" prefHeight="550.0" prefWidth="450.0" spacing="25.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ReservationDetailsController">
    <padding>
       <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
    <children>
-      <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Edit Reservation" />
+      <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Reservation Details" />
       
       <GridPane alignment="CENTER" hgap="15.0" vgap="20.0">
         <columnConstraints>
@@ -35,8 +35,12 @@
 
            <Label text="Diners:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
            <TextField fx:id="dinersField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+           <Label text="Status:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+           <TextField fx:id="statusField" editable="false" focusTraversable="false" mouseTransparent="true" style="-fx-background-color: #eeeeee; -fx-border-color: #cccccc; -fx-text-fill: #e65100; -fx-font-weight: bold;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         </children>
          <rowConstraints>
+            <RowConstraints />
             <RowConstraints />
             <RowConstraints />
             <RowConstraints />
