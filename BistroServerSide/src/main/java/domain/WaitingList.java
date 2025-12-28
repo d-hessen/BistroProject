@@ -8,11 +8,11 @@ import java.util.Queue;
 import dataLayer.Guest;
 import domain.WaitingList.Party;
 
-public final class WaitingList { // 
+public final class WaitingList {  // 
 	
 	private static final WaitingList INSTANCE= new WaitingList();
 	public record Party(int id, Guest guest, int partySize, String phone, String email, Instant readyAt) {} // creates small class with fields and getters (id is validation code)
-	private final LinkedList <Party> queue= new LinkedList<>(); // Queue that represents the Waiting List
+	private final LinkedList <Party> queue= new LinkedList<>();  // Queue that represents the Waiting List
 	private WaitingList() {}
 	private int nextId = 1;
 	

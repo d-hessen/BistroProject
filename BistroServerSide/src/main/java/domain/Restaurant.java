@@ -18,7 +18,7 @@ public final class Restaurant {
 	
 	public static Restaurant getInstance() {return INSTANCE;}
 	
-	private Restaurant() {  						// private constructor prevents making new restaurants 
+	private Restaurant() {// private constructor prevents making new restaurants 
 		this.restaurantId = 0;
 	    this.openTime = LocalTime.of(12, 0);
 	    this.closeTime = LocalTime.of(23, 0);
