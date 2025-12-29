@@ -8,30 +8,30 @@ import java.util.Queue;
 import dataLayer.Guest;
 import domain.WaitingList.Party;
 
-public final class WaitingList {  // 
+public final class WaitingList {  
 	
-	private static final WaitingList INSTANCE= new WaitingList();
-	public record Party(int id, Guest guest, int partySize, String phone, String email, Instant readyAt) {} // creates small class with fields and getters (id is validation code)
+	private static final WaitingList INSTANCE = new WaitingList();
+	public record Party(int id, Guest guest, int partySize, Instant readyAt) {} // creates small class with fields and getters (id is validation code)
 	private final LinkedList <Party> queue= new LinkedList<>();  // Queue that represents the Waiting List
 	private WaitingList() {}
 	private int nextId = 1;
 	
-	public synchronized int join (Guest guest, int partySize, String phone, String email) { // joining the queue one at a time and returns unique waitingId
+	public synchronized int join (Guest guest, int partySize) { // joining the queue one at a time and returns unique waitingId
 		
 		if(guest == null) throw new IllegalArgumentException("guest is null");
 		if(partySize <= 0) throw new IllegalArgumentException("party sizee must be at least 1");
 		
 		boolean hasPhone = false , hasEmail = false;
-		if(phone != null && !phone.isBlank()) { hasPhone = true;} // not empty and not null
-		if(email != null && !email.isBlank()) { hasEmail = true;}
+		if(guest.getPhoneNumber() != null && !guest.getPhoneNumber().isBlank()) { hasPhone = true;} // not empty and not null
+		if(guest.getEmail() != null && !guest.getEmail().isBlank()) { hasEmail = true;}
 		if (!hasPhone && !hasEmail) { 							  // if both are empty or null
             throw new IllegalArgumentException("Must provide phone and/or email");
 		}
-		if(isGuestInQueue(phone,email)) {
+		if(isGuestInQueue(guest.getPhoneNumber(),guest.getEmail())) {
 			throw new IllegalArgumentException("Customer already in waiting list");
 		}
 		int id = nextId++;
-        queue.addLast(new Party(id, guest, partySize, phone, email, null)); // add to end of queue
+        queue.addLast(new Party(id, guest, partySize, null)); // add to end of queue 
         return id;
 
 	}
@@ -61,18 +61,18 @@ public final class WaitingList {  //
 		 return false;
 	 }
 	 
-	 public synchronized WaitingList.Party notifyPartyHead() { // called when a table becomes available and notifies the next party
+	 public synchronized Guest notifyPartyHead() { // called when a table becomes available and notifies the next party
 		 Party head = queue.peekFirst();
 		 if (head == null) {return null;}
 		 
-		 if (head.readyAt() != null) return head; // if the party was already notified
+		 if (head.readyAt() != null) return head.guest; // if the party was already notified
 		 //returns party with the time and date of this method execution for notification time
-		 Party updatedParty = new Party(head.id, head.guest, head.partySize, head.phone, head.email, Instant.now());
+		 Party updatedParty = new Party(head.id, head.guest, head.partySize, Instant.now());
 		 queue.set(0, updatedParty); 
-		 return head;
+		 return head.guest;
 	 }
 	// called when a customer arrives and provides their code and returns a party if arrival time is valid
-	 public synchronized WaitingList.Party confirmArrival(int waitingId, int maxLateMinutes){ 
+	 public synchronized Guest confirmArrival(int waitingId, int maxLateMinutes){ 
 		 
 		 removeExpiredTimeParty(maxLateMinutes);
 		 for(int i = 0; i < queue.size(); i++) {
@@ -85,7 +85,7 @@ public final class WaitingList {  //
                     return null;
 				}
 				queue.remove(i); // party is on time
-                return party;
+                return party.guest;
 		  }	
 		} 
 		 return null;
@@ -110,8 +110,8 @@ public final class WaitingList {  //
 		if(email != null && !email.isBlank()) { hasEmail = true;}
 		for(int i = 0; i < queue.size(); i++) {
 			Party party = queue.get(i);
-			if(hasPhone && party.phone() != null && party.phone().equals(phone)) {return true;} // we check both because it's only mandatory to have one
-			if(hasEmail && party.phone() != null && party.email().equals(email)) {return true;}
+			if(hasPhone && party.guest.getPhoneNumber() != null && party.guest.getPhoneNumber().equals(phone)) {return true;} // we check both because it's only mandatory to have one
+			if(hasEmail && party.guest.getEmail() != null && party.guest.getEmail().equals(email)) {return true;}
 		}
 		return false;
 	 }
