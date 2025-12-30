@@ -3,8 +3,10 @@ package common;
 public enum Action {
     // Reservation Actions
     GET_RESERVATION,
+    CREATE_RESERVATION,
     UPDATE_RESERVATION,
     CANCEL_RESERVATION,
+    RESERVATION_NOT_CREATED,
     RESERVATION_NOT_FOUND,
     SEND_VERIFICATION_CODE,
     
@@ -16,6 +18,8 @@ public enum Action {
     
     //Member Actions
     GET_MEMBER,
+    CREATE_MEMBER,
+    MEMBER_NOT_CREATED,
     UPDATE_MEMBER,
     DELETE_MEMBER,
     MEMBER_IDENTIFICATION,
@@ -29,5 +33,5 @@ public enum Action {
     
     //BILL ACTIONS
     GET_BILL,
-    UPDATE_BILL
+    UPDATE_BILL, 
 }

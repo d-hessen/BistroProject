@@ -18,10 +18,9 @@ public class CreateCommands {
 	//RESERVATION CREATION
 	//======================================
 	//Method that creates Reservation in database and returns Reservation Number
-	public Integer createReservation(Integer reservationId,String reservationDate, String reservationTime, Integer numberOfGuests, Integer memberId, Guest guest, ServerFrameController guiController) {
+	public static Integer createReservation(Reservation resToCreate, ServerFrameController guiController) {
 			Connection conn = dbController.getInstance().getConnection();
-			
-			Reservation resToCreate = new Reservation(reservationId, new DateTime(reservationDate,reservationTime), numberOfGuests, memberId, guest);
+
 			//SQL QUERY TO INSERT RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
 			String sql = "INSERT INTO reservation ("
 					+ "reservation_number,"
@@ -51,7 +50,7 @@ public class CreateCommands {
 				int executionResult = ps.executeUpdate();
 				if(executionResult > 0) return resToCreate.getReservationId();
 			} catch(SQLException e) {
-				guiController.addToConsole("Error adding reservation for" +memberId+ " to database. Error: " +e.getMessage());
+				guiController.addToConsole("Error adding reservation for" +resToCreate.getMemberId()+ " to database. Error: " +e.getMessage());
 				e.printStackTrace();
 			}
 			return null;
@@ -59,25 +58,23 @@ public class CreateCommands {
 	//======================================
 	//MEMBER CREATION
 	//======================================
-	public Integer createMember(String fullName, String phoneNumber, String email, String password, ServerFrameController guiController) {
+	public static Integer createMember(Member memberToCreate, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
-
-		Member memToCreate = new Member(fullName, phoneNumber, email, password);
 		
 		String sql = "INSERT INTO members (member_id, full_name, phone, email, password, card_code) VALUES (?, ?, ?, ?, ?, ?)";
 		//Set values to query
 		try (PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setInt(1,memToCreate.getMemberId());
-			ps.setString(2, memToCreate.getFullName());
-			ps.setString(3, memToCreate.getPhoneNumber());
-			ps.setString(4, memToCreate.getEmail());
-			ps.setString(5, memToCreate.getPassword());
-			ps.setString(6, memToCreate.getCardCode());
+			ps.setInt(1,memberToCreate.getMemberId());
+			ps.setString(2, memberToCreate.getFullName());
+			ps.setString(3, memberToCreate.getPhoneNumber());
+			ps.setString(4, memberToCreate.getEmail());
+			ps.setString(5, memberToCreate.getPassword());
+			ps.setString(6, memberToCreate.getCardCode());
 			//Execute prepared query
 			int executionResult = ps.executeUpdate();
-			if(executionResult > 0) return memToCreate.getMemberId();
+			if(executionResult > 0) return memberToCreate.getMemberId();
 		} catch(SQLException e) {
-			guiController.addToConsole("Error creating member: " +memToCreate.getFullName()+". Error: " +e.getMessage());
+			guiController.addToConsole("Error creating member: " +memberToCreate.getFullName()+". Error: " +e.getMessage());
 			e.printStackTrace();
 		}
 		return null;

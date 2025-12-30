@@ -3,6 +3,7 @@ package domainLogic;
 import common.Action;
 import common.BistroMessage;
 import dataLayer.Reservation;
+import databaseController.CreateCommands;
 import databaseController.GetCommands;
 import databaseController.UpdateCommands;
 
@@ -19,5 +20,15 @@ public class ReservationController {
 	public static BistroMessage updateReservation(Reservation reservationToUpdate) {
 		boolean success = UpdateCommands.updateReservation(reservationToUpdate);
 		return new BistroMessage(Action.UPDATE_RESERVATION, success);
+	}
+
+	public static BistroMessage createReservation(Reservation reservationToCreate, ServerFrameController guiController) {
+		if (getReservation(reservationToCreate.getReservationId(), guiController).getAction() == Action.RESERVATION_NOT_FOUND) {
+			Integer createdReservationId = CreateCommands.createReservation(reservationToCreate, guiController);
+			if(createdReservationId > 0) {
+				return new BistroMessage(Action.CREATE_RESERVATION, createdReservationId);
+			}
+		}
+		return new BistroMessage(Action.RESERVATION_NOT_CREATED, null);
 	}
 }

@@ -9,7 +9,6 @@ public class Member extends Guest {
 	public Member (String fullName, String phoneNumber, String email, String password) {
 		super(fullName, phoneNumber, email);
 		this.password = password;
-		setMemberId(memberId);
 		setCardCode(cardCode);
 	}
 
@@ -33,7 +32,7 @@ public class Member extends Guest {
 		return memberId;
 	}
 
-	private void setMemberId(Integer memberId) {
+	public void setMemberId(Integer memberId) {
 		this.memberId = memberId;
 	}
 }

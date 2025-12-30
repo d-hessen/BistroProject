@@ -24,13 +24,37 @@ public class BistroServer extends AbstractServer
       BistroMessage request = (BistroMessage) msg;
       try {
           switch (request.getAction()) {
+          	// --- START OF CASES ---
           	// --- MEMBER ROUTES ---
           	case MEMBER_IDENTIFICATION:
           		Member memberRecieved = (Member)request.getData();
-          		BistroMessage identificationResult = GuestController.memberIdentification(memberRecieved, guiController);
-          		client.sendToClient(identificationResult);
+          		client.sendToClient(GuestController.memberIdentification(memberRecieved, guiController));
           		break;
-          	// --- CLIENT DISCONNECTS ---
+          	case CREATE_MEMBER:
+          		Member memberToCreate = (Member)request.getData();
+          		client.sendToClient(GuestController.memberCreation(memberToCreate, guiController));
+          		break;
+          	case DELETE_MEMBER:
+          		Member memberToDelete = (Member)request.getData();
+          		client.sendToClient(GuestController.memberDelete(memberToDelete, guiController));
+          		break;
+            // --- RESERVATION ROUTES ---
+            case GET_RESERVATION:
+            	// Data is an Integer (ID)
+                Integer resId = Integer.parseInt((String)request.getData()); 
+                client.sendToClient(ReservationController.getReservation(resId, guiController));
+                break;
+            case CREATE_RESERVATION:
+            	Reservation reservationToCreate = (Reservation)request.getData();
+            	client.sendToClient(ReservationController.createReservation(reservationToCreate, guiController));
+            	break;
+            case UPDATE_RESERVATION:
+                //Data is a Reservation Object
+                Reservation resToUpdate = (Reservation) request.getData();
+                // Send back success/failure
+                client.sendToClient(ReservationController.updateReservation(resToUpdate)); 
+                break;
+              	// --- CLIENT DISCONNECTS ---
             case DISCONNECT:
             	guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");
             	try {
@@ -39,20 +63,7 @@ public class BistroServer extends AbstractServer
 	                  e.printStackTrace();
 	              }
                 break;
-            // --- RESERVATION ROUTES ---
-            case GET_RESERVATION:
-            	// Data is an Integer (ID)
-                Integer resId = Integer.parseInt((String)request.getData()); 
-                BistroMessage reservation = ReservationController.getReservation(resId, guiController);
-                client.sendToClient(reservation);
-                break;
-            case UPDATE_RESERVATION:
-                //Data is a Reservation Object
-                Reservation resToUpdate = (Reservation) request.getData();
-                // Send back success/failure
-                client.sendToClient(ReservationController.updateReservation(resToUpdate)); 
-                break;
-
+                // --- END OF CASES ---
             default:
                   System.out.println("Unknown Action: " + request.getAction());
           }

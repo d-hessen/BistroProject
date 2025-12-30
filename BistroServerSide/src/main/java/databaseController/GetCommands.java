@@ -7,12 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import dataLayer.DateTime;
-import dataLayer.Guest;
-import dataLayer.Member;
-import dataLayer.Reservation;
-import dataLayer.Table;
-import dataLayer.Visit;
+import dataLayer.*;
 import domainLogic.ServerFrameController;
 import common.Status;
 
@@ -128,7 +123,7 @@ public class GetCommands {
 	//GET MEMBER
 	//======================================
 	//Get member by phone number
-	public Member getMember(Integer phone, ServerFrameController guiController) {
+	public static Member getMember(Integer phone, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 	        
 	    String sql = "SELECT * FROM members WHERE phone = ?";
@@ -160,12 +155,14 @@ public class GetCommands {
 	    	ps.setString(1, email);
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
-	        		return new Member(
+	        		Member toReturn = new Member(
 	        				rs.getString("full_name"),
 	                        rs.getString("phone"),
 	                        rs.getString("email"),
 	                        rs.getString("password")
 	                    );
+	        		toReturn.setMemberId(rs.getInt("member_id"));
+	        		return toReturn;
 	                }
 	            }
 	       	} catch (SQLException e) {

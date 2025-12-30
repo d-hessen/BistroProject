@@ -2,6 +2,8 @@ package domainLogic;
 //GUEST LOGIC 
 import common.*;
 import dataLayer.*;
+import databaseController.CreateCommands;
+import databaseController.DeleteCommands;
 import databaseController.GetCommands;
 public class GuestController {
 	
@@ -16,19 +18,29 @@ public class GuestController {
 	}
 	
 	public static BistroMessage memberIdentification(Member memberToCheck, ServerFrameController guiController) {
-		String phone = memberToCheck.getPhoneNumber();
+		String phoneStr = memberToCheck.getPhoneNumber();
 		String email = memberToCheck.getEmail();
 		Member wantedMember = null;
-		if(phone != null || email != null) {
-			if(phone != null) {
-				wantedMember = GetCommands.getMember(phone, guiController);
+		
+		boolean hasPhone = (phoneStr != null && !phoneStr.isEmpty());
+		boolean hasEmail = (email != null && !email.isEmpty());	
+		
+		if(hasPhone || hasEmail) {
+			if(hasPhone) {
+				try {
+	                // Parse inside the safe block
+	                int phone = Integer.parseInt(phoneStr);
+	                wantedMember = GetCommands.getMember(phone, guiController);
+	            } catch (NumberFormatException e) {
+	                guiController.addToConsole("Error: Invalid phone number format");
+	            }
 			}
-			else if(email != null) {
+			else if(hasEmail) {
 				wantedMember = GetCommands.getMember(email, guiController);
 			}
 		}
 		else {
-			guiController.addToConsole("Recieved member with NULL for phoneNumber and NULL for email");
+			guiController.addToConsole("Received member with NULL/Empty phone and NULL/Empty email");
 		}
 		
 		if(wantedMember == null) {
@@ -40,6 +52,22 @@ public class GuestController {
 			return new BistroMessage(Action.MEMBER_NOT_FOUND, null);
 		}
 		return new BistroMessage(Action.MEMBER_IDENTIFICATION, wantedMember);
+	}
+
+	public static BistroMessage memberCreation(Member memberToCreate, ServerFrameController guiController) {
+		Integer memberId = CreateCommands.createMember(memberToCreate, guiController); 
+		if(memberId > 0) {
+			return new BistroMessage(Action.CREATE_MEMBER, memberId);
+		}
+		return new BistroMessage(Action.MEMBER_NOT_CREATED, null);
+	}
+
+	public static BistroMessage memberDelete(Member memberToDelete, ServerFrameController guiController) {
+		boolean memberDeleted = DeleteCommands.deleteMember(memberToDelete, guiController); 
+		if(memberDeleted) {
+			return new BistroMessage(Action.DELETE_MEMBER, memberDeleted);
+		}
+		return new BistroMessage(Action.MEMBER_NOT_FOUND, null);
 	}
 
 }

@@ -16,8 +16,8 @@
       
       <VBox spacing="10.0">
          <children>
-            <Label text="FullName/Email:" />
-            <TextField fx:id="usernameField" prefHeight="35.0" promptText="Enter FullName/Email" />
+            <Label text="Phone number/ Email:" />
+            <TextField fx:id="usernameField" prefHeight="35.0" promptText="Enter phone number/email" />
          </children>
       </VBox>
 
