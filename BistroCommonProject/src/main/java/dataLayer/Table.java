@@ -1,6 +1,8 @@
 package dataLayer;
 
-public class Table {
+import java.io.Serializable;
+
+public class Table implements Serializable {
 	private Integer tableNumber;
 	private Integer tableCapacity;
 	private boolean isActive = false;

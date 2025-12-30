@@ -10,10 +10,24 @@ public enum Action {
     
     // Guest Actions
     GET_GUEST,
-    UPDATE_GUEST,
     
     // Connection Actions
-    DISCONNECT
+    DISCONNECT,
     
+    //Member Actions
+    GET_MEMBER,
+    UPDATE_MEMBER,
+    DELETE_MEMBER,
+    MEMBER_IDENTIFICATION,
+    MEMBER_NOT_FOUND,
     
+    //Visit Actions
+    GET_VISIT,
+    START_VISIT,
+    END_VISIT,
+    CANCEL_VISIT,
+    
+    //BILL ACTIONS
+    GET_BILL,
+    UPDATE_BILL
 }

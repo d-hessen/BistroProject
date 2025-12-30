@@ -151,7 +151,7 @@ public class GetCommands {
 	        return null;
 	}
 	//Get member by email
-	public Member getMember(String email, ServerFrameController guiController) {
+	public static Member getMember(String email, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 	        
 	    String sql = "SELECT * FROM members WHERE email = ?";
@@ -203,31 +203,8 @@ public class GetCommands {
 	//======================================
 	//GET VISIT
 	//======================================
-	//Get visit by visitId
-	public Visit getVisit(Integer visitId, ServerFrameController guiController) {
-			Connection conn = dbController.getInstance().getConnection();
-		        
-		    String sql = "SELECT * FROM visits WHERE visit_id = ?";
-		        
-		    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-		    	ps.setInt(1, visitId);
-		        try (ResultSet rs = ps.executeQuery()) {
-		        	if (rs.next()) {
-		        		return new Visit(
-		        				rs.getInt("table_id"),
-		        				rs.getInt("reservation_number"),
-		        				rs.getInt("waiting_id"),
-		        				rs.getString("start_time"),
-		        				rs.getString("end_time"),
-		        				rs.getBoolean("is_active")
-		                    );
-		                }
-		            }
-		       	} catch (SQLException e) {
-		       		guiController.addToConsole("Error fetching table: " + e.getMessage());
-		        }
-		        return null;
-	}
+	//Get visit by visitId (NEED TO WRITE)
+	
 	
 	//======================================
 	//GET BILL

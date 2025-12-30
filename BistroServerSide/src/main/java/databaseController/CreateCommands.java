@@ -4,11 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import dataLayer.DateTime;
-import dataLayer.Guest;
-import dataLayer.Member;
-import dataLayer.Reservation;
-import dataLayer.Staff;
+import dataLayer.*;
+
 import domainLogic.ServerFrameController;
 
 public class CreateCommands {
@@ -111,6 +108,30 @@ public class CreateCommands {
 			executionResult = ps.executeUpdate();
 		} catch(SQLException e) {
 			guiController.addToConsole("Error creating staff: " +staffToCreate.getFullName()+". Error: " +e.getMessage());
+			e.printStackTrace();
+		}
+		return executionResult > 0;
+	}
+	
+	//======================================
+	//TABLE CREATION
+	//======================================
+	public boolean createTable(Integer tableNumber, Integer tableCapacity, boolean isActive, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+
+		Table tableToCreate = new Table(tableNumber, tableCapacity, isActive);
+		
+		String sql = "INSERT INTO tables (table_number, capacity, is_active) VALUES (?, ?, ?)";
+		//Set values to query
+		int executionResult = 0;
+		try (PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setInt(1, tableToCreate.getTableNumber());
+			ps.setInt(2, tableToCreate.getTableCapacity());
+			ps.setBoolean(3, tableToCreate.isActive());
+			//Execute prepared query
+			executionResult = ps.executeUpdate();
+		} catch(SQLException e) {
+			guiController.addToConsole("Error creating table: " +tableToCreate.getTableNumber()+". Error: " +e.getMessage());
 			e.printStackTrace();
 		}
 		return executionResult > 0;

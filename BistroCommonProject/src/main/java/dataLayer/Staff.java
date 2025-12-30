@@ -1,6 +1,8 @@
 package dataLayer;
 
-public class Staff {
+import java.io.Serializable;
+
+public class Staff implements Serializable {
 	private String username;
 	private String password;
 	private String fullName;
