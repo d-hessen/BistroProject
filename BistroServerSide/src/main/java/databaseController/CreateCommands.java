@@ -3,7 +3,10 @@ package databaseController;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 
+import common.Action;
+import common.BistroMessage;
 import dataLayer.*;
 
 import domainLogic.ServerFrameController;
@@ -58,26 +61,30 @@ public class CreateCommands {
 	//======================================
 	//MEMBER CREATION
 	//======================================
-	public static Integer createMember(Member memberToCreate, ServerFrameController guiController) {
+	public static BistroMessage createMember(Member memberToCreate, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		
-		String sql = "INSERT INTO members (member_id, full_name, phone, email, password, card_code) VALUES (?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO members (full_name, phone, email, password, card_code) VALUES (?, ?, ?, ?, ?)";
+		String errorMessage = null;
 		//Set values to query
 		try (PreparedStatement ps = conn.prepareStatement(sql)){
-			ps.setInt(1,memberToCreate.getMemberId());
-			ps.setString(2, memberToCreate.getFullName());
-			ps.setString(3, memberToCreate.getPhoneNumber());
-			ps.setString(4, memberToCreate.getEmail());
-			ps.setString(5, memberToCreate.getPassword());
-			ps.setString(6, memberToCreate.getCardCode());
+			ps.setString(1, memberToCreate.getFullName());
+			ps.setString(2, memberToCreate.getPhoneNumber());
+			ps.setString(3, memberToCreate.getEmail());
+			ps.setString(4, memberToCreate.getPassword());
+			ps.setString(5, memberToCreate.getCardCode());
 			//Execute prepared query
-			int executionResult = ps.executeUpdate();
-			if(executionResult > 0) return memberToCreate.getMemberId();
-		} catch(SQLException e) {
-			guiController.addToConsole("Error creating member: " +memberToCreate.getFullName()+". Error: " +e.getMessage());
-			e.printStackTrace();
+			ps.executeUpdate();
+			Member createdMember = GetCommands.getMember(Integer.parseInt(memberToCreate.getPhoneNumber()), guiController);
+			return new BistroMessage(Action.CREATE_MEMBER, createdMember);
+		} catch(SQLIntegrityConstraintViolationException e) {
+			errorMessage = "User already exists";
 		}
-		return null;
+		catch(SQLException e) {
+			
+			guiController.addToConsole("Error creating member: " +memberToCreate.getFullName()+". Error: " +e.getMessage());
+		}
+		return new BistroMessage(Action.MEMBER_NOT_CREATED, errorMessage);
 	}
 	//======================================
 	//STAFF CREATION

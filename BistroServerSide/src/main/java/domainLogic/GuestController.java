@@ -2,9 +2,7 @@ package domainLogic;
 //GUEST LOGIC 
 import common.*;
 import dataLayer.*;
-import databaseController.CreateCommands;
-import databaseController.DeleteCommands;
-import databaseController.GetCommands;
+import databaseController.*;
 public class GuestController {
 	
 	//Method will send message to phone number of client
@@ -45,6 +43,7 @@ public class GuestController {
 		
 		if(wantedMember == null) {
 			guiController.addToConsole("Member not found");
+			return new BistroMessage(Action.MEMBER_NOT_FOUND, null);
 		}
 		
 		if(!wantedMember.getPassword().equals(memberToCheck.getPassword())) {
@@ -55,11 +54,14 @@ public class GuestController {
 	}
 
 	public static BistroMessage memberCreation(Member memberToCreate, ServerFrameController guiController) {
-		Integer memberId = CreateCommands.createMember(memberToCreate, guiController); 
-		if(memberId > 0) {
-			return new BistroMessage(Action.CREATE_MEMBER, memberId);
-		}
-		return new BistroMessage(Action.MEMBER_NOT_CREATED, null);
+		Object recieved = (CreateCommands.createMember(memberToCreate, guiController)).getData(); 
+		if(recieved instanceof String) {
+			String errorMessage = (String)recieved;
+			return new BistroMessage(Action.MEMBER_NOT_CREATED, errorMessage);
+		}else {
+			Member createdMember = (Member)recieved;
+			return new BistroMessage(Action.CREATE_MEMBER, createdMember);
+		}	
 	}
 
 	public static BistroMessage memberDelete(Member memberToDelete, ServerFrameController guiController) {

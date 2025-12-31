@@ -16,7 +16,7 @@
       
       <VBox spacing="10.0">
          <children>
-            <Label text="Phone number/ Email:" />
+            <Label text="Phone number or email:" />
             <TextField fx:id="usernameField" prefHeight="35.0" promptText="Enter phone number/email" />
          </children>
       </VBox>
@@ -36,6 +36,6 @@
          </children>
       </VBox>
       
-      <Label fx:id="errorLabel" style="-fx-text-fill: red;" text="" wrapText="true" />
+      <Label fx:id="errorLabel" style="-fx-text-fill: red;" text=" " wrapText="true" />
    </children>
 </VBox>

@@ -1,5 +1,6 @@
 package handlers;
 
+import client.BistroClient;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -57,6 +58,12 @@ public class VisitIdentificationController {
     // Navigates back to the previous dashboard.
     @FXML
     private void handleBack(ActionEvent event) {
-        SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	if(BistroClient.memberInstance != null) {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
+    	else {
+    		SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	}
+        
     }
 }

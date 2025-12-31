@@ -8,6 +8,8 @@ import javafx.scene.control.TextField;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 
+import client.BistroClient;
+
 /**
  * Controller for the New Reservation screen.
  * Validates user input for email, phone, date, and table size.
@@ -85,6 +87,11 @@ public class MakeReservationController {
      //Navigates back to the Guest Dashboard.
     @FXML
     private void handleBack(ActionEvent event) {
-        SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	if(BistroClient.memberInstance != null) {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
+    	else {
+    		SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	}
     }
 }

@@ -16,7 +16,7 @@ public class Member extends Guest {
 		return cardCode;
 	}
 
-	private void setCardCode(String cardCode) {
+	public void setCardCode(String cardCode) {
 		this.cardCode = cardCode;
 	}
 

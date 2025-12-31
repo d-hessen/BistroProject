@@ -105,9 +105,12 @@ public class ReservationFrameController {
 	}
 	
 	public void getExitBtn(ActionEvent event) throws Exception {
-		ClientUI.chat.display("exit Reservation Finder");
-		Platform.exit();
-		
+    	if(BistroClient.memberInstance != null) {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
+    	else {
+    		SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	}
 	}
 	
 	public void notFound() {

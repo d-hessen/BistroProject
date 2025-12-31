@@ -132,12 +132,15 @@ public class GetCommands {
 	    	ps.setInt(1, phone);
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
-	        		return new Member(
+	        		Member toReturn = new Member(
 	        				rs.getString("full_name"),
 	                        rs.getString("phone"),
 	                        rs.getString("email"),
 	                        rs.getString("password")
 	                    );
+	        		toReturn.setMemberId(rs.getInt("member_id"));
+	        		toReturn.setCardCode(rs.getString("card_code"));
+	        		return toReturn;
 	                }
 	            }
 	       	} catch (SQLException e) {
@@ -162,6 +165,7 @@ public class GetCommands {
 	                        rs.getString("password")
 	                    );
 	        		toReturn.setMemberId(rs.getInt("member_id"));
+	        		toReturn.setCardCode(rs.getString("card_code"));
 	        		return toReturn;
 	                }
 	            }

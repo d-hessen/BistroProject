@@ -26,7 +26,7 @@ public class IsMemberController {
     // Handles the action when "Join As Guest" button is clicked.
     @FXML
     private void openGuestOptions(ActionEvent event) {
-    	 SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	 SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     }
 
 }

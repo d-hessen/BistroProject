@@ -3,15 +3,19 @@ package client;
 import ocsf.client.*;
 import common.BistroMessage;
 import common.ChatIF;
+import dataLayer.Member;
 import dataLayer.Reservation;
+import handlers.MemberSignUpController;
 
 import java.io.*;
 
 public class BistroClient extends AbstractClient
 {
   ChatIF clientUI; 
+  private static MemberSignUpController signUpControllerInstance = new MemberSignUpController();
   public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
   public static Integer wantedReservationId = null;
+  public static Member memberInstance = null;
   public static boolean awaitResponse = false;
 	 
   public BistroClient(String host, int port, ChatIF clientUI) 
@@ -32,21 +36,35 @@ public class BistroClient extends AbstractClient
 	  BistroMessage answer = (BistroMessage) msg;
 	  try {
 		  switch(answer.getAction()) {
-		  		case GET_RESERVATION:
-		  			reservationInstance = (Reservation)answer.getData();
-		  			wantedReservationId = reservationInstance.getReservationId();
-		  			break;
-		  		case UPDATE_RESERVATION:
-		  			if((boolean) answer.getData()) System.out.println("Update succeeded");
-		  			else {
-		  				System.out.println("Update failed");
-		  			}
-		  			break;
-		  		case RESERVATION_NOT_FOUND:
-		  			wantedReservationId = (Integer)answer.getData();
-		  			break;
-		  		default:
-	                  System.out.println("Unknown Action: " + answer.getAction());
+		  	// --- MEMBER ROUTES ---
+		  	case MEMBER_IDENTIFICATION:
+		  		memberInstance = (Member)answer.getData();
+		  		break;
+		  	case MEMBER_NOT_FOUND:
+		  		memberInstance = null;
+		  		break;
+		  	case CREATE_MEMBER:
+		  		signUpControllerInstance.memberCreated(true, "");
+		  		break;
+		  	case MEMBER_NOT_CREATED:
+		  		signUpControllerInstance.memberCreated(false, (String)answer.getData());
+		  		break;
+		  	// --- RESERVATION ROUTES --
+		  	case GET_RESERVATION:
+		  		reservationInstance = (Reservation)answer.getData();
+		  		wantedReservationId = reservationInstance.getReservationId();
+		  		break;
+		  	case UPDATE_RESERVATION:
+		  		if((boolean) answer.getData()) System.out.println("Update succeeded");
+		  		else {
+		  			System.out.println("Update failed");
+		  		}
+		  		break;
+		  	case RESERVATION_NOT_FOUND:
+		  		wantedReservationId = (Integer)answer.getData();
+		  		break;
+		  	default:
+	            System.out.println("Unknown Action: " + answer.getAction());
 		  }
 	  } catch(Exception e) {
 		  e.printStackTrace();

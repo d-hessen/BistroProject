@@ -1,12 +1,20 @@
 package handlers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import java.util.regex.Pattern;
+
+import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
+import dataLayer.Member;
 
 
  //Controller for the Member Sign Up screen.
@@ -89,7 +97,30 @@ public class MemberSignUpController {
         System.out.println("Validation successful for user: " + name);
         
         // TODO: Send registration data to the server
+        Member memberToCreate = new Member(name,phone,email,pass);
+        memberToCreate.setCardCode("CARD-" + (int)(Math.random() * 9000 + 1000));
+        ClientUI.chat.accept(new BistroMessage(Action.CREATE_MEMBER, memberToCreate));
+        PhoneNumberField.setText("");
+        EmailField.setText("");
+        FullNameField.setText("");
+        PasswordField.setText("");
     }
+
+    public void memberCreated(boolean isCreated, String message) {
+    	Platform.runLater(() -> {
+    		Alert alert = new Alert(AlertType.INFORMATION);
+            alert.setTitle("Registration Status");
+            alert.setHeaderText(null);
+            if(isCreated) {
+            	alert.setContentText("Member has been signed up successfully!");
+            } else {
+            	alert.setContentText("There was an error signing up member! Error: " +message);
+            }
+            alert.showAndWait();
+            ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
+        });
+    }
+    
         
     // Navigates back to the membership options screen.
     @FXML

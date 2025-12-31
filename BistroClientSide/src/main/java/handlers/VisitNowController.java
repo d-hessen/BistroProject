@@ -9,6 +9,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import java.util.regex.Pattern;
 
+import client.BistroClient;
+
 
  // Controller for the VisitNow screen.
  // Handles walk-in customers and validates contact information.
@@ -80,7 +82,12 @@ public class VisitNowController {
     // Navigates back to the previous screen.
     @FXML
     private void handleBack(ActionEvent event) {
-        SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	if(BistroClient.memberInstance != null) {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
+    	else {
+    		SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+    	}
     }
 
 
