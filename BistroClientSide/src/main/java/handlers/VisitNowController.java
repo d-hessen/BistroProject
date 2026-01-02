@@ -82,12 +82,7 @@ public class VisitNowController {
     // Navigates back to the previous screen.
     @FXML
     private void handleBack(ActionEvent event) {
-    	if(BistroClient.memberInstance != null) {
-    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
-    	}
-    	else {
-    		SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
-    	}
+    	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     }
 
 

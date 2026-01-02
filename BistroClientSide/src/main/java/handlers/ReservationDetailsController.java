@@ -37,7 +37,7 @@ public class ReservationDetailsController {
         System.out.println("Saving changes for Order: " + orderIdField.getText());
         
         // After saving, return to dashboard
-        SceneLoader.loadScene(event, "/gui/GuestDashboard.fxml", "Guest Dashboard");
+        SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     }
 
 
