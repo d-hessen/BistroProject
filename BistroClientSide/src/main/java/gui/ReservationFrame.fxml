@@ -26,6 +26,6 @@
     </HBox>
 
     <Button fx:id="findButton" onAction="#Find_Reservation" style="-fx-padding: 10 20; -fx-font-size: 14px;" text="Find Reservation" />
-   <Button fx:id="exitBtn" mnemonicParsing="false" onAction="#getExitBtn" text="Exit" />
+   <Button fx:id="exitBtn" mnemonicParsing="false" onAction="#getExitBtn" text="Back" />
 
 </VBox>

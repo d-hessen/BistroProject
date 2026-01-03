@@ -54,7 +54,11 @@ public class BistroServer extends AbstractServer
                 // Send back success/failure
                 client.sendToClient(ReservationController.updateReservation(resToUpdate)); 
                 break;
-              	// --- CLIENT DISCONNECTS ---
+            case GET_VERIFICATION_CODE:
+            	String ver_code = (String)request.getData();
+            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
+                break;
+             // --- CLIENT DISCONNECTS ---
             case DISCONNECT:
             	guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");
             	try {

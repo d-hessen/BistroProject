@@ -15,6 +15,7 @@ public class BistroClient extends AbstractClient
   private static MemberSignUpController signUpControllerInstance = new MemberSignUpController();
   public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
   public static Integer wantedReservationId = null;
+  public static String wantedVerCode = null;  
   public static Member memberInstance = null;
   public static boolean awaitResponse = false;
 	 
@@ -53,6 +54,16 @@ public class BistroClient extends AbstractClient
 		  	case GET_RESERVATION:
 		  		reservationInstance = (Reservation)answer.getData();
 		  		wantedReservationId = reservationInstance.getReservationId();
+		  		break;
+		  	case GET_VERIFICATION_CODE:
+		  		if (answer.getData() == null) {
+                    reservationInstance = null;
+                    wantedVerCode = null;
+                    return;
+		  		}
+		  		reservationInstance = (Reservation)answer.getData();
+		  		wantedVerCode = reservationInstance.getVerificationCode();
+
 		  		break;
 		  	case UPDATE_RESERVATION:
 		  		if((boolean) answer.getData()) System.out.println("Update succeeded");

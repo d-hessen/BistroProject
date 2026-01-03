@@ -96,7 +96,6 @@ public class MemberSignUpController {
         // If all validations pass, proceed with registration logic
         System.out.println("Validation successful for user: " + name);
         
-        // TODO: Send registration data to the server
         Member memberToCreate = new Member(name,phone,email,pass);
         memberToCreate.setCardCode("CARD-" + (int)(Math.random() * 9000 + 1000));
         ClientUI.chat.accept(new BistroMessage(Action.CREATE_MEMBER, memberToCreate));

@@ -201,6 +201,32 @@ public class GetCommands {
 		        return null;
 	}
 	
+	public static Reservation getVerificationCode(String code, ServerFrameController guiController) {
+    	Connection conn = dbController.getInstance().getConnection();
+        //SQL QUERY TO GET RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
+        String sql = "SELECT * FROM reservation WHERE verification_code = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                	Reservation toReturn = new Reservation(
+                        	rs.getInt("reservation_number"),
+                        	rs.getInt("number_of_guests"),
+                        	rs.getString("verification_code")
+                        );
+                	return toReturn;
+                }
+                else {
+					guiController.addToConsole("Verification code not found");
+                }
+            }
+        } catch (SQLException e) {
+        	guiController.addToConsole("Error fetching verification code: " + e.getMessage());
+        }
+        return null;
+    }
+	
 	//======================================
 	//GET VISIT
 	//======================================

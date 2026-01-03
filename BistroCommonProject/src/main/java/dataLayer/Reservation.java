@@ -9,7 +9,7 @@ public class Reservation implements Serializable {
 	private Integer reservationId; 
 	private Integer memberId; 
 	private Integer numberOfGuests; //Can be updated
-	private Integer verificationCode; 
+	private String verificationCode; 
 	private DateTime reservationDate;
 	private String dateOfPlacingReservation;
 	private Status status; //Can be updated
@@ -24,6 +24,13 @@ public class Reservation implements Serializable {
 		setReservationId(reservationId);
 		setVerificationCode(verificationCode);
 		setStatus(status);
+	}
+	
+	public Reservation(Integer reservationId,Integer numberOfGuests, String verificationCode) {
+		this.numberOfGuests = numberOfGuests;
+		setReservationId(reservationId);
+		setVerificationCode(verificationCode);
+
 	}
 
 	public String getDateOfPlacingReservation() {
@@ -62,11 +69,11 @@ public class Reservation implements Serializable {
 		this.numberOfGuests = numberOfGuests;
 	}
 
-	public Integer getVerificationCode() {
+	public String getVerificationCode() {
 		return verificationCode;
 	}
 
-	private void setVerificationCode(Integer verificationCode) {
+	private void setVerificationCode(String verificationCode) {
 		this.verificationCode = verificationCode;
 	}
 

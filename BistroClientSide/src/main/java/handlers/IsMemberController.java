@@ -28,5 +28,10 @@ public class IsMemberController {
     private void openGuestOptions(ActionEvent event) {
     	 SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     }
+    
+    @FXML
+    private void handleBack(ActionEvent event) {
+    	SceneLoader.loadScene(event, "/gui/MainPage.fxml", "Client Dashboard");
+    }
 
 }

@@ -31,4 +31,12 @@ public class ReservationController {
 		}
 		return new BistroMessage(Action.RESERVATION_NOT_CREATED, null);
 	}
+	
+	public static BistroMessage codeVerification(String code, ServerFrameController guiController) {
+		Reservation res = GetCommands.getVerificationCode(code, guiController);
+		if(res != null) {
+			return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+		}
+		return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+	}
 }
