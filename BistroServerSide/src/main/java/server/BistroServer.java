@@ -25,6 +25,11 @@ public class BistroServer extends AbstractServer
       try {
           switch (request.getAction()) {
           	// --- START OF CASES ---
+          	// --- STAFF ROUTES ---
+          	case STAFF_IDENTIFICATION:
+          		Staff staffRecieved = (Staff)request.getData();
+          		client.sendToClient(StaffController.staffIdentification(staffRecieved, guiController));
+          		break;
           	// --- MEMBER ROUTES ---
           	case MEMBER_IDENTIFICATION:
           		Member memberRecieved = (Member)request.getData();

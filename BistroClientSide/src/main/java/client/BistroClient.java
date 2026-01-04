@@ -3,20 +3,22 @@ package client;
 import ocsf.client.*;
 import common.BistroMessage;
 import common.ChatIF;
-import dataLayer.Member;
-import dataLayer.Reservation;
-import handlers.MemberSignUpController;
+import dataLayer.*;
+import handlers.StaffDashboardController;
+import handlers.StaffLoginController;
 
 import java.io.*;
 
 public class BistroClient extends AbstractClient
 {
   ChatIF clientUI; 
-  private static MemberSignUpController signUpControllerInstance = new MemberSignUpController();
+  private static StaffLoginController staffLoginControllerInstance = new StaffLoginController();
+  private static StaffDashboardController staffDashControllerInstance = new StaffDashboardController();
   public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
   public static Integer wantedReservationId = null;
   public static String wantedVerCode = null;  
   public static Member memberInstance = null;
+  public static Staff staffInstance = null;
   public static boolean awaitResponse = false;
 	 
   public BistroClient(String host, int port, ChatIF clientUI) 
@@ -37,6 +39,13 @@ public class BistroClient extends AbstractClient
 	  BistroMessage answer = (BistroMessage) msg;
 	  try {
 		  switch(answer.getAction()) {
+		  	// --- STAFF ROUTES ---
+		  	case STAFF_IDENTIFICATION:
+		  		staffInstance = (Staff)answer.getData();
+		  		break;
+		  	case STAFF_NOT_FOUND:
+		  		staffLoginControllerInstance.staffNotLogged((String)answer.getData());
+		  		break;
 		  	// --- MEMBER ROUTES ---
 		  	case MEMBER_IDENTIFICATION:
 		  		memberInstance = (Member)answer.getData();
@@ -45,10 +54,10 @@ public class BistroClient extends AbstractClient
 		  		memberInstance = null;
 		  		break;
 		  	case CREATE_MEMBER:
-		  		signUpControllerInstance.memberCreated(true, "");
+		  		staffDashControllerInstance.memberCreated(true, null);
 		  		break;
 		  	case MEMBER_NOT_CREATED:
-		  		signUpControllerInstance.memberCreated(false, (String)answer.getData());
+		  		staffDashControllerInstance.memberCreated(false, (String)answer.getData());
 		  		break;
 		  	// --- RESERVATION ROUTES --
 		  	case GET_RESERVATION:

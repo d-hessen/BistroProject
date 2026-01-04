@@ -2,8 +2,11 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
@@ -14,9 +17,10 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="650.0" prefWidth="900.0" spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.StaffDashboardController">
+<VBox prefHeight="528.0" prefWidth="900.0" spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.StaffDashboardController">
     
     <padding>
         <Insets bottom="10" left="10" right="10" top="10" />
@@ -31,27 +35,50 @@
     <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         
         <Tab text="Operations &amp; Check-In">
-            <VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 20;">
-                <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Customer Arrival Verification" />
-                <HBox alignment="CENTER" spacing="15">
-                    <Label text="Reservation Code:" />
-                    <TextField fx:id="reservationCodeField" />
-                    <Button onAction="#handleCheckIn" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Verify &amp; Check-In" />
-                </HBox>
+            <VBox alignment="TOP_CENTER" prefHeight="457.0" prefWidth="879.0" spacing="20" style="-fx-padding: 20;">
+                <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Member Arrival Verification" />
+            <HBox alignment="CENTER" spacing="15">
+               <children>
+                  <Label prefHeight="18.0" prefWidth="130.0" text="Scan Member Code:" />
+                  <TextField fx:id="memberCodeField" alignment="CENTER" prefHeight="26.0" prefWidth="545.0" />
+                  <Button onAction="#handleMemberCheckIn" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Verify &amp; Check-In" />
+               </children>
+            </HBox>
                 <Label fx:id="checkInStatusLabel" style="-fx-text-fill: blue;" />
+            <Separator prefWidth="200.0" />
+            <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Operations" />
+            <GridPane prefHeight="203.0" prefWidth="839.0">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleNewReservation" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="New Reservation" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleFindReservation" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Find Reservation" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleInsertParty" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Insert new party to waiting list" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleWaitingList" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Waiting list" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleCustomerArrival" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Visit Identification" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleCustomerArrival" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Current Dinning Sessions" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+               </children>
+            </GridPane>
             </VBox>
         </Tab>
 
         <Tab text="Table Management">
             <VBox alignment="TOP_CENTER" spacing="15" style="-fx-padding: 20;">
-                <Label text="Manage Restaurant Tables (Green = Free, Red = Occupied)" />
+                <Label style="-fx-font-size: 18px;" text="Manage Restaurant Tables " />
                 <GridPane fx:id="tablesGrid" alignment="CENTER" hgap="15" vgap="15">
-                    <ToggleButton onAction="#toggleTableStatus" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="1" />
-                    <ToggleButton onAction="#toggleTableStatus" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="2" GridPane.columnIndex="1" />
-                    <ToggleButton onAction="#toggleTableStatus" prefHeight="60" prefWidth="60" style="-fx-background-color: #ff6666;" text="3" GridPane.columnIndex="2" />
-                    <ToggleButton onAction="#toggleTableStatus" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="4" GridPane.rowIndex="1" />
-                    <ToggleButton onAction="#toggleTableStatus" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                    <ToggleButton onAction="#toggleTableStatus" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="6" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="1" />
+                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="2" GridPane.columnIndex="1" />
+                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="3" GridPane.columnIndex="2" />
+                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="4" GridPane.rowIndex="1" />
+                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="6" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                <columnConstraints>
                   <ColumnConstraints />
                   <ColumnConstraints />
@@ -70,15 +97,21 @@
                 <Label style="-fx-font-size: 16px;" text="New Member Registration" />
                 <GridPane alignment="CENTER" hgap="10" vgap="10">
                     <Label text="Full Name:" GridPane.rowIndex="0" />
-                    <TextField fx:id="regFullName" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <TextField fx:id="regFullName" promptText="First Last" GridPane.columnIndex="1" GridPane.rowIndex="0" />
                     
                     <Label text="Phone:" GridPane.rowIndex="1" />
-                    <TextField fx:id="regPhone" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <TextField fx:id="regPhone" promptText="05X-XXXXXXX" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     
                     <Label text="Email:" GridPane.rowIndex="2" />
-                    <TextField fx:id="regEmail" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                    <TextField fx:id="regEmail" promptText="example@example.com" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                <Label text="Password:" GridPane.rowIndex="3" />
-               <TextField fx:id="regPassword" prefHeight="25.0" prefWidth="168.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+               <CheckBox fx:id="showPasswordTick" onAction="#togglePasswordVisible" style="-fx-font-size: 11px;" text="Show Password" GridPane.rowIndex="4" />
+               <StackPane alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                  <children>
+                     <TextField fx:id="PasswordFieldVisible" managed="false" visible="false" />
+                     <PasswordField fx:id="PasswordField" promptText="Enter Password" />
+                  </children>
+               </StackPane>
                <columnConstraints>
                   <ColumnConstraints />
                   <ColumnConstraints />
@@ -87,6 +120,7 @@
                   <RowConstraints />
                   <RowConstraints />
                   <RowConstraints />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" />
                   <RowConstraints minHeight="10.0" prefHeight="30.0" />
                </rowConstraints>
                 </GridPane>

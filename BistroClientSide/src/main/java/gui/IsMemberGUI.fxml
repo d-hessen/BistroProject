@@ -11,9 +11,7 @@
          <children>
             <Label prefHeight="35.0" prefWidth="220.0" style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Have Membership?" />
             
-            <Button onAction="#openClientOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Log In" />
-            
-            <Button onAction="#openStaffOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Sign Up" />
+            <Button onAction="#openClientOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Member Join" />
             
             <Button onAction="#openGuestOptions" style="-fx-font-size: 14px; -fx-min-width: 150px;" text="Join As Guest" />
             

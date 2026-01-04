@@ -3,6 +3,7 @@ package dataLayer;
 import java.io.Serializable;
 
 public class Staff implements Serializable {
+	private Integer staffId;
 	private String username;
 	private String password;
 	private String fullName;
@@ -15,6 +16,14 @@ public class Staff implements Serializable {
 		this.isManager = isManager;
 	}
 	
+	public Integer getStaffId() {
+		return staffId;
+	}
+
+	public void setStaffId(Integer staffId) {
+		this.staffId = staffId;
+	}
+
 	public String getUsername() {
 		return username;
 	}

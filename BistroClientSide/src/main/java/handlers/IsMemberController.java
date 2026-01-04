@@ -16,12 +16,6 @@ public class IsMemberController {
     private void openClientOptions(ActionEvent event) {
     	 SceneLoader.loadScene(event, "/gui/MemberLoginGUI.fxml", "Member Login");
     }
-
-    // Handles the action when "Sign Up" button is clicked.
-    @FXML
-    private void openStaffOptions(ActionEvent event) {
-    	 SceneLoader.loadScene(event, "/gui/MemberSignUp.fxml", "Member Sign Up");
-    }
     
     // Handles the action when "Join As Guest" button is clicked.
     @FXML

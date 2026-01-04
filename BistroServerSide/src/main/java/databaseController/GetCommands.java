@@ -228,6 +228,41 @@ public class GetCommands {
     }
 	
 	//======================================
+	//GET STAFF
+	//======================================
+	//Get staff by username
+	public static Staff getStaff(String username, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+        
+	    String sql = "SELECT * FROM staff WHERE username = ?";
+	        
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	    	ps.setString(1, username);
+	        try (ResultSet rs = ps.executeQuery()) {
+	        	if (rs.next()) {
+	        		boolean isManager = false;
+	        		if(rs.getString("role").equals("manager")) {
+	        			isManager = true;
+	        		}
+	        		Staff toReturn = new Staff(
+	        				rs.getString("username"),
+	                        rs.getString("password"),
+	                        rs.getString("full_name"),
+	                        isManager
+	                    );
+	        		toReturn.setStaffId(rs.getInt("staff_id"));
+	        		return toReturn;
+	                }
+	            }
+	       	} catch (SQLException e) {
+	       		guiController.addToConsole("Error fetching staff: " + e.getMessage());
+	        }
+	        return null;
+	}
+	
+	
+	
+	//======================================
 	//GET VISIT
 	//======================================
 	//Get visit by visitId (NEED TO WRITE)
