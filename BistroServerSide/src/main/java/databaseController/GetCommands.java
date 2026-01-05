@@ -18,7 +18,6 @@ public class GetCommands {
 	//Retrieve a reservation by ID
     public static Reservation getReservation(Integer id, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO GET RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
         String sql = "SELECT * FROM reservation WHERE reservation_number = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -201,31 +200,54 @@ public class GetCommands {
 		        return null;
 	}
 	
-	public static Reservation getVerificationCode(String code, ServerFrameController guiController) {
-    	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO GET RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
-        String sql = "SELECT * FROM reservation WHERE verification_code = ?";
-        
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, code);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                	Reservation toReturn = new Reservation(
-                        	rs.getInt("reservation_number"),
-                        	rs.getInt("number_of_guests"),
-                        	rs.getString("verification_code")
-                        );
-                	return toReturn;
-                }
-                else {
-					guiController.addToConsole("Verification code not found");
-                }
-            }
-        } catch (SQLException e) {
-        	guiController.addToConsole("Error fetching verification code: " + e.getMessage());
-        }
-        return null;
-    }
+	public static Reservation getVerificationCode(String codeStr, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+		
+		int code;
+		try {
+			code = Integer.parseInt(codeStr);
+		} catch (NumberFormatException e) {
+			guiController.addToConsole("Invalid verification code format: " + codeStr);
+			return null;
+		}
+
+		String sql = "SELECT * FROM reservation WHERE verification_code = ?";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, code); 
+			
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					Reservation toReturn = new Reservation(
+						rs.getInt("reservation_number"),
+						new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")), 
+						rs.getInt("number_of_guests"),
+						rs.getInt("member_id"), 
+						new Guest(
+								rs.getString("guest_full_name"), 
+								rs.getString("guest_phone"), 
+								rs.getString("email")
+						)
+					);					
+					toReturn.setVerificationCode(rs.getInt("verification_code"));
+					
+					if (rs.getString("status") != null) {
+						toReturn.setStatus(Status.valueOf(rs.getString("status")));
+					}
+					
+					toReturn.setDateOfPlacingReservation(rs.getString("created_at"));
+					
+					return toReturn;
+				} else {
+					guiController.addToConsole("Reservation not found for verification code: " + code);
+				}
+			}
+		} catch (SQLException e) {
+			guiController.addToConsole("Error fetching reservation by code: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	//======================================
 	//GET STAFF

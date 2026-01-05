@@ -59,10 +59,6 @@ public class BistroServer extends AbstractServer
                 // Send back success/failure
                 client.sendToClient(ReservationController.updateReservation(resToUpdate)); 
                 break;
-            case GET_VERIFICATION_CODE:
-            	String ver_code = (String)request.getData();
-            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
-                break;
              // --- CLIENT DISCONNECTS ---
             case DISCONNECT:
             	guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");
@@ -72,7 +68,10 @@ public class BistroServer extends AbstractServer
 	                  e.printStackTrace();
 	              }
                 break;
-                // --- END OF CASES ---
+            case CANCEL_RESERVATION:
+                Reservation resToCancel = (Reservation) request.getData();
+                client.sendToClient(ReservationController.cancelReservation(resToCancel, guiController));
+                break;
             default:
                   System.out.println("Unknown Action: " + request.getAction());
           }

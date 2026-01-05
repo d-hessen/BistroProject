@@ -16,7 +16,7 @@ public class BistroClient extends AbstractClient
   private static StaffDashboardController staffDashControllerInstance = new StaffDashboardController();
   public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
   public static Integer wantedReservationId = null;
-  public static String wantedVerCode = null;  
+  public static Integer wantedVerCode = null;  
   public static Member memberInstance = null;
   public static Staff staffInstance = null;
   public static boolean awaitResponse = false;
@@ -83,6 +83,21 @@ public class BistroClient extends AbstractClient
 		  	case RESERVATION_NOT_FOUND:
 		  		wantedReservationId = (Integer)answer.getData();
 		  		break;
+		  		
+		  	case CREATE_RESERVATION:
+		  		Reservation newRes = (Reservation) answer.getData();		  	    
+		  	    reservationInstance = newRes;
+		  	    wantedReservationId = newRes.getReservationId(); 	  	    
+		  	    System.out.println("Reservation created successfully. ID: " + wantedReservationId);
+		  	    break;
+		  	    
+		  	case CANCEL_RESERVATION:
+		  	    if ((boolean) answer.getData()) {
+		  	        System.out.println("Reservation deleted successfully.");
+		  	    } else {
+		  	        System.out.println("Failed to delete reservation.");
+		  	    }
+		  	    break;
 		  	default:
 	            System.out.println("Unknown Action: " + answer.getAction());
 		  }

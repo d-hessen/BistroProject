@@ -2,62 +2,81 @@ package databaseController;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
-
+import java.sql.Types; // Import for clear code
 import common.Action;
 import common.BistroMessage;
 import dataLayer.*;
-
 import domainLogic.ServerFrameController;
 
 public class CreateCommands {
-	//======================================
-	//RESTAURANT CONFIG CREATION
-	//======================================
-	//Create restaurant (METHOD TO BE WRITTEN)
-	
-	//======================================
-	//RESERVATION CREATION
-	//======================================
-	//Method that creates Reservation in database and returns Reservation Number
-	public static Integer createReservation(Reservation resToCreate, ServerFrameController guiController) {
-			Connection conn = dbController.getInstance().getConnection();
+    // ======================================
+    // RESERVATION CREATION
+    // ======================================
+    // Method that creates a Reservation in the database and returns the Updated Reservation Object
+    public static Reservation createReservation(Reservation resToCreate, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        String sql = "INSERT INTO reservation ("
+                + "reservation_date,"
+                + "reservation_time," 
+                + "number_of_guests, "
+                + "verification_code,"
+                + "member_id,"
+                + "guest_full_name,"
+                + "guest_phone,"
+                + "email,"
+                + "status"
+                + ") "
+                + "VALUES "
+                + "(?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
 
-			//SQL QUERY TO INSERT RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
-			String sql = "INSERT INTO reservation ("
-					+ "reservation_number,"
-					+ "reservation_date,"
-					+ "number_of_guests, "
-					+ "verification_code,"
-					+ "member_id,"
-					+ "guest_full_name,"
-					+ "guest_phone,"
-					+ "email,"
-					+ "status"
-					+ ") "
-					+ "VALUES "
-					+ "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-			//Set values to query
-			try (PreparedStatement ps = conn.prepareStatement(sql)){
-				ps.setInt(1,resToCreate.getReservationId());
-				ps.setString(2, resToCreate.getReservationDate().getDate());
-				ps.setInt(3, resToCreate.getNumberOfGuests());
-				ps.setString(4, resToCreate.getVerificationCode());
-				ps.setInt(5, resToCreate.getMemberId());
-				ps.setString(6, resToCreate.getGuest().getFullName());
-				ps.setString(7, resToCreate.getGuest().getPhoneNumber());
-				ps.setString(8, resToCreate.getGuest().getEmail());
-				ps.setString(9, resToCreate.getStatus().name());
-				//Execute prepared query
-				int executionResult = ps.executeUpdate();
-				if(executionResult > 0) return resToCreate.getReservationId();
-			} catch(SQLException e) {
-				guiController.addToConsole("Error adding reservation for" +resToCreate.getMemberId()+ " to database. Error: " +e.getMessage());
-				e.printStackTrace();
-			}
-			return null;
-	}
+        try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, resToCreate.getReservationDate().getDate());            
+            ps.setString(2, resToCreate.getReservationDate().getTime());
+            ps.setInt(3, resToCreate.getNumberOfGuests());            
+            ps.setInt(4, resToCreate.getVerificationCode());
+            ps.setObject(5, resToCreate.getMemberId(), Types.INTEGER);
+
+            // 6, 7, 8. Guest Details
+            if (resToCreate.getGuest() != null) {
+                ps.setString(6, resToCreate.getGuest().getFullName());
+                ps.setString(7, resToCreate.getGuest().getPhoneNumber());
+                ps.setString(8, resToCreate.getGuest().getEmail());
+            } else {
+                ps.setNull(6, Types.VARCHAR);
+                ps.setNull(7, Types.VARCHAR);
+                ps.setNull(8, Types.VARCHAR);
+            }
+
+            // 9. Status
+            if (resToCreate.getStatus() != null) {
+                ps.setString(9, resToCreate.getStatus().name());
+            } else {
+                ps.setString(9, "PENDING");
+            }
+            int executionResult = ps.executeUpdate();
+
+            if (executionResult > 0) {
+                // Retrieve the generated ID
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int newId = generatedKeys.getInt(1);                        
+                        // update the object with the new ID
+                        resToCreate.setReservationId(newId);                       
+                        return resToCreate; 
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            guiController.addToConsole("Error adding reservation to database. Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null; 
+    }
+		
 	//======================================
 	//MEMBER CREATION
 	//======================================

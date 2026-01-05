@@ -7,22 +7,44 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import java.util.Arrays;
 import java.util.List;
+import java.time.LocalDate;
+import java.io.IOException;
 
-
-// Controller for the Time Slot selection screen.
+// --- Imports for Client-Server Communication and Data ---
+import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
+import dataLayer.DateTime;
+import dataLayer.Guest;
+import dataLayer.Reservation;
 
 public class TimeSlotController {
 
     @FXML private Label selectedDateLabel;
     @FXML private FlowPane timeSlotsPane;
 
+    // --- Variables to store data passed from the previous screen ---
+    private LocalDate reservationDate;
+    private String email;
+    private String phone;
+    private int numberOfDiners;
 
-    //Initializes the controller. 
+    /**
+     * This method is called by MakeReservationController to pass the user's input.
+     */
+    public void initData(LocalDate date, String email, String phone, int diners) {
+        this.reservationDate = date;
+        this.email = email;
+        this.phone = phone;
+        this.numberOfDiners = diners;
+        
+        // Update the UI with the selected date
+        setSelectedDateText(date.toString());
+    }
+
     @FXML
     public void initialize() {
-    	
-        //TODO: Get available times from server
-    	
+        // List of available times
         List<String> availableTimes = Arrays.asList(
             "12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"
         );
@@ -30,44 +52,38 @@ public class TimeSlotController {
         displayTimeSlots(availableTimes);
     }
 
-    // Dynamically creates buttons for each available time slot and adds them to the FlowPane.
     private void displayTimeSlots(List<String> times) {
-        // Clear any existing children in the pane
         timeSlotsPane.getChildren().clear();
 
         for (String time : times) {
             Button timeButton = new Button(time);
-            
-            // Apply styling to make it look like a "box/cube"
             timeButton.setPrefSize(80, 40);
             timeButton.setStyle("-fx-background-color: white; -fx-border-color: #1976d2; -fx-border-radius: 5; -fx-cursor: hand;");
-            
-            // Set the action when a specific time is clicked
             timeButton.setOnAction(event -> handleTimeSelection(time, event));
-            
-            // Add the button to the dynamic FlowPane
             timeSlotsPane.getChildren().add(timeButton);
         }
     }
 
-
-    // Handles the event when a user selects a specific time slot.
+    /**
+     * Handles the time selection.
+     * Creates the Reservation object and sends it to the server.
+     */
     private void handleTimeSelection(String selectedTime, ActionEvent event) {
-        SceneLoader.loadScene(event, "/gui/ReservationDetails.fxml", "Reservation Details");
         System.out.println("Time selected: " + selectedTime);
-        
-        // TODO: Save the selected time and proceed to the ReservationDetails screen.
-
+        DateTime resDateTime = new DateTime(reservationDate.toString(), selectedTime);
+        Guest guest = new Guest(null, phone, email);
+        Reservation newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
+        BistroMessage msg = new BistroMessage(Action.CREATE_RESERVATION, newReservation);
+        ClientUI.chat.accept(msg);
+        System.out.println("Message sent to server: CREATE_RESERVATION");
+        SceneLoader.loadScene(event, "/gui/ReservationDetails.fxml", "Reservation Details");
     }
 
-    // Navigates back to the New Reservation screen.
     @FXML
     private void handleBack(ActionEvent event) {
         SceneLoader.loadScene(event, "/gui/MakeReservation.fxml", "New Reservation");
     }
-    
 
-    // Sets the text for the date label
     public void setSelectedDateText(String date) {
         selectedDateLabel.setText("Available slots for: " + date);
     }
