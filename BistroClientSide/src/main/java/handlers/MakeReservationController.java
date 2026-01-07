@@ -2,75 +2,98 @@ package handlers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import java.time.LocalDate;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 import client.BistroClient;
-
+import dataLayer.Member;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.net.URL;
 
-/**
- * Controller for the New Reservation screen.
- * Validates user input for email, phone, date, and table size.
- */
-public class MakeReservationController {
+public class MakeReservationController implements Initializable {
 
+    @FXML private TextField fullNameField;
     @FXML private TextField emailField;
     @FXML private TextField phoneField;
     @FXML private DatePicker datePicker;
     @FXML private TextField dinersField;
     @FXML private Label errorLabel;
 
-    // Regular expression for email validation 
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
 
-    
-    // Handles the transition to the time selection screen.
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
+        // Auto-fill member details if logged in
+        if (BistroClient.memberInstance != null) {
+            Member member = BistroClient.memberInstance;
+
+            fullNameField.setText(member.getFullName());
+            emailField.setText(member.getEmail());
+            phoneField.setText(member.getPhoneNumber());
+
+            // Lock fields – member data is source of truth
+            fullNameField.setDisable(true);
+            emailField.setDisable(true);
+            phoneField.setDisable(true);
+        }
+    }
+
     @FXML
     private void handleSelectTime(ActionEvent event) {
-        // Clear previous error message 
+
         errorLabel.setText("");
 
+        String fullName = fullNameField.getText().trim();
         String email = emailField.getText().trim();
         String phone = phoneField.getText().trim();
         LocalDate date = datePicker.getValue();
         String diners = dinersField.getText().trim();
 
-        // Validate Email format
-        if (email.isEmpty() || !Pattern.compile(EMAIL_REGEX).matcher(email).matches()) {
-            errorLabel.setText("Please enter a valid email address (e.g., name@example.com).");
+        // Full name validation
+        if (fullName.isEmpty() || fullName.length() < 2) {
+            errorLabel.setText("Please enter your full name.");
+            return;
+        }
+        if (!fullName.matches("[A-Za-z ]+")) {
+            errorLabel.setText("Full name must contain letters only.");
             return;
         }
 
-        // Validate Phone: Must contain only digits
+        // Email validation
+        if (email.isEmpty() || !Pattern.compile(EMAIL_REGEX).matcher(email).matches()) {
+            errorLabel.setText("Please enter a valid email address.");
+            return;
+        }
+
+        // Phone validation
         if (phone.isEmpty() || !phone.matches("\\d+")) {
             errorLabel.setText("Phone number must contain digits only.");
             return;
         }
 
-        // Validate Date: Must be selected and not in the past
+        // Date validation
         if (date == null) {
-            errorLabel.setText("Please select a date for your reservation.");
+            errorLabel.setText("Please select a date.");
             return;
         }
         if (date.isBefore(LocalDate.now())) {
             errorLabel.setText("Reservation date cannot be in the past.");
             return;
         }
-        if (diners.isEmpty()) {
-            errorLabel.setText("Please enter the number of diners.");
-            return;
-        }
-        
-        int numDiners = 0;
+
+        // Diners validation
+        int numDiners;
         try {
             numDiners = Integer.parseInt(diners);
             if (numDiners <= 0) {
@@ -78,16 +101,17 @@ public class MakeReservationController {
                 return;
             }
         } catch (NumberFormatException e) {
-            errorLabel.setText("Diners must be a numeric value.");
+            errorLabel.setText("Diners must be numeric.");
             return;
         }
-        System.out.println("Validation successful. Proceeding to select time for: " + date);
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TimeSlot.fxml"));
             Parent root = loader.load();
-            TimeSlotController timeSlotController = loader.getController();
-            timeSlotController.initData(date, email, phone, numDiners);
+
+            TimeSlotController controller = loader.getController();
+            controller.initData(date, fullName, email, phone, numDiners);
+
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Select Time Slot");
@@ -95,18 +119,16 @@ public class MakeReservationController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            errorLabel.setText("Error loading the next screen.");
+            errorLabel.setText("Failed to load time selection screen.");
         }
     }
 
-     //Navigates back to the Guest Dashboard.
     @FXML
     private void handleBack(ActionEvent event) {
-    	if(BistroClient.memberInstance != null) {
-    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
-    	}
-    	else {
-    		SceneLoader.closeWindow(event);
-    	}
+        if (BistroClient.memberInstance != null) {
+            SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+        } else {
+            SceneLoader.closeWindow(event);
+        }
     }
 }

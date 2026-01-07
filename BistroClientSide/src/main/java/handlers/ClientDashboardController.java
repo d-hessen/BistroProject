@@ -8,6 +8,7 @@ import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
 import dataLayer.Member;
+import dataLayer.Reservation;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

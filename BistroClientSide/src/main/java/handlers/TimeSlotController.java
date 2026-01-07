@@ -10,12 +10,14 @@ import java.util.List;
 import java.time.LocalDate;
 import java.io.IOException;
 
+import client.BistroClient;
 // --- Imports for Client-Server Communication and Data ---
 import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
 import dataLayer.DateTime;
 import dataLayer.Guest;
+import dataLayer.Member;
 import dataLayer.Reservation;
 
 public class TimeSlotController {
@@ -27,14 +29,16 @@ public class TimeSlotController {
     private LocalDate reservationDate;
     private String email;
     private String phone;
+    private String fullName;
     private int numberOfDiners;
 
     /**
      * This method is called by MakeReservationController to pass the user's input.
      */
-    public void initData(LocalDate date, String email, String phone, int diners) {
+    public void initData(LocalDate date, String fullName, String email, String phone, int diners) {
         this.reservationDate = date;
         this.email = email;
+        this.fullName = fullName;
         this.phone = phone;
         this.numberOfDiners = diners;
         
@@ -71,8 +75,15 @@ public class TimeSlotController {
     private void handleTimeSelection(String selectedTime, ActionEvent event) {
         System.out.println("Time selected: " + selectedTime);
         DateTime resDateTime = new DateTime(reservationDate.toString(), selectedTime);
-        Guest guest = new Guest(null, phone, email);
+        Guest guest = new Guest(fullName, phone, email);
+        Member member = BistroClient.memberInstance; 
         Reservation newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
+        if(BistroClient.memberInstance != null) {
+        	newReservation = new Reservation(resDateTime, numberOfDiners, member.getMemberId(), member);
+        }
+        else {
+        	
+        }
         BistroMessage msg = new BistroMessage(Action.CREATE_RESERVATION, newReservation);
         ClientUI.chat.accept(msg);
         System.out.println("Message sent to server: CREATE_RESERVATION");
