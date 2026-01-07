@@ -63,33 +63,85 @@
                   <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleInsertParty" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Insert new party to waiting list" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleWaitingList" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Waiting list" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleCustomerArrival" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Visit Identification" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
-                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleCustomerArrival" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Current Dinning Sessions" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+                  <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleCurrentVisits" prefHeight="40.0" prefWidth="382.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Current Dinning Sessions" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
                </children>
             </GridPane>
             </VBox>
         </Tab>
 
         <Tab text="Table Management">
-            <VBox alignment="TOP_CENTER" spacing="15" style="-fx-padding: 20;">
-                <Label style="-fx-font-size: 18px;" text="Manage Restaurant Tables " />
-                <GridPane fx:id="tablesGrid" alignment="CENTER" hgap="15" vgap="15">
-                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="1" />
-                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="2" GridPane.columnIndex="1" />
-                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="3" GridPane.columnIndex="2" />
-                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="4" GridPane.rowIndex="1" />
-                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                    <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="6" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-               <columnConstraints>
-                  <ColumnConstraints />
-                  <ColumnConstraints />
-                  <ColumnConstraints />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-                </GridPane>
-            </VBox>
+         <content>
+            <GridPane>
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="676.0" minWidth="10.0" prefWidth="258.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="715.0" minWidth="10.0" prefWidth="622.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <HBox>
+                     <children>
+                        <VBox alignment="TOP_CENTER" prefHeight="428.0" prefWidth="257.0">
+                           <children>
+                              <Label alignment="TOP_CENTER" contentDisplay="CENTER" style="-fx-font-size: 18px;" text="Add New Table" textAlignment="CENTER">
+                                 <VBox.margin>
+                                    <Insets top="20.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <GridPane alignment="CENTER" hgap="15.0" prefHeight="134.0" prefWidth="217.0" vgap="20.0">
+                                 <columnConstraints>
+                                    <ColumnConstraints halignment="RIGHT" maxWidth="144.79998779296875" minWidth="49.0" prefWidth="83.0" />
+                                    <ColumnConstraints halignment="LEFT" maxWidth="222.4000076293945" minWidth="104.0" prefWidth="134.0" />
+                                 </columnConstraints>
+                                 <children>
+                                    <Label text="Status:" GridPane.rowIndex="2" />
+                                    <ComboBox fx:id="statusComboBox" prefHeight="26.0" prefWidth="202.0" promptText="Choose status" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="Capacity:" GridPane.rowIndex="1" />
+                                    <TextField fx:id="capacityField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Label prefHeight="17.0" prefWidth="107.0" text="Table Number:" />
+                                    <TextField fx:id="tableNumberField" GridPane.columnIndex="1" />
+                                 </children>
+                                 <rowConstraints>
+                                    <RowConstraints maxHeight="30.0" minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints maxHeight="25.0" minHeight="25.0" prefHeight="25.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                 </rowConstraints>
+                              </GridPane>
+                              <Button alignment="CENTER" contentDisplay="CENTER" onAction="#handleAddTable" prefHeight="40.0" prefWidth="270.0" style="-fx-background-color: purple; -fx-text-fill: white;" text="Add Table" />
+                           </children>
+                        </VBox>
+                        <Separator orientation="VERTICAL" prefHeight="428.0" prefWidth="10.0">
+                           <HBox.margin>
+                              <Insets left="20.0" />
+                           </HBox.margin>
+                        </Separator>
+                     </children>
+                  </HBox>
+                     <VBox alignment="TOP_CENTER" prefHeight="428.0" prefWidth="638.0" spacing="15" style="-fx-padding: 20;" GridPane.columnIndex="1">
+                         <Label alignment="TOP_CENTER" contentDisplay="CENTER" style="-fx-font-size: 18px;" text="Manage Restaurant Tables " textAlignment="CENTER" />
+                     <Separator prefHeight="0.0" prefWidth="622.0" />
+                         <GridPane fx:id="tablesGrid" alignment="CENTER" hgap="15" vgap="15">
+                             <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="1" />
+                             <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="2" GridPane.columnIndex="1" />
+                             <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="3" GridPane.columnIndex="2" />
+                             <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="4" GridPane.rowIndex="1" />
+                             <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                             <ToggleButton onAction="#openTableInfo" prefHeight="60" prefWidth="60" style="-fx-background-color: lightgreen;" text="6" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <columnConstraints>
+                           <ColumnConstraints />
+                           <ColumnConstraints />
+                           <ColumnConstraints />
+                        </columnConstraints>
+                        <rowConstraints>
+                           <RowConstraints />
+                           <RowConstraints />
+                        </rowConstraints>
+                         </GridPane>
+                     </VBox>
+               </children>
+            </GridPane>
+         </content>
         </Tab>
 
         <Tab text="Register Member">

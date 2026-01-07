@@ -4,6 +4,7 @@ import common.Action;
 import common.BistroMessage;
 import dataLayer.Reservation;
 import databaseController.CreateCommands;
+import databaseController.DeleteCommands;
 import databaseController.GetCommands;
 import databaseController.UpdateCommands;
 
@@ -18,8 +19,8 @@ public class ReservationController {
 		return new BistroMessage(Action.RESERVATION_NOT_FOUND, recieved);
 	}
 	
-	public static BistroMessage updateReservation(Reservation reservationToUpdate) {
-		boolean success = UpdateCommands.updateReservation(reservationToUpdate);
+	public static BistroMessage updateReservation(Reservation reservationToUpdate, ServerFrameController guiController) {
+		boolean success = UpdateCommands.updateReservation(reservationToUpdate, guiController);
 		return new BistroMessage(Action.UPDATE_RESERVATION, success);
 	}
 
@@ -37,7 +38,7 @@ public class ReservationController {
 	}
 	
 	public static BistroMessage cancelReservation(Reservation res, ServerFrameController guiController) {	    
-	    boolean success = databaseController.DeleteCommands.deleteReservation(res.getReservationId(), guiController);    
+	    boolean success = DeleteCommands.deleteReservation(res.getReservationId(), guiController);    
 	    if (success) {
 	        return new BistroMessage(Action.CANCEL_RESERVATION, true);
 	    } else {

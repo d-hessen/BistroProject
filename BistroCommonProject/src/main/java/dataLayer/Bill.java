@@ -3,18 +3,11 @@ package dataLayer;
 import java.io.Serializable;
 
 public class Bill implements Serializable {
-	private double totalAmount;
-	private Integer discountAmount;
-	private double finalAmount;
+	private Double totalAmount;
+	private Double discountAmount;
+	private Double finalAmount;
 	private boolean isPaid;
-	private Visit visit;
-	
-	public Bill(Visit visit) {
-		this.visit = visit;
-		this.isPaid = false;
-		this.totalAmount = 0.0;
-		this.discountAmount = 0;
-	}
+	private DateTime paymentTime;
 	
 	public double getTotalAmount() {
 		return totalAmount;
@@ -28,16 +21,16 @@ public class Bill implements Serializable {
 		this.totalAmount += amount;
 	}
 
-	public Integer getDiscountAmount() {
+	public Double getDiscountAmount() {
 		return discountAmount;
 	}
 
-	public void setDiscountAmount(Integer discountAmount) {
+	public void setDiscountAmount(Double discountAmount) {
 		this.discountAmount = discountAmount;
 	}
 
 	public double getFinalAmount() {
-		return calculateFinalAmount();
+		return finalAmount;
 	}
 
 	public void setFinalAmount(double finalAmount) {
@@ -52,17 +45,12 @@ public class Bill implements Serializable {
 		this.isPaid = isPaid;
 	}
 
-	public Visit getVisit() {
-		return visit;
+	public DateTime getPaymentTime() {
+		return paymentTime;
 	}
 
-	public void setVisit(Visit visit) {
-		this.visit = visit;
-	}
-
-	protected double calculateFinalAmount() {
-		this.finalAmount = this.totalAmount * this.discountAmount;
-		return this.finalAmount;
+	public void setPaymentTime(DateTime paymentTime) {
+		this.paymentTime = paymentTime;
 	}
 	
 	

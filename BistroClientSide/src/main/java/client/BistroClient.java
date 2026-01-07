@@ -4,22 +4,32 @@ import ocsf.client.*;
 import common.BistroMessage;
 import common.ChatIF;
 import dataLayer.*;
+import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
+import javafx.scene.control.Alert;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BistroClient extends AbstractClient
 {
   ChatIF clientUI; 
-  private static StaffLoginController staffLoginControllerInstance = new StaffLoginController();
-  private static StaffDashboardController staffDashControllerInstance = new StaffDashboardController();
+  
+  //STATIC REFERENCES TO ACTIVE CONTROLLERS
+  public static StaffLoginController staffLoginControllerInstance;
+  public static StaffDashboardController staffDashControllerInstance;
+  
   public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
+  public static List<Visit> visitsList = null;
+  public static ArrayList<Table> tables = new ArrayList<>();
   public static Integer wantedReservationId = null;
   public static Integer wantedVerCode = null;  
   public static Member memberInstance = null;
   public static Staff staffInstance = null;
   public static boolean awaitResponse = false;
+  public static boolean operationSuccess = false;
 	 
   public BistroClient(String host, int port, ChatIF clientUI) 
     throws IOException 
@@ -44,8 +54,64 @@ public class BistroClient extends AbstractClient
 		  		staffInstance = (Staff)answer.getData();
 		  		break;
 		  	case STAFF_NOT_FOUND:
-		  		staffLoginControllerInstance.staffNotLogged((String)answer.getData());
-		  		break;
+		  		if(staffLoginControllerInstance != null)
+                    staffLoginControllerInstance.staffNotLogged((String)answer.getData());
+                break;
+            // --- DASHBOARD UPDATES ---
+            case GET_ALL_TABLES:
+		  		if(answer.getData() instanceof ArrayList<?>) {
+		  			ArrayList<?> list = (ArrayList<?>) answer.getData();
+		  			for(Object item : list) {
+		  				if(item instanceof Table) {
+		  					tables.add((Table)item);
+		  				} else {
+		  					throw new ClassCastException("List contained an element of unexpected type");
+		  				}
+		  			}
+		  		}
+                if(staffDashControllerInstance != null) {
+                    staffDashControllerInstance.updateTableGrid(tables);
+                }
+                break;
+            case DELETE_TABLE:
+            	if(answer.getData() instanceof Table) {
+                	tables.remove((Table)answer.getData());
+            		operationSuccess = true;
+            	}else {
+            		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
+            	}
+
+            	break;
+            case ADD_TABLE:
+            	if(answer.getData() instanceof Table) {
+                	tables.add((Table)answer.getData());
+                    if(staffDashControllerInstance != null) {
+                        staffDashControllerInstance.updateTableGrid(tables);
+                    }
+            	}else {
+            		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
+            	}
+            	break;
+            case UPDATE_TABLE:
+            	if(answer.getData() instanceof Table) {
+            		operationSuccess = true;
+            	} else {
+            		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
+            	}
+            	break;
+            case CHECK_IN_CUSTOMER: // Response from check-in
+                String result = (String) answer.getData();
+                if(staffDashControllerInstance != null) {
+                    staffDashControllerInstance.updateCheckInStatus(result.startsWith("Success"), result);
+                }
+                break;
+            case VERIFY_MEMBER_ARRIVAL:
+                String mesg = (String) answer.getData();
+                boolean isSuccess = mesg.startsWith("Success");
+                if (staffDashControllerInstance != null) {
+                    staffDashControllerInstance.updateCheckInStatus(isSuccess, mesg);
+                }
+                break;
 		  	// --- MEMBER ROUTES ---
 		  	case MEMBER_IDENTIFICATION:
 		  		memberInstance = (Member)answer.getData();
@@ -54,11 +120,13 @@ public class BistroClient extends AbstractClient
 		  		memberInstance = null;
 		  		break;
 		  	case CREATE_MEMBER:
-		  		staffDashControllerInstance.memberCreated(true, null);
-		  		break;
+                if(staffDashControllerInstance != null)
+                    staffDashControllerInstance.memberCreated(true, null);
+                break;
 		  	case MEMBER_NOT_CREATED:
-		  		staffDashControllerInstance.memberCreated(false, (String)answer.getData());
-		  		break;
+                if(staffDashControllerInstance != null)
+                    staffDashControllerInstance.memberCreated(false, (String)answer.getData());
+                break;
 		  	// --- RESERVATION ROUTES --
 		  	case GET_RESERVATION:
 		  		reservationInstance = (Reservation)answer.getData();
@@ -97,6 +165,22 @@ public class BistroClient extends AbstractClient
 		  	    } else {
 		  	        System.out.println("Failed to delete reservation.");
 		  	    }
+		  	    break;
+		  	// ---VISITS ROUTES---
+		  	case GET_MEMBER_VISITS:
+		  	case GET_ACTIVE_VISITS:
+		  		List<Visit> visits = new ArrayList<>();
+		  		if(answer.getData() instanceof List<?>) {
+		  			List<?> list = (List<?>) answer.getData();
+		  			for(Object item : list) {
+		  				if(item instanceof Visit) {
+		  					visits.add((Visit)item);
+		  				} else {
+		  					throw new ClassCastException("List contained an element of unexpected type");
+		  				}
+		  			}
+		  		}
+		  	    visitsList = visits;
 		  	    break;
 		  	default:
 	            System.out.println("Unknown Action: " + answer.getAction());
@@ -138,8 +222,7 @@ public class BistroClient extends AbstractClient
     }
     catch(IOException e)
     {
-    	e.printStackTrace();
-      clientUI.display("Could not send message to server: Terminating client."+ e);
+      SceneLoader.showAlert(Alert.AlertType.ERROR, "Connection to server", "Could not send message to server: Terminating client.");
       quit();
     }
   }

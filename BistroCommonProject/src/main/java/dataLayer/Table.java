@@ -6,11 +6,14 @@ public class Table implements Serializable {
 	private Integer tableNumber;
 	private Integer tableCapacity;
 	private boolean isActive = false;
+	private boolean isOccupied;
+	private Visit currentVisit;
 	
 	public Table(Integer tableNumber, Integer tableCapacity, boolean isActive) {
 		this.isActive = isActive;
 		this.tableNumber = tableNumber;
 		this.tableCapacity = tableCapacity;
+		this.isOccupied = false;
 	}
 
 	public Integer getTableNumber() {
@@ -36,6 +39,22 @@ public class Table implements Serializable {
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	
 
+	public boolean isOccupied() {
+		return isOccupied;
+	}
+
+	public void setOccupied(boolean isOccupied) {
+		this.isOccupied = isOccupied;
+	}
+
+	public Visit getCurrentVisit() {
+		return currentVisit;
+	}
+
+	public void setCurrentVisit(Visit currentVisit) {
+		this.currentVisit = currentVisit;
+	}
+	
+	
 }

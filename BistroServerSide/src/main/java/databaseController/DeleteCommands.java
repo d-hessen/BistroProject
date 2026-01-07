@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import dataLayer.Member;
+import dataLayer.Table;
 import domainLogic.ServerFrameController;
 
 public class DeleteCommands {
@@ -14,28 +15,18 @@ public class DeleteCommands {
 	//Method to delete Reservation with @id in database
 	public static boolean deleteReservation(Integer id, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
-		
-        //SQL QUERY TO DELETE RESERVATION
-		String sql = "DELETE FROM reservation WHERE reservation_number = ?";
-		
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, id);
-			int executionResult = ps.executeUpdate();
-            
-            if (executionResult > 0) {
-                guiController.addToConsole("Reservation ID " + id + " was deleted successfully.");
-                return true;
-            } else {
-                guiController.addToConsole("Reservation ID " + id + " was not found.");
-                return false;
-            }
-
-		} catch (SQLException e) {
-			guiController.addToConsole("Error deleting reservation: " + id + ". Error: " + e.getMessage());
-			return false;
-		}
-	}
-
+	    //SQL QUERY TO DELETE RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
+	    String sql = "DELETE FROM reservation WHERE reservation_number = ?";
+	        
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, id);
+	        int executionResult = ps.executeUpdate();
+	        return executionResult > 0;
+	    } catch (SQLException e) {
+	    	guiController.addToConsole("Error deleting reservation: " +id+ ". Error: " +e.getMessage());
+	        return false;
+	        }
+	  }
 	//======================================
 	//MEMBER DELETE
 	//======================================
@@ -55,5 +46,23 @@ public class DeleteCommands {
 			guiController.addToConsole("Error deleting member: " + id + ". Error: " + e.getMessage());
 			return false;
 		}
+	}
+	
+	//======================================
+	//TABLE DELETE
+	//======================================
+	public static boolean deleteTable(Table tableToDelete, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+	    //SQL QUERY TO DELETE TABLE CHECK FIELDS IN DATABASE BEFORE CHANGE
+	    String sql = "DELETE FROM tables WHERE table_number = ?";
+	    Integer id = tableToDelete.getTableNumber();
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, id);
+	        int executionResult = ps.executeUpdate();
+	        return executionResult > 0;
+	    } catch (SQLException e) {
+	    	guiController.addToConsole("Error deleting table: " +id+ ". Error: " +e.getMessage());
+	        return false;
+	        }
 	}
 }

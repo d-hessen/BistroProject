@@ -66,15 +66,7 @@ public class ReservationFormController {
     }
 	
 	public void buttonBack(ActionEvent event) throws IOException {
-		FXMLLoader loader = new FXMLLoader();
-		((Node)event.getSource()).getScene().getWindow().hide(); //hiding primary window
-		Stage primaryStage = new Stage();
-		Pane root = loader.load(getClass().getResource("/gui/ReservationFrame.fxml").openStream());
-	
-		Scene scene = new Scene(root);			
-		primaryStage.setTitle("Reservation Finder");
-		primaryStage.setScene(scene);		
-		primaryStage.show();
+		SceneLoader.loadScene(event, "/gui/ReservationFrame.fxml", "Reservation Finder");
 		ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT,null));
 	}
 	

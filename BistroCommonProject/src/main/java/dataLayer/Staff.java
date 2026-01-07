@@ -50,5 +50,12 @@ public class Staff implements Serializable {
 		this.isManager = isManager;
 	}
 	
+	public String getRole() {
+		if(isManager) return "manager";
+		else {
+			return "worker";
+		}
+	}
+	
 
 }

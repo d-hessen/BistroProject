@@ -1,7 +1,9 @@
 package server;
 
 import java.io.*;
+import java.util.List;
 
+import databaseController.GetCommands;
 import databaseController.dbController;
 import domainLogic.*;
 import common.*;
@@ -30,6 +32,29 @@ public class BistroServer extends AbstractServer
           		Staff staffRecieved = (Staff)request.getData();
           		client.sendToClient(StaffController.staffIdentification(staffRecieved, guiController));
           		break;
+          	case GET_ALL_TABLES:
+                client.sendToClient(StaffController.getAllTables(guiController));
+                break;
+          	case ADD_TABLE:
+          		Table tableRecieved = (Table)request.getData();
+          		client.sendToClient(StaffController.addNewTable(tableRecieved, guiController));
+          		break;
+          	case DELETE_TABLE:
+          		Table tableToDelete = (Table)request.getData();
+          		client.sendToClient(StaffController.deleteTable(tableToDelete, guiController));
+          		break;
+          	case UPDATE_TABLE:
+          		Table tableToUpdate = (Table)request.getData();
+          		client.sendToClient(StaffController.updateTable(tableToUpdate, guiController));
+          		break;
+            case CHECK_IN_CUSTOMER:
+                String code = (String) request.getData();
+                client.sendToClient(StaffController.checkInCustomer(code, guiController));
+                break;
+            case VERIFY_MEMBER_ARRIVAL:
+                String cardCode = (String) request.getData();
+                client.sendToClient(StaffController.verifyMemberArrival(cardCode, guiController));
+                break;
           	// --- MEMBER ROUTES ---
           	case MEMBER_IDENTIFICATION:
           		Member memberRecieved = (Member)request.getData();
@@ -57,7 +82,17 @@ public class BistroServer extends AbstractServer
                 //Data is a Reservation Object
                 Reservation resToUpdate = (Reservation) request.getData();
                 // Send back success/failure
-                client.sendToClient(ReservationController.updateReservation(resToUpdate)); 
+                client.sendToClient(ReservationController.updateReservation(resToUpdate, guiController)); 
+                break;
+            // --- VISIT ROUTES ---
+            case GET_MEMBER_VISITS:
+                Integer memberId = (Integer) request.getData();
+                List<Visit> memberVisits = GetCommands.getMemberVisits(memberId, guiController);
+                client.sendToClient(new BistroMessage(Action.GET_MEMBER_VISITS, memberVisits));
+                break;
+            case GET_ACTIVE_VISITS:
+                List<Visit> activeVisits = GetCommands.getActiveVisits(guiController);
+                client.sendToClient(new BistroMessage(Action.GET_ACTIVE_VISITS, activeVisits));
                 break;
              // --- CLIENT DISCONNECTS ---
             case DISCONNECT:

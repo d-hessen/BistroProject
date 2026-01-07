@@ -5,12 +5,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
@@ -19,267 +24,260 @@ import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
 import dataLayer.Member;
+import dataLayer.Table;
 
 public class StaffDashboardController implements Initializable {
 
-    // --- FXML Injections ---
-
-    @FXML private Label dashboardTitleLabel;
     @FXML private Label welcomeLabel;
     @FXML private TabPane mainTabPane;
-
-    // Operations Tab
-    @FXML private TextField reservationCodeField;
+    
+    //Check-In TAB
+    @FXML private TextField memberCodeField; // Renamed to match FXML id
     @FXML private Label checkInStatusLabel;
 
-    // Table Management Tab
+    //Tables TAB
     @FXML private GridPane tablesGrid;
+    @FXML private TextField capacityField;
+    @FXML private TextField tableNumberField;
+    @FXML private ComboBox<String> statusComboBox;
 
-    // Register Member Tab
-    @FXML private TextField regFullName;
-    @FXML private TextField regPhone;
-    @FXML private TextField regEmail;
+    //Register member TAB
+    @FXML private TextField regFullName, regPhone, regEmail;
     @FXML private PasswordField PasswordField;
     @FXML private TextField PasswordFieldVisible;
     @FXML private CheckBox showPasswordTick;
 
-    // Reports Tab
+    // Reports & Admin Tabs TAB
     @FXML private Tab managerReportsTab;
-    @FXML private ComboBox<String> reportTypeCombo;
-    @FXML private ComboBox<String> monthCombo;
-    @FXML private TableView<ReportData> reportsTable;
-
-    // Admin Tab
     @FXML private Tab managerAdminTab;
-    @FXML private TableView<LogEntry> logsTable;
-    
-    // Regular expression for basic email validation
-    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+    @FXML private ComboBox<String> reportTypeCombo, monthCombo;
+    @FXML private TableView<?> reportsTable, logsTable; // Generic for now
 
-    // --- Initialization ---
+    private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+    private ArrayList<Table> tables;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        BistroClient.staffDashControllerInstance = this;
+        tables = null;
+
+        if (BistroClient.staffInstance != null) {
+            welcomeLabel.setText("Welcome, " + BistroClient.staffInstance.getFullName());
+            
+            // Role Check: Hide Manager Tabs if worker
+            if (!"manager".equalsIgnoreCase(BistroClient.staffInstance.getRole())) { 
+                mainTabPane.getTabs().remove(managerReportsTab);
+            }
+        }
         setupComboBoxes();
-        setupTables();
-        welcomeLabel.setText("Welcome, " +BistroClient.staffInstance.getFullName());
+        refreshTables();
     }
 
     private void setupComboBoxes() {
-        reportTypeCombo.setItems(FXCollections.observableArrayList("Reservations", "Waiting Lists", "Guest's arrival and leaving times"));
-        monthCombo.setItems(FXCollections.observableArrayList("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"));
+    	statusComboBox.getItems().addAll("Available", "Occupied", "Reserved", "Deleted");
+        if(reportTypeCombo != null) 
+            reportTypeCombo.setItems(FXCollections.observableArrayList("Reservations", "Waiting Lists"));
+        if(monthCombo != null)
+            monthCombo.setItems(FXCollections.observableArrayList("January", "February", "March", "April"));
     }
 
-    private void setupTables() {
-        // Setup Reports Table Columns
-        if (!reportsTable.getColumns().isEmpty()) {
-            reportsTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("category"));
-            reportsTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("value"));
-            reportsTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("date"));
-        }
-
-        // Setup Logs Table Columns
-        if (!logsTable.getColumns().isEmpty()) {
-            logsTable.getColumns().get(0).setCellValueFactory(new PropertyValueFactory<>("time"));
-            logsTable.getColumns().get(1).setCellValueFactory(new PropertyValueFactory<>("user"));
-            logsTable.getColumns().get(2).setCellValueFactory(new PropertyValueFactory<>("action"));
-        }
+    // --- TABLE MANAGEMENT ---
+    
+    private void refreshTables() {
+        ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES, null));
     }
 
-    // --- Event Handlers ---
-    
-    @FXML
-    void handleNewReservation(ActionEvent event) {
-    	SceneLoader.openNewWindow("/gui/MakeReservation.fxml", "Make new reservation");
+    // Called by BistroClient
+    public void updateTableGrid(ArrayList<Table> tables) {
+        Platform.runLater(() -> {
+        	this.tables = tables;
+            tablesGrid.getChildren().clear(); 
+            int col = 0;
+            int row = 0;
+            
+            for (Table t : tables) {
+                if(!t.isActive()) continue; // Skip deleted tables
+                
+                ToggleButton btn = new ToggleButton("Table " + t.getTableNumber() + "\nCapacity:(" + t.getTableCapacity() + " ppl)");
+                btn.setPrefSize(100, 80);
+                
+                if (t.isOccupied()) {
+                    btn.setStyle("-fx-background-color: #ff6666; -fx-text-fill: white;"); // Red
+                    btn.setSelected(true);
+                } else {
+                    btn.setStyle("-fx-background-color: lightgreen; -fx-text-fill: black;"); // Green
+                    btn.setSelected(false);
+                }
+                
+                btn.setOnAction(e -> {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TableManagement.fxml"));
+                        Parent root = loader.load();
+                        
+                        TableManagementController controller = loader.getController();
+                        controller.setTableDetails(t);
+                        
+                       Stage stage = new Stage();
+                       stage.setScene(new Scene(root));
+                       stage.setTitle("Manage Table " + t.getTableNumber());
+                       stage.show();
+                        
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                
+                tablesGrid.add(btn, col, row);
+                col++;
+                if (col > 2) { 
+                	col = 0;
+                	row++; 
+                }
+            }
+        });
     }
     
     @FXML
-    void handleFindReservation(ActionEvent event) {
-    	SceneLoader.openNewWindow("/gui/ReservationFrame.fxml", "Reservation finder");
-    }
-    
-    @FXML
-    void handleInsertParty(ActionEvent event) {
-    	SceneLoader.openNewWindow("/gui/VisitNow.fxml", "Insert Party to Waiting List");
-    }
-    
-    @FXML
-    void handleWaitingList(ActionEvent event) {
+    void handleAddTable(ActionEvent event) {
+    	if(tableNumberField.getText().trim().isEmpty() || capacityField.getText().trim().isEmpty()) {
+    		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "You must enter table number and it's capacity!");
+			return;
+    	}
+    	Integer tableNum = Integer.valueOf(tableNumberField.getText().trim());
+    	for (Table table : this.tables) {
+			if(table.getTableNumber().equals(tableNum)) {
+				SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "Table: "+tableNum+" already exists!");
+				return;
+			}
+		}
+    	Integer capacity = Integer.valueOf(capacityField.getText().trim());
+    	if (capacity < 2) {
+			SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "Table capacity must be bigger than 2");
+			return;
+    	}
     	
-    }
-    
-    @FXML
-    void handleCustomerArrival(ActionEvent event) {
-    	
+    	Table toCreate = new Table(tableNum,capacity,false);
+    	if (statusComboBox.getValue().equals("Available")) {
+    		toCreate.setActive(true);
+    		toCreate.setOccupied(false);
+    	}
+    	ClientUI.chat.accept(new BistroMessage(Action.ADD_TABLE,toCreate));
+    	tableNumberField.clear();
+    	capacityField.clear();
     }
 
-    @FXML
-    void handleLogout(ActionEvent event) {
-    	BistroClient.staffInstance = null;
-    	ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
-    	SceneLoader.loadScene(event, "/gui/StaffLoginGUI.fxml", "Member Login");
-    }
+    // --- CHECK IN ---
 
     @FXML
     void handleMemberCheckIn(ActionEvent event) {
-        String code = reservationCodeField.getText();
+        String code = memberCodeField.getText(); 
         if (code == null || code.trim().isEmpty()) {
-            checkInStatusLabel.setText("Error: Please enter a code.");
+            checkInStatusLabel.setText("Please enter member code.");
             checkInStatusLabel.setStyle("-fx-text-fill: red;");
-        } else {
-            // Mock validation logic
-            checkInStatusLabel.setText("Success: Reservation " + code + " checked in.");
-            checkInStatusLabel.setStyle("-fx-text-fill: green;");
-            reservationCodeField.clear();
+            return;
         }
+        
+        checkInStatusLabel.setText("Verifying...");
+        checkInStatusLabel.setStyle("-fx-text-fill: black;");
+        
+        // Send request
+        ClientUI.chat.accept(new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, code.trim()));
     }
     
-    @FXML
-    void openTableInfo(ActionEvent event) {
-    	if(event.getSource() instanceof Button) {
-    		Button button = (Button) event.getSource();
-    		
-    		System.out.println(button.getText()+" pressed");
-    	}
-    	
+    // Add this to update UI based on response
+    public void updateCheckInStatus(boolean success, String message) {
+        Platform.runLater(() -> {
+            checkInStatusLabel.setText(message);
+            if (success) {
+                checkInStatusLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                memberCodeField.clear();
+                // Refresh tables to show the new red table
+                ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES, null)); 
+            } else {
+                checkInStatusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+            }
+        });
     }
+    // --- MEMBER REGISTRATION ---
 
     @FXML
     void handleRegisterMember(ActionEvent event) {
+        String name = regFullName.getText().trim();
         String phone = regPhone.getText().trim();
         String email = regEmail.getText().trim();
-        String name = regFullName.getText().trim();
-        
-        // Get password from the currently active field
         String pass = showPasswordTick.isSelected() ? PasswordFieldVisible.getText() : PasswordField.getText();
-        
-        // Validate Full Name: Must contain at least two words
-        String[] nameParts = name.split("\\s+");
-        if (nameParts.length < 2) {
-            showAlert(Alert.AlertType.ERROR, "Registration Error", "Full name must contain at least two words.");
+
+        if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || pass.isEmpty()) {
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
             return;
         }
-
+        
         // Validate Phone Number: Must contain digits only
         if (!phone.matches("\\d+")) {
-            showAlert(Alert.AlertType.ERROR, "Registration Error", "Phone number must contain numbers only.");
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Phone number must contain numbers only.");
             return;
         }
 
         // Validate Email: Must follow standard email format
         if (!Pattern.compile(EMAIL_REGEX).matcher(email).matches()) {
-            showAlert(Alert.AlertType.ERROR, "Registration Error", "Invalid email format.");
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Invalid email format.");
             return;
         }
 
-        // Validate Password: Must not be empty
-        if (pass.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Registration Error", "Password cannot be empty.");
+        // Validate Full Name: Must contain at least two words
+        String[] nameParts = name.split("\\s+");
+        if (nameParts.length < 2) {
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Full name must contain at least two words.");
             return;
         }
 
-        // If all validations pass, proceed with registration logic
-        System.out.println("Validation successful for user: " + name);
+        Member memberToCreate = new Member(name, phone, email, pass);
+        memberToCreate.setCardCode("CARD-" + (int)(Math.random() * 9000 + 1000)); //TODO: Move logic from controller to server (We must check if code is already exists)
         
-        Member memberToCreate = new Member(name,phone,email,pass);
-        memberToCreate.setCardCode("CARD-" + (int)(Math.random() * 9000 + 1000));
         ClientUI.chat.accept(new BistroMessage(Action.CREATE_MEMBER, memberToCreate));
-        regPhone.clear();
-        regEmail.clear();
-        regFullName.clear();
-        PasswordField.clear();
     }
+    //Method when member created or there's an error
+    public void memberCreated(boolean isCreated, String message) {
+        Platform.runLater(() -> {
+            if(isCreated) {
+            	SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Success", "Member Registered!");
+                regFullName.clear(); regPhone.clear(); regEmail.clear(); PasswordField.clear();
+            } else {
+                SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Registration Failed: " + message);
+            }
+        });
+    }
+
+    // --- NAVIGATION ---
+    @FXML void handleNewReservation(ActionEvent event) { SceneLoader.openNewWindow("/gui/MakeReservation.fxml", "New Reservation"); }
+    @FXML void handleFindReservation(ActionEvent event) { SceneLoader.openNewWindow("/gui/ReservationFrame.fxml", "Find Reservation"); }
+    @FXML void handleInsertParty(ActionEvent event) { SceneLoader.openNewWindow("/gui/VisitNow.fxml", "Waiting List"); }
+    @FXML void handleWaitingList(ActionEvent event) { SceneLoader.openNewWindow("/gui/ClientWaiting.fxml", "Waiting List View"); } // Check FXML name
+    @FXML void handleCustomerArrival(ActionEvent event) { SceneLoader.openNewWindow("/gui/VisitIdentification.fxml", "Visit Identification"); }
+    @FXML void handleCurrentVisits(ActionEvent event) { SceneLoader.openNewWindow("/gui/ViewVisits.fxml", "Current Dinning Sessions");}
     
-    // Toggles the password visibility between masked and plain text.
+    @FXML
+    void handleLogout(ActionEvent event) {
+        BistroClient.staffInstance = null;
+        BistroClient.staffDashControllerInstance = null;
+        BistroClient.tables = new ArrayList<>();
+        ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
+        SceneLoader.loadScene(event, "/gui/StaffLoginGUI.fxml", "Staff Login");
+    }
+
     @FXML
     private void togglePasswordVisible(ActionEvent event) {
         if (showPasswordTick.isSelected()) {
-            // Switch to visible text field
             PasswordFieldVisible.setText(PasswordField.getText());
-            PasswordFieldVisible.setVisible(true);
-            PasswordFieldVisible.setManaged(true);
-            PasswordField.setVisible(false);
-            PasswordField.setManaged(false);
+            PasswordFieldVisible.setVisible(true); PasswordFieldVisible.setManaged(true);
+            PasswordField.setVisible(false); PasswordField.setManaged(false);
         } else {
-            // Switch back to masked password field
             PasswordField.setText(PasswordFieldVisible.getText());
-            PasswordField.setVisible(true);
-            PasswordField.setManaged(true);
-            PasswordFieldVisible.setVisible(false);
-            PasswordFieldVisible.setManaged(false);
+            PasswordField.setVisible(true); PasswordField.setManaged(true);
+            PasswordFieldVisible.setVisible(false); PasswordFieldVisible.setManaged(false);
         }
     }
 
-    @FXML
-    void handleGenerateReport(ActionEvent event) {
-        String type = reportTypeCombo.getValue();
-        String month = monthCombo.getValue();
-
-        if (type == null || month == null) {
-            showAlert(Alert.AlertType.WARNING, "Missing Selection", "Please select both Report Type and Month.");
-            return;
-        }
-
-        // Mock Data Generation
-        ObservableList<ReportData> data = FXCollections.observableArrayList(
-            new ReportData(type, "1500.00", "01-" + month),
-            new ReportData(type, "2300.50", "15-" + month)
-        );
-        reportsTable.setItems(data);
-    }
-
-    // --- Helper Methods ---
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    // --- Data Models (Inner Classes for TableViews) ---
-
-    public static class ReportData {
-        private final String category;
-        private final String value;
-        private final String date;
-
-        public ReportData(String category, String value, String date) {
-            this.category = category;
-            this.value = value;
-            this.date = date;
-        }
-
-        public String getCategory() { return category; }
-        public String getValue() { return value; }
-        public String getDate() { return date; }
-    }
-
-    public static class LogEntry {
-        private final String time;
-        private final String user;
-        private final String action;
-
-        public LogEntry(String time, String user, String action) {
-            this.time = time;
-            this.user = user;
-            this.action = action;
-        }
-
-        public String getTime() { return time; }
-        public String getUser() { return user; }
-        public String getAction() { return action; }
-    }
-
-	public void memberCreated(boolean isCreated, String message) {
-    	Platform.runLater(() -> {
-            if(isCreated) {
-            	showAlert(Alert.AlertType.INFORMATION, "Registration Confirmation", "Member has been signed up successfully!");
-            } else {
-            	showAlert(Alert.AlertType.ERROR, "Registration Error", "There was an error signing up member! Error: " + message);
-            }
-        });
-		
-	}
+    @FXML void openTableInfo(ActionEvent event) {} // Legacy support if needed
+    @FXML void handleGenerateReport(ActionEvent event) {} // Stub
 }

@@ -29,9 +29,9 @@ public final class dbController {
     //Establishes the connection to the database.
 	public boolean connectToDB() {
 		try {
-			String dbUrl = "jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false&allowPublicKeyRetrieval=true";
-	        String dbUser = "root";
-	        String dbPass = "Faymane55$$$"; 
+			String dbUrl = "jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false";
+            String dbUser = "root";
+            String dbPass = "danhessen"; 
 
 	        conn = DriverManager.getConnection(dbUrl, dbUser, dbPass);
 	        return true;

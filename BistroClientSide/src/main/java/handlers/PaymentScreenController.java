@@ -1,5 +1,6 @@
 package handlers;
 
+import client.BistroClient;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -71,8 +72,13 @@ public class PaymentScreenController {
 
     // Handles "Back" button click
     @FXML
-    private void handleBack(ActionEvent event) {
-        SceneLoader.loadScene(event, "/gui/VisitDetails.fxml", "Visit Details");
+    private void handleBack(ActionEvent event) { 
+    	if(BistroClient.memberInstance != null) {
+    		 SceneLoader.loadScene(event, "/gui/VisitDetails.fxml", "Visit Details");
+    	}
+    	else {
+    		SceneLoader.closeWindow(event);
+    	}
     }
 
     private void showError(String message) {

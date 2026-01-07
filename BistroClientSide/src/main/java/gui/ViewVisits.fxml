@@ -7,12 +7,12 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="500.0" prefWidth="450.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.ViewVisitsController">
+<VBox alignment="CENTER" prefHeight="500.0" prefWidth="450.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ViewVisitsController">
    <padding>
       <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
    <children>
-      <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="My Visits History" />
+      <Label fx:id="welcomeLabel" style="-fx-font-size: 24px; -fx-font-weight: bold;" text="My Visits History" />
       
       <TableView fx:id="visitsTable" prefHeight="350.0" prefWidth="400.0">
         <columns>

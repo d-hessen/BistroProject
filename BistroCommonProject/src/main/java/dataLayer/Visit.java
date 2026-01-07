@@ -12,6 +12,8 @@ public class Visit implements Serializable {
 	private Integer visitId;
 	private DateTime startTime;
 	private DateTime endTime;
+	private Bill billOfVisit;
+	private Integer partySize;
 	
 	public Visit(Reservation reservation, Table table) {
 		if(reservation != null) {
@@ -64,36 +66,40 @@ public class Visit implements Serializable {
 		this.visitId = visitId;
 	}
 
-	private void setActive(boolean isActive) {
-		if(isActive && !this.isActive) {
-			startVisit();
-		}
-		else {
-			if(this.isActive) {
-				endVisit();
-			}
-		}
+	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	
-	protected void startVisit() {
-		if(startTime == null) {
-			LocalDate currentDate = LocalDate.now();
-			LocalTime currentTime = LocalTime.now();
-			startTime = new DateTime(currentDate.toString(), currentTime.toString());
-		}
-	}
-	
-	protected void endVisit() {
-		if(startTime != null) {
-			LocalDate currentDate = LocalDate.now();
-			LocalTime currentTime = LocalTime.now();
-			endTime = new DateTime(currentDate.toString(), currentTime.toString());
-		}
-		else {
-			System.err.println("Error trying end visit that doesn't have start time!!");
-		}
 
+	public void setReservation(Reservation reservation) {
+		this.reservation = reservation;
 	}
 
+	public void setGuest(Guest guest) {
+		this.guest = guest;
+	}
+
+	public void setStartTime(DateTime startTime) {
+		this.startTime = startTime;
+	}
+
+	public void setEndTime(DateTime endTime) {
+		this.endTime = endTime;
+	}
+
+	public Bill getBillOfVisit() {
+		return billOfVisit;
+	}
+
+	public void setBillOfVisit(Bill billOfVisit) {
+		this.billOfVisit = billOfVisit;
+	}
+
+	public Integer getPartySize() {
+		return partySize;
+	}
+
+	public void setPartySize(Integer partySize) {
+		this.partySize = partySize;
+	}
+	
 }

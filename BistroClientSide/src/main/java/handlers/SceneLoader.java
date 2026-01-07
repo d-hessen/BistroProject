@@ -1,13 +1,17 @@
 package handlers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Optional;
 
 // Class to navigation
 
@@ -56,6 +60,33 @@ public class SceneLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    public static void closeWindow(ActionEvent event) {
+        Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
+        stage.close();
+    }
+    
+    public static void showAlert(Alert.AlertType type, String title, String content) {
+    	Platform.runLater(() -> {
+    		Alert alert = new Alert(type);
+    		alert.setTitle(title);
+    		alert.setHeaderText(null);
+    		alert.setContentText(content);
+    		alert.showAndWait();
+    	});
+    }
+    
+    public static boolean showConfirmationAlert(String title, String content){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK) {
+        	return true;
+        }
+        return false;
     }
 
 }

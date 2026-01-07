@@ -27,4 +27,9 @@ public class DateTime implements Serializable {
 		this.time = time;
 	}
 
+	@Override
+	public String toString() {
+		return time + "("+date+")";
+	}
+
 }

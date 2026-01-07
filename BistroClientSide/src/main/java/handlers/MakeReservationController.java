@@ -102,6 +102,11 @@ public class MakeReservationController {
      //Navigates back to the Guest Dashboard.
     @FXML
     private void handleBack(ActionEvent event) {
-    	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	if(BistroClient.memberInstance != null) {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
+    	else {
+    		SceneLoader.closeWindow(event);
+    	}
     }
 }

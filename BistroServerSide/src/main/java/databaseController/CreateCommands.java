@@ -5,6 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
 import java.sql.Types; // Import for clear code
 import common.Action;
 import common.BistroMessage;
@@ -139,24 +146,87 @@ public class CreateCommands {
 	//======================================
 	//TABLE CREATION
 	//======================================
-	public boolean createTable(Integer tableNumber, Integer tableCapacity, boolean isActive, ServerFrameController guiController) {
+	//Create table with table number
+	public static Table createTable(Table tableToCreate, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
-
-		Table tableToCreate = new Table(tableNumber, tableCapacity, isActive);
-		
+		Table created = null;
 		String sql = "INSERT INTO tables (table_number, capacity, is_active) VALUES (?, ?, ?)";
 		//Set values to query
-		int executionResult = 0;
 		try (PreparedStatement ps = conn.prepareStatement(sql)){
 			ps.setInt(1, tableToCreate.getTableNumber());
 			ps.setInt(2, tableToCreate.getTableCapacity());
 			ps.setBoolean(3, tableToCreate.isActive());
 			//Execute prepared query
-			executionResult = ps.executeUpdate();
+			ps.executeUpdate();
+			created = GetCommands.getTable(tableToCreate.getTableNumber(), guiController);
 		} catch(SQLException e) {
 			guiController.addToConsole("Error creating table: " +tableToCreate.getTableNumber()+". Error: " +e.getMessage());
 			e.printStackTrace();
 		}
-		return executionResult > 0;
+		return created;
 	}
+	//======================================
+	//VISIT CREATION
+	//======================================
+	//Create visit for reservation 
+	public boolean createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        // Start time = Current time
+        Date now = new Date();
+        Timestamp startTime = new Timestamp(now.getTime());
+        Reservation reservation = GetCommands.getReservation(reservationId, guiController);
+        
+        String sql = "INSERT INTO visits (table_id, reservation_number, start_time, is_active, party_size) VALUES (?, ?, ?, 1, ?)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, tableId);
+            ps.setInt(2, reservationId);
+            ps.setTimestamp(3, startTime);
+            ps.setInt(4, reservation.getNumberOfGuests());
+            int affectedRows = ps.executeUpdate();
+            if(affectedRows > 0) {
+            	try(ResultSet generatedKeys = ps.getGeneratedKeys()){
+            		if(generatedKeys.next()) {
+            			Integer visitId = generatedKeys.getInt(1);
+            			createBill(visitId,guiController);
+            		}
+            	}
+            	return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error creating visit: " + e.getMessage());
+            return false;
+        }
+    }
+	//======================================
+	//BILL CREATION
+	//======================================
+	//Create bill for visitId
+	public boolean createBill(Integer visitId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        Visit visit = GetCommands.getVisit(visitId, guiController);
+        Member member = new Member(null,null,null,null);
+        Guest guest = visit.getGuest();
+        if(guest instanceof Member) {
+        	member = (Member) guest;
+        }
+        
+        String sql = "INSERT INTO bills (visit_id, member_id, total_amount, discount_amount, final_amount, is_paid) VALUES (?, ?, ?, ?, ?, 0)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, visit.getVisitId());
+            ps.setObject(2, member.getMemberId());
+            ps.setDouble(3, 0);
+            if(member.getMemberId() != null) {
+            	ps.setDouble(4, 10.00);
+            } else {ps.setDouble(4, 0.00);}
+            ps.setDouble(5, 0);
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error creating bill: " + e.getMessage());
+            return false;
+        }
+    }
 }
