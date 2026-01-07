@@ -25,7 +25,7 @@ public class BistroClient extends AbstractClient
   public static List<Visit> visitsList = null;
   public static ArrayList<Table> tables = new ArrayList<>();
   public static Integer wantedReservationId = null;
-  public static Integer wantedVerCode = null;  
+  public static String wantedVerCode = null;  
   public static Member memberInstance = null;
   public static Staff staffInstance = null;
   public static boolean awaitResponse = false;

@@ -43,7 +43,7 @@ public class CreateCommands {
             ps.setString(1, resToCreate.getReservationDate().getDate());            
             ps.setString(2, resToCreate.getReservationDate().getTime());
             ps.setInt(3, resToCreate.getNumberOfGuests());            
-            ps.setInt(4, resToCreate.getVerificationCode());
+            ps.setString(4, resToCreate.getVerificationCode());
             ps.setObject(5, resToCreate.getMemberId(), Types.INTEGER);
 
             // 6, 7, 8. Guest Details

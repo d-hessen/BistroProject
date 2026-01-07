@@ -45,4 +45,12 @@ public class ReservationController {
 	        return new BistroMessage(Action.CANCEL_RESERVATION, false);
 	    }
 	}
+	
+	public static BistroMessage codeVerification(String code, ServerFrameController guiController) {
+		Reservation res = GetCommands.getVerificationCode(code, guiController);
+		if(res != null) {
+			return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+		}
+		return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+	}
 }

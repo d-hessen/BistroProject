@@ -384,7 +384,7 @@ public class GetCommands {
 								rs.getString("email")
 						)
 					);					
-					toReturn.setVerificationCode(rs.getInt("verification_code"));
+					toReturn.setVerificationCode(rs.getString("verification_code"));
 					
 					if (rs.getString("status") != null) {
 						toReturn.setStatus(Status.valueOf(rs.getString("status")));

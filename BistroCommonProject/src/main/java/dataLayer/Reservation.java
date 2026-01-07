@@ -8,7 +8,7 @@ public class Reservation implements Serializable {
     private Integer reservationId; 
     private Integer memberId; 
     private Integer numberOfGuests;
-    private Integer verificationCode; 
+    private String verificationCode; 
     private DateTime reservationDate;
     private String dateOfPlacingReservation;
     private Status status; 
@@ -44,7 +44,7 @@ public class Reservation implements Serializable {
 
     // generates a random 4-digit verification code
     private void generateVerificationCode() {
-        this.verificationCode = (int) (Math.random() * 9000) + 1000;
+    	this.verificationCode = String.valueOf((int) (Math.random() * 9000) + 1000);
     }
 
     // getter and setter for Date of Placing
@@ -61,7 +61,14 @@ public class Reservation implements Serializable {
             this.dateOfPlacingReservation = dateOfPlacingReservation;
         }
     }
+    
+    public Reservation(Integer reservationId,Integer numberOfGuests, String verificationCode) {
+		this.numberOfGuests = numberOfGuests;
+		setReservationId(reservationId);
+		setVerificationCode(verificationCode);
 
+	}
+    
     // getters and setters for the other fields
 
     public Integer getReservationId() { 
@@ -84,10 +91,10 @@ public class Reservation implements Serializable {
     	this.numberOfGuests = numberOfGuests; 
     }
 
-    public Integer getVerificationCode() { 
+    public String getVerificationCode() { 
     	return verificationCode; 
     }
-    public void setVerificationCode(Integer verificationCode) { 
+    public void setVerificationCode(String verificationCode) { 
     	this.verificationCode = verificationCode; 
     }
     public DateTime getReservationDate() { 
