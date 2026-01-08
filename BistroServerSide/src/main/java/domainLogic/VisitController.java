@@ -25,7 +25,7 @@ public class VisitController {
 		}
 		boolean success = CreateCommands.createVisit(resId,tableId, guiController);
 		if(success) {
-			return new BistroMessage(Action.CREATE_VISIT, toCreate.getVisitId());
+			return new BistroMessage(Action.CREATE_VISIT, resId);
 		}else {
 			return new BistroMessage(Action.CREATE_VISIT, "Error: Failed during creating visit - SQL error");
 		}

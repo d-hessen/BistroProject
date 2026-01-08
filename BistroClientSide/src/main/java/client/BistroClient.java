@@ -34,6 +34,8 @@ public class BistroClient extends AbstractClient
   public static Staff staffInstance = null;
   public static boolean awaitResponse = false;
   public static boolean operationSuccess = false;
+  public static Visit currentVisit;
+
 	 
   public BistroClient(String host, int port, ChatIF clientUI) 
     throws IOException 

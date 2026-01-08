@@ -1,6 +1,7 @@
 package handlers;
 
 import client.BistroClient;
+import dataLayer.Visit;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -25,8 +26,15 @@ public class PaymentScreenController {
     private Label statusLabel;
 
     @FXML
+    private Label priceLabel;
+
+    @FXML
     public void initialize() {
         statusLabel.setVisible(false);
+        if (BistroClient.currentVisit != null) {
+            //String price = String.valueOf(BistroClient.currentVisit.getBillOfVisit().getFinalAmount());
+            //priceLabel.setText(String.format("Total Price: ₪%.2f", price));
+        }
     }
 
     /**
@@ -62,11 +70,10 @@ public class PaymentScreenController {
             showError("CVV must be 3 digits");
             return;
         }
-
-        // ✔ Payment accepted (mock)
+        VisitSessionManager.clear();
         showSuccess("Payment completed successfully");
-
-        // TODO: Send to server and move to recipe screen
+        SceneLoader.loadScene(event, "/gui/ReceiptScreen.fxml", "Receipt");
+        // TODO: Send to server
     }
 
 

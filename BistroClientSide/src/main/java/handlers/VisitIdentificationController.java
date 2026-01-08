@@ -54,6 +54,8 @@ public class VisitIdentificationController {
         if(BistroClient.wantedVerCode == null || !BistroClient.wantedVerCode.equals(code))
 		{
 			ClientUI.chat.display("Wrong verification code");
+			statusLabel.setText("There is no table with this verification code");
+            statusLabel.setTextFill(Color.RED);
 			return;
 		}
 		else {

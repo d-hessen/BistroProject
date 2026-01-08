@@ -1,6 +1,5 @@
 package handlers;
 
-import java.time.LocalDate;
 
 import client.BistroClient;
 import client.ClientUI;
@@ -14,10 +13,12 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
+import handlers.VisitSessionManager;
 
 public class VisitDetailsController {
 
@@ -42,12 +43,22 @@ public class VisitDetailsController {
     private Timeline countdown;
     private int secondsLeft = 15 * 60; // 15 minutes
     private boolean visitStarted = false;
-    private Reservation res;
-
+    private Visit globalVisit = null;
+    
     @FXML
     public void initialize() {
-        startTimeLabel.setText("15:00");
-        startCountdown();
+    	if (VisitSessionManager.hasActiveTimer()) {
+            startTimeLabel.setText("Started");
+            startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
+    	    orderIdLabel.setText(String.valueOf(BistroClient.reservationInstance.getReservationId()));
+    	    dinersLabel.setText(String.valueOf(BistroClient.reservationInstance.getNumberOfGuests()));
+            startVisitBtn.setDisable(true);
+            //TODO: tableIdLabel.setText();
+        } else {
+            secondsLeft = 15 * 60;
+            VisitSessionManager.setSecondsLeft(secondsLeft);
+            startCountdown();
+        }
     }
 
     // Starts the 15-minute countdown
@@ -57,6 +68,8 @@ public class VisitDetailsController {
         );
         countdown.setCycleCount(Timeline.INDEFINITE);
         countdown.play();
+        
+        VisitSessionManager.startTimer(secondsLeft, countdown);
     }
 
 
@@ -71,6 +84,7 @@ public class VisitDetailsController {
         }
 
         secondsLeft--;
+        VisitSessionManager.setSecondsLeft(secondsLeft);
 
         int minutes = secondsLeft / 60;
         int seconds = secondsLeft % 60;
@@ -81,10 +95,8 @@ public class VisitDetailsController {
     // User clicked "Start Visit"
     @FXML
     private void handleStartVisit() {
-    	if (res == null || res.getReservationId() == null) {
-            return;
-        }
         visitStarted = true;
+        VisitSessionManager.setVisitStarted(true);
 
         if (countdown != null) {
             countdown.stop();
@@ -95,11 +107,13 @@ public class VisitDetailsController {
         startVisitBtn.setDisable(true);
 
         // TODO:
-        // 1. Notify server that visit has started
+        // 1. Notify server that visit has started - Done
         // 2. Lock table as active
+        // 3. Change random logic
         int randomTableNum = (int)(Math.random() * (5 - 1 + 1) + 1);
         Table randomTable = new Table(randomTableNum, 3, true);
-        Visit visit = new Visit(res,randomTable,true);
+        Visit visit = new Visit(BistroClient.reservationInstance,randomTable,true);
+        globalVisit = visit;
         BistroMessage msg = new BistroMessage(Action.CREATE_VISIT, visit);
         ClientUI.chat.accept(msg);
         System.out.println("Message sent to server: CREATE_VISIT");
@@ -108,15 +122,14 @@ public class VisitDetailsController {
     // User clicked "End Meal"
     @FXML
     private void handleEndMeal(ActionEvent event) {
-        if (countdown != null) {
-            countdown.stop();
-        }
+        visitStarted = false;
+        VisitSessionManager.setVisitStarted(false);
 
         // TODO:
         // 1. Notify server to close visit
         // 2. Release table
+     BistroClient.currentVisit = globalVisit;
    	 SceneLoader.loadScene(event, "/gui/PaymentScreen.fxml", "Payment Screen");
-
     }
 
 
@@ -131,7 +144,6 @@ public class VisitDetailsController {
         // 4. Navigate back to main screen
     }
 
-
 	public void loadReservation(Reservation reservation) {
 		if (reservation == null) {
 	        return;
@@ -139,7 +151,7 @@ public class VisitDetailsController {
 
 	    orderIdLabel.setText(String.valueOf(reservation.getReservationId()));
 	    dinersLabel.setText(String.valueOf(reservation.getNumberOfGuests()));
-	    res = reservation;
+        //TODO: tableIdLabel.setText();
 	}
 
 	public static void visitCreated(Integer visitId) {

@@ -50,7 +50,7 @@
             <Button onAction="#handleBack" prefWidth="100.0" style="-fx-background-color: transparent; -fx-text-fill: #666666; -fx-border-color: #cccccc;" text="Back" />
          </children>
       </VBox>
-      
+      <Label fx:id="priceLabel" text="Total Price: ₪1.00" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;" />
       <Label fx:id="statusLabel" text="" visible="false" />
    </children>
 </VBox>

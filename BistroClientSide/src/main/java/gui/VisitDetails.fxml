@@ -59,7 +59,7 @@
       <!-- Buttons -->
       <Button fx:id="startVisitBtn" onAction="#handleStartVisit" prefWidth="150" style="-fx-background-color: #008000; -fx-text-fill: white; -fx-font-weight: bold;" text="Start Visit" />
 
-      <Button onAction="#handleEndMeal" prefWidth="150" style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-weight: bold;" text="End Visit" />
+      <Button fx:id="endVisitBtn" onAction="#handleEndMeal" prefWidth="150" style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-weight: bold;" text="End Visit" />
 
    </children>
 </VBox>
