@@ -91,7 +91,10 @@ public class VisitIdentificationController {
     // Navigates back to the previous dashboard.
     @FXML
     private void handleBack(ActionEvent event) {
-    	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
-        
+    	if(BistroClient.staffInstance != null) {
+    		SceneLoader.closeWindow(event);
+    	}else {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
     }
 }

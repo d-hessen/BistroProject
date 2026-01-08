@@ -116,7 +116,7 @@ public class VisitNowController implements Initializable {
     @FXML
     private void handleBack(ActionEvent event) {
     	if(BistroClient.staffInstance != null) {
-    		SceneLoader.loadScene(event, "/gui/StaffDashboard.fxml", "Staff Dashboard");
+    		SceneLoader.closeWindow(event);
     	}else {
     		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     	}
