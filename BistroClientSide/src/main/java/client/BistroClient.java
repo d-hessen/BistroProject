@@ -8,6 +8,7 @@ import dataLayer.*;
 import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
+import handlers.VisitDetailsController;
 import handlers.VisitNowController;
 import javafx.scene.control.Alert;
 
@@ -24,7 +25,7 @@ public class BistroClient extends AbstractClient
   public static StaffDashboardController staffDashControllerInstance;
   public static VisitNowController visitNowControllerInstance;
   
-  public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
+  public static Reservation  reservationInstance = null;
   public static List<Visit> visitsList = null;
   public static ArrayList<Table> tables = new ArrayList<>();
   public static Integer wantedReservationId = null;
@@ -182,6 +183,11 @@ public class BistroClient extends AbstractClient
 		  		}
 		  	    visitsList = visits;
 		  	    break;
+		  	case CREATE_VISIT:
+		  		Integer visitId = (Integer)answer.getData();
+		  		VisitDetailsController.visitCreated(visitId);
+		  	    break;
+		  	    
 		  	case VISIT_NOW:
 		  		String recieved = (String)answer.getData();
 		  		visitNowControllerInstance.randomVisitCreated(recieved);

@@ -28,6 +28,7 @@ public enum Action {
     GET_MEMBER_VISITS,
     
     //Visit Actions
+    CREATE_VISIT,
     GET_VISIT,
     START_VISIT,
     END_VISIT,

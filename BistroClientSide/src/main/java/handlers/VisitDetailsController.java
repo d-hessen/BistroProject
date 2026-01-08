@@ -2,11 +2,19 @@ package handlers;
 
 import java.time.LocalDate;
 
+import client.BistroClient;
+import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
 import dataLayer.Reservation;
+import dataLayer.Table;
+import dataLayer.Visit;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
@@ -27,11 +35,14 @@ public class VisitDetailsController {
 
     @FXML
     private Button startVisitBtn;
+    
+    @FXML
+    private Button endtVisitBtn;
 
     private Timeline countdown;
     private int secondsLeft = 15 * 60; // 15 minutes
     private boolean visitStarted = false;
-
+    private Reservation res;
 
     @FXML
     public void initialize() {
@@ -70,6 +81,9 @@ public class VisitDetailsController {
     // User clicked "Start Visit"
     @FXML
     private void handleStartVisit() {
+    	if (res == null || res.getReservationId() == null) {
+            return;
+        }
         visitStarted = true;
 
         if (countdown != null) {
@@ -83,6 +97,12 @@ public class VisitDetailsController {
         // TODO:
         // 1. Notify server that visit has started
         // 2. Lock table as active
+        int randomTableNum = (int)(Math.random() * (5 - 1 + 1) + 1);
+        Table randomTable = new Table(randomTableNum, 3, true);
+        Visit visit = new Visit(res,randomTable,true);
+        BistroMessage msg = new BistroMessage(Action.CREATE_VISIT, visit);
+        ClientUI.chat.accept(msg);
+        System.out.println("Message sent to server: CREATE_VISIT");
     }
 
     // User clicked "End Meal"
@@ -119,7 +139,17 @@ public class VisitDetailsController {
 
 	    orderIdLabel.setText(String.valueOf(reservation.getReservationId()));
 	    dinersLabel.setText(String.valueOf(reservation.getNumberOfGuests()));
+	    res = reservation;
+	}
 
+	public static void visitCreated(Integer visitId) {
+		Platform.runLater(() -> {
+    		if(visitId == null) {
+    			String msg = "";
+        		SceneLoader.showAlert(Alert.AlertType.ERROR, "Create visit failed",msg);
+    		}else {
+    		}
+    	});
 		
 	}
 }

@@ -61,6 +61,11 @@ public class VisitIdentificationController {
 			((Node)event.getSource()).getScene().getWindow().hide();
 			Stage primaryStage = new Stage();
 			Pane root = loader.load(getClass().getResource("/gui/VisitDetails.fxml").openStream());
+			if (BistroClient.reservationInstance == null) {
+			    statusLabel.setText("Reservation not loaded. Please try again.");
+			    statusLabel.setTextFill(Color.RED);
+			    return;
+			}
 			VisitDetailsController visitDetailsController = loader.getController();		
 			visitDetailsController.loadReservation(BistroClient.reservationInstance);
 		

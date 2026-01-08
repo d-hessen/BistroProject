@@ -85,6 +85,10 @@ public class BistroServer extends AbstractServer
                 client.sendToClient(ReservationController.updateReservation(resToUpdate, guiController)); 
                 break;
             // --- VISIT ROUTES ---
+            case CREATE_VISIT:
+            	Visit visitToCreate = (Visit)request.getData();
+            	client.sendToClient(VisitController.createVisitByReservation(visitToCreate, guiController));
+            	break;
             case GET_MEMBER_VISITS:
                 Integer memberId = (Integer) request.getData();
                 List<Visit> memberVisits = GetCommands.getMemberVisits(memberId, guiController);

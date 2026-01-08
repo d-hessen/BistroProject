@@ -169,7 +169,7 @@ public class CreateCommands {
 	//VISIT CREATION
 	//======================================
 	//Create visit for reservation 
-	public boolean createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController) {
+	public static boolean createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         // Start time = Current time
         Date now = new Date();
@@ -228,7 +228,7 @@ public class CreateCommands {
 	//BILL CREATION
 	//======================================
 	//Create bill for visitId
-	public boolean createBill(Integer visitId, ServerFrameController guiController) {
+	public static boolean createBill(Integer visitId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         Visit visit = GetCommands.getVisit(visitId, guiController);
         Member member = new Member(null,null,null,null);

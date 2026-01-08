@@ -25,6 +25,20 @@ public class Visit implements Serializable {
 		}
 	}
 	
+	public Visit(Reservation reservation, Table table, boolean isActive) {
+		if(reservation != null) {
+			this.guest = reservation.getGuest();
+			setTable(table);	
+			this.reservation = reservation;
+			this.isActive = isActive;
+			this.partySize = reservation.getMemberId();
+			this.verificationCode = reservation.getVerificationCode();
+		}
+		else {
+			System.err.println("Use another constructor Visit(Guest)");
+		}
+	}
+	
 	public Visit(Guest guest, Table table) {
 		this.guest = guest;
 		setTable(table);
