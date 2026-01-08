@@ -1,24 +1,35 @@
 package handlers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
 import client.BistroClient;
+import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
+import dataLayer.Guest;
+import dataLayer.Visit;
 
 
  // Controller for the VisitNow screen.
  // Handles walk-in customers and validates contact information.
 
-public class VisitNowController {
+public class VisitNowController implements Initializable {
 
     @FXML private TextField contactField;
     @FXML private TextField dinersField;
+    @FXML private TextField fullNameField;
     @FXML private VBox confirmationArea;
     @FXML private Label generatedCodeLabel;
     @FXML private Button generateCodeBtn;
@@ -26,30 +37,41 @@ public class VisitNowController {
     // Regular expression for basic email validation
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
 
-
+	@Override
+	public void initialize(URL arg0, ResourceBundle arg1) {
+		BistroClient.visitNowControllerInstance = this;
+		if(BistroClient.memberInstance != null) {
+			contactField.setText(BistroClient.memberInstance.getPhoneNumber());
+			fullNameField.setText(BistroClient.memberInstance.getFullName());
+			contactField.setDisable(true);
+			fullNameField.setDisable(true);
+		}
+		
+	}
     // Handles the "Get Confirmation Code" button click.
     // Validates that the input is either a valid phone number or a valid email.
     @FXML
     private void handleGenerateCode(ActionEvent event) {
         String contact = contactField.getText().trim();
         String diners = dinersField.getText().trim();
+        String fullName = fullNameField.getText().trim();
 
         // Validate that fields are not empty
-        if (contact.isEmpty() || diners.isEmpty()) {
-            showAlert("Input Error", "All fields are required. Please fill in your contact info and number of diners.");
+        if (contact.isEmpty() || diners.isEmpty() || fullName.isEmpty()) {
+        	SceneLoader.showAlert(Alert.AlertType.ERROR,"Input Error", "All fields are required. Please fill in your contact info and number of diners.");
             return;
         }
 
         // Validate Contact: Check if it's a valid Email or a valid Phone Number
         boolean isEmail = Pattern.compile(EMAIL_REGEX).matcher(contact).matches();
-        boolean isPhone = contact.matches("\\d{9,10}"); // Validates phone as 9 or 10 digits
+        boolean isPhone = contact.matches("\\d{9,10}"); // Validates phone as 9 or 10 digits only
 
         if (!isEmail && !isPhone) {
             // Provide specific feedback based on what the user tried to enter
             if (contact.contains("@")) {
-                showAlert("Invalid Email", "The email format you entered is incorrect.");
+                SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Email", "The email format you entered is incorrect.");
             } else {
-                showAlert("Invalid Phone", "Phone number must contain only digits (9-10 digits).");
+            	SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Phone", "Phone number must contain only digits (9-10 digits).");
             }
             return;
         }
@@ -58,40 +80,61 @@ public class VisitNowController {
         try {
             int numDiners = Integer.parseInt(diners);
             if (numDiners <= 0) {
-                showAlert("Input Error", "Number of diners must be greater than 0.");
+            	SceneLoader.showAlert(Alert.AlertType.ERROR,"Input Error", "Number of diners must be greater than 0.");
                 return;
             }
         } catch (NumberFormatException e) {
-            showAlert("Input Error", "Please enter a valid number for diners.");
+        	SceneLoader.showAlert(Alert.AlertType.ERROR,"Input Error", "Please enter a valid number for diners.");
             return;
         }
-
-        //TODO: Logic for Server Communication
+        
+        // Validate Full Name: Must contain at least two words
+        String[] nameParts = fullName.split("\\s+");
+        if (nameParts.length < 2) {
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Full name must contain at least two words.");
+            return;
+        }
         
         System.out.println("Validations passed for: " + contact);
-
-        // Generate a mock code
-        String mockCode = "V-" + (int)(Math.random() * 9000 + 1000);
-        generatedCodeLabel.setText(mockCode);
-        
-        confirmationArea.setVisible(true);
-        generateCodeBtn.setDisable(true); // Disable button after successful generation
+        Visit toCreate;
+        if(BistroClient.memberInstance != null) {
+        	toCreate = new Visit(BistroClient.memberInstance,null);
+        } else {
+            Guest guest = new Guest(fullName,null,null);
+            if(isPhone) {
+            	 guest.setPhoneNumber(contact);
+            }else {
+            	guest.setEmail(contact);
+            }
+            toCreate = new Visit(guest,null);
+        }
+        toCreate.setPartySize(Integer.valueOf(diners));
+        ClientUI.chat.accept(new BistroMessage(Action.VISIT_NOW, toCreate));
     }
-
 
     // Navigates back to the previous screen.
     @FXML
     private void handleBack(ActionEvent event) {
-    	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	if(BistroClient.staffInstance != null) {
+    		SceneLoader.loadScene(event, "/gui/StaffDashboard.fxml", "Staff Dashboard");
+    	}else {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
     }
+    
+    public void randomVisitCreated(String message) {
+    	Platform.runLater(() -> {
+    		if(!message.startsWith("Error")) {
+        		generatedCodeLabel.setText(message);
+                confirmationArea.setVisible(true);
+                generateCodeBtn.setDisable(true); // Disable button after successful generation
+    		}else {
+        		SceneLoader.showAlert(Alert.AlertType.ERROR, "Creating random visit failed", message);
+    		}
+    		if(BistroClient.memberInstance == null && BistroClient.staffInstance == null) {
+    			ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
+    		}
 
-
-    // method to show an alert dialog.
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+    	});
     }
 }

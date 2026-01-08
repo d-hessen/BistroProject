@@ -70,6 +70,11 @@ public class ClientDashboardController implements Initializable {
     private void handleMyVisits(ActionEvent event) {
         SceneLoader.loadScene(event, "/gui/ViewVisits.fxml", "My Visits");
     }
+    
+    @FXML
+    private void handleViewProfile(ActionEvent event) {
+        SceneLoader.loadScene(event, "/gui/MemberProfile.fxml", "My Profile");
+    }
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {

@@ -94,6 +94,10 @@ public class BistroServer extends AbstractServer
                 List<Visit> activeVisits = GetCommands.getActiveVisits(guiController);
                 client.sendToClient(new BistroMessage(Action.GET_ACTIVE_VISITS, activeVisits));
                 break;
+            case VISIT_NOW:
+            	Visit toCreate = (Visit)request.getData();
+            	client.sendToClient(VisitController.createVisit(toCreate, guiController));
+            	break;
             case GET_VERIFICATION_CODE:
             	String ver_code = (String)request.getData();
             	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));

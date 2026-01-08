@@ -14,6 +14,7 @@ public class Visit implements Serializable {
 	private DateTime endTime;
 	private Bill billOfVisit;
 	private Integer partySize;
+	private String verificationCode;
 	
 	public Visit(Reservation reservation, Table table) {
 		if(reservation != null) {
@@ -100,6 +101,14 @@ public class Visit implements Serializable {
 
 	public void setPartySize(Integer partySize) {
 		this.partySize = partySize;
+	}
+
+	public String getVerificationCode() {
+		return verificationCode;
+	}
+
+	public void setVerificationCode(String verificationCode) {
+		this.verificationCode = verificationCode;
 	}
 	
 }

@@ -156,14 +156,24 @@ public class StaffDashboardController implements Initializable {
 			return;
     	}
     	
+    	if(statusComboBox.getValue() == null) {
+    		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "You must choose table status");
+			return;
+    	}
+    	
     	Table toCreate = new Table(tableNum,capacity,false);
     	if (statusComboBox.getValue().equals("Available")) {
     		toCreate.setActive(true);
     		toCreate.setOccupied(false);
     	}
     	ClientUI.chat.accept(new BistroMessage(Action.ADD_TABLE,toCreate));
-    	tableNumberField.clear();
-    	capacityField.clear();
+    	if(BistroClient.operationSuccess) {
+    		BistroClient.operationSuccess = false;
+    		BistroClient.tables = new ArrayList<>();
+        	ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES,null));
+        	tableNumberField.clear();
+        	capacityField.clear();
+    	}
     }
 
     // --- CHECK IN ---
@@ -212,8 +222,8 @@ public class StaffDashboardController implements Initializable {
             return;
         }
         
-        // Validate Phone Number: Must contain digits only
-        if (!phone.matches("\\d+")) {
+        // Validate Phone Number: Must contain 9-10 digits only
+        if (!phone.matches("\\d{9,10}")) {
         	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Phone number must contain numbers only.");
             return;
         }

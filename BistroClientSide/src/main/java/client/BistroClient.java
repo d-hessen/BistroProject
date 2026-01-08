@@ -1,12 +1,14 @@
 package client;
 
 import ocsf.client.*;
+import common.Action;
 import common.BistroMessage;
 import common.ChatIF;
 import dataLayer.*;
 import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
+import handlers.VisitNowController;
 import javafx.scene.control.Alert;
 
 import java.io.*;
@@ -20,6 +22,7 @@ public class BistroClient extends AbstractClient
   //STATIC REFERENCES TO ACTIVE CONTROLLERS
   public static StaffLoginController staffLoginControllerInstance;
   public static StaffDashboardController staffDashControllerInstance;
+  public static VisitNowController visitNowControllerInstance;
   
   public static Reservation  reservationInstance = new Reservation(null,null,null,null,null);
   public static List<Visit> visitsList = null;
@@ -73,21 +76,17 @@ public class BistroClient extends AbstractClient
                     staffDashControllerInstance.updateTableGrid(tables);
                 }
                 break;
+            // --- TABLE ROUTES ---
             case DELETE_TABLE:
             	if(answer.getData() instanceof Table) {
-                	tables.remove((Table)answer.getData());
             		operationSuccess = true;
             	}else {
             		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
             	}
-
             	break;
             case ADD_TABLE:
             	if(answer.getData() instanceof Table) {
-                	tables.add((Table)answer.getData());
-                    if(staffDashControllerInstance != null) {
-                        staffDashControllerInstance.updateTableGrid(tables);
-                    }
+            		operationSuccess = true;
             	}else {
             		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
             	}
@@ -99,6 +98,7 @@ public class BistroClient extends AbstractClient
             		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
             	}
             	break;
+            // --- MANAGEMENT ROUTES ---
             case CHECK_IN_CUSTOMER: // Response from check-in
                 String result = (String) answer.getData();
                 if(staffDashControllerInstance != null) {
@@ -182,6 +182,10 @@ public class BistroClient extends AbstractClient
 		  		}
 		  	    visitsList = visits;
 		  	    break;
+		  	case VISIT_NOW:
+		  		String recieved = (String)answer.getData();
+		  		visitNowControllerInstance.randomVisitCreated(recieved);
+		  		break;
 		  	default:
 	            System.out.println("Unknown Action: " + answer.getAction());
 		  }

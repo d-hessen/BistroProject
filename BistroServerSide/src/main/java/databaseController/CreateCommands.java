@@ -15,6 +15,7 @@ import java.util.Date;
 import java.sql.Types; // Import for clear code
 import common.Action;
 import common.BistroMessage;
+import common.Status;
 import dataLayer.*;
 import domainLogic.ServerFrameController;
 
@@ -142,7 +143,6 @@ public class CreateCommands {
 		}
 		return executionResult > 0;
 	}
-	
 	//======================================
 	//TABLE CREATION
 	//======================================
@@ -196,6 +196,31 @@ public class CreateCommands {
             return false;
         } catch (SQLException e) {
             guiController.addToConsole("Error creating visit: " + e.getMessage());
+            return false;
+        }
+    }
+	//Create visit to random visits(waiting_list) 
+	public static boolean createRandomVisit(Visit toCreate, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        Guest mainGuest = toCreate.getGuest();
+        Integer memberId = null;
+        if(mainGuest instanceof Member) {
+        	Member member = (Member) mainGuest;
+        	memberId = member.getMemberId();
+        }
+        String sql = "INSERT INTO waiting_list (member_id, guest_full_name, guest_phone, email, number_of_guests, verification_code) VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        	ps.setObject(1, memberId);
+        	ps.setString(2, mainGuest.getFullName());
+        	ps.setString(3, mainGuest.getPhoneNumber());
+        	ps.setString(4, mainGuest.getEmail());
+        	ps.setInt(5, toCreate.getPartySize());
+        	ps.setString(6, toCreate.getVerificationCode());
+            int affectedRows = ps.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error creating random visit: " + e.getMessage());
             return false;
         }
     }

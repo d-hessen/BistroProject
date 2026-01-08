@@ -355,7 +355,7 @@ public class GetCommands {
         return null;
     }
 	
-	public static Reservation getVerificationCode(String codeStr, ServerFrameController guiController) {
+	public static Reservation getReservationVerificationCode(String codeStr, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		
 		int code;

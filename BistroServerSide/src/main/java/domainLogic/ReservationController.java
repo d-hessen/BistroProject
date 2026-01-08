@@ -1,5 +1,8 @@
 package domainLogic;
 
+import java.security.SecureRandom;
+import java.util.stream.Collectors;
+
 import common.Action;
 import common.BistroMessage;
 import dataLayer.Reservation;
@@ -47,10 +50,20 @@ public class ReservationController {
 	}
 	
 	public static BistroMessage codeVerification(String code, ServerFrameController guiController) {
-		Reservation res = GetCommands.getVerificationCode(code, guiController);
+		Reservation res = GetCommands.getReservationVerificationCode(code, guiController);
 		if(res != null) {
 			return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
 		}
 		return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+	}
+
+	public static String generateVerificationCode() {
+		String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		SecureRandom random = new SecureRandom();
+		 String result = random.ints(10, 0, chars.length())
+	                .mapToObj(chars::charAt)
+	                .map(Object::toString)
+	                .collect(Collectors.joining());
+		return result;
 	}
 }

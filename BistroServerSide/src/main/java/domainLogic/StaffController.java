@@ -40,7 +40,7 @@ public class StaffController {
     }
 	
 	public static BistroMessage checkInCustomer(String verificationCode, ServerFrameController guiController) {
-        var reservation = GetCommands.getVerificationCode(verificationCode, guiController);
+        var reservation = GetCommands.getReservationVerificationCode(verificationCode, guiController);
         
         if (reservation != null) {
             // Logic to start visit would go here (CreateCommands.startVisit...)

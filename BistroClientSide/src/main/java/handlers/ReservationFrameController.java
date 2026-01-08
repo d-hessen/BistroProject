@@ -105,11 +105,11 @@ public class ReservationFrameController {
 	}
 	
 	public void getExitBtn(ActionEvent event) throws Exception {
-    	if(BistroClient.memberInstance != null) {
-    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	if(BistroClient.staffInstance != null) {
+    		SceneLoader.closeWindow(event);
     	}
     	else {
-    		SceneLoader.closeWindow(event);
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     	}
 	}
 	

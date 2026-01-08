@@ -35,6 +35,7 @@
          <children>
             <Button onAction="#handleMyReservations" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="My Reservations" />
             <Button onAction="#handleMyVisits" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="My Visits" />
+            <Button onAction="#handleViewProfile" prefHeight="40.0" prefWidth="220.0" style="-fx-font-size: 14px;" text="View Profile" />
          </children>
       </VBox>
       
