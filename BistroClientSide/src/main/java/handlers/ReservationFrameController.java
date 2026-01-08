@@ -4,124 +4,89 @@ import client.BistroClient;
 import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
-import dataLayer.Reservation;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class ReservationFrameController {
-	private ReservationFormController rfc;	
 
-	@FXML
-	private TextField orderNumberField;
-	
-	@FXML
-	private TextField memberIdField;
-	
-	@FXML
-	private Button findButton;
-	
-	@FXML
-	private Button exitBtn;
-	
-	private String getOrderNumber() {
-		return orderNumberField.getText();
-	}
-	
-	private String getMemberID() {
-		return memberIdField.getText();
-	}
-	
-	public void Find_Reservation(ActionEvent event) throws Exception {
-		String orderNumber, memberID;
-		FXMLLoader loader = new FXMLLoader();
-		
-		orderNumber = getOrderNumber();
-		memberID = getMemberID();
-		
-		try {
-			if(orderNumber.trim().isEmpty())
-			{
-				ClientUI.chat.display("You must enter an order number");
-			}
-			else {
-				if(memberID.trim().isEmpty())
-				{
-					ClientUI.chat.display("You must enter your member ID");
-				}
-				else {
-					ClientUI.chat.accept(new BistroMessage(Action.GET_RESERVATION, orderNumber));
-					
-					if(BistroClient.wantedReservationId != Integer.parseInt(orderNumber))
-					{
-						ClientUI.chat.display("Reservation ID Not Found");
-						notFound();
-					}
-					else {
-						if(BistroClient.reservationInstance.getMemberId() != Integer.parseInt(memberID))
-						{
-							ClientUI.chat.display("Member ID Not Found");
-							notFound();
-						}
-						else {
-							System.out.println("Reservation Found");
-							((Node)event.getSource()).getScene().getWindow().hide();
-							Stage primaryStage = new Stage();
-							Pane root = loader.load(getClass().getResource("/gui/ReservationForm.fxml").openStream());
-							ReservationFormController reservationFormController = loader.getController();		
-							reservationFormController.loadReservation(BistroClient.reservationInstance);
-						
-							Scene scene = new Scene(root);			
-							primaryStage.setTitle("Reservation Managment");
-				
-							primaryStage.setScene(scene);		
-							primaryStage.show();
-						}
-					}
-				}
-			}
-		}catch(NullPointerException ex) {
-			ex.printStackTrace();
-			notFound();
-		}
-		
-	}
-	public void start(Stage primaryStage) throws Exception {	
-		Parent root = FXMLLoader.load(getClass().getResource("/gui/ReservationFrame.fxml"));
-				
-		Scene scene = new Scene(root);
-		primaryStage.setTitle("Reservation Finder");
-		primaryStage.setScene(scene);
-		
-		primaryStage.show();	 	   
-	}
-	
-	public void getExitBtn(ActionEvent event) throws Exception {
-    	if(BistroClient.staffInstance != null) {
-    		SceneLoader.closeWindow(event);
-    	}
-    	else {
-    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
-    	}
-	}
-	
-	public void notFound() {
-		ClientUI.chat.display("Some details are wrong(Reservation ID or Member ID)");
-		orderNumberField.setText("");
-		memberIdField.setText("");
-		ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT,""));
-	}
-	
-	public void loadReservation(Reservation reservation) {
-		this.rfc.loadReservation(reservation);
-	}	
-	
+    @FXML
+    private TextField orderNumberField; // Holds Verification Code
+    
+    @FXML
+    private Button findButton;
+    
+    @FXML
+    private Button exitBtn;
+    
+    private String getVerificationCodeInput() {
+        return orderNumberField.getText();
+    }
+    
+    public void Find_Reservation(ActionEvent event) throws Exception {
+        String codeInput = getVerificationCodeInput();
+        FXMLLoader loader = new FXMLLoader();
+        
+        try {
+            if (codeInput == null || codeInput.trim().isEmpty()) {
+                SceneLoader.showAlert(Alert.AlertType.WARNING, "Input Error", "You must enter a verification code.");
+                return;
+            }
+            
+            // 1. Reset static instance
+            BistroClient.reservationInstance = null;
+
+            // 2. Request from server
+            ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, codeInput));
+            
+            // 3. Check result
+            if (BistroClient.reservationInstance != null) {
+                System.out.println("Reservation Found");
+                
+                // Hide current window
+                ((Node)event.getSource()).getScene().getWindow().hide();
+                
+                // Load ReservationDetails.fxml
+                Stage primaryStage = new Stage();
+                Pane root = loader.load(getClass().getResource("/gui/ReservationDetails.fxml").openStream());
+                
+                Scene scene = new Scene(root);          
+                primaryStage.setTitle("Reservation Details");
+                primaryStage.setScene(scene);       
+                primaryStage.show();
+                
+            } else {
+                SceneLoader.showAlert(Alert.AlertType.ERROR, "Not Found", "No reservation found with this verification code.");
+                orderNumberField.clear();
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "System Error", "An error occurred while searching.");
+        }
+    }
+
+    public void start(Stage primaryStage) throws Exception {    
+        Parent root = FXMLLoader.load(getClass().getResource("/gui/ReservationFrame.fxml"));
+        Scene scene = new Scene(root);
+        primaryStage.setTitle("Reservation Finder");
+        primaryStage.setScene(scene);
+        primaryStage.show();           
+    }
+    
+    public void getExitBtn(ActionEvent event) throws Exception {
+        if (BistroClient.memberInstance != null) {
+            SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+        } else {
+            SceneLoader.closeWindow(event);
+        }
+    }
 }

@@ -12,21 +12,21 @@ import ocsf.server.*;
 
 public class BistroServer extends AbstractServer 
 {
- private ServerFrameController guiController; // Reference to the GUI Controller
-
+  private ServerFrameController guiController; // Reference to the GUI Controller
 
   public BistroServer(int port, ServerFrameController controller) 
   {
     super(port);
     this.guiController = controller;
-    
   }
+
   @Override
   public void handleMessageFromClient(Object msg, ConnectionToClient client) {
       BistroMessage request = (BistroMessage) msg;
       try {
           switch (request.getAction()) {
           	// --- START OF CASES ---
+          	
           	// --- STAFF ROUTES ---
           	case STAFF_IDENTIFICATION:
           		Staff staffRecieved = (Staff)request.getData();
@@ -55,6 +55,7 @@ public class BistroServer extends AbstractServer
                 String cardCode = (String) request.getData();
                 client.sendToClient(StaffController.verifyMemberArrival(cardCode, guiController));
                 break;
+                
           	// --- MEMBER ROUTES ---
           	case MEMBER_IDENTIFICATION:
           		Member memberRecieved = (Member)request.getData();
@@ -68,22 +69,32 @@ public class BistroServer extends AbstractServer
           		Member memberToDelete = (Member)request.getData();
           		client.sendToClient(GuestController.memberDelete(memberToDelete, guiController));
           		break;
+          		
             // --- RESERVATION ROUTES ---
             case GET_RESERVATION:
-            	// Data is an Integer (ID)
-                Integer resId = Integer.parseInt((String)request.getData()); 
+                Integer resId = (Integer)request.getData(); 
                 client.sendToClient(ReservationController.getReservation(resId, guiController));
                 break;
+                
             case CREATE_RESERVATION:
             	Reservation reservationToCreate = (Reservation)request.getData();
             	client.sendToClient(ReservationController.createReservation(reservationToCreate, guiController));
             	break;
             case UPDATE_RESERVATION:
-                //Data is a Reservation Object
+                // Data is a Reservation Object
                 Reservation resToUpdate = (Reservation) request.getData();
                 // Send back success/failure
                 client.sendToClient(ReservationController.updateReservation(resToUpdate, guiController)); 
                 break;
+            case CANCEL_RESERVATION:
+                Reservation resToCancel = (Reservation) request.getData();
+                client.sendToClient(ReservationController.cancelReservation(resToCancel, guiController));
+                break;
+            case GET_VERIFICATION_CODE:
+            	String ver_code = (String)request.getData();
+            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
+                break;
+
             // --- VISIT ROUTES ---
             case CREATE_VISIT:
             	Visit visitToCreate = (Visit)request.getData();
@@ -102,10 +113,7 @@ public class BistroServer extends AbstractServer
             	Visit toCreate = (Visit)request.getData();
             	client.sendToClient(VisitController.createVisit(toCreate, guiController));
             	break;
-            case GET_VERIFICATION_CODE:
-            	String ver_code = (String)request.getData();
-            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
-                break;
+
              // --- CLIENT DISCONNECTS ---
             case DISCONNECT:
             	guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");
@@ -115,10 +123,7 @@ public class BistroServer extends AbstractServer
 	                  e.printStackTrace();
 	              }
                 break;
-            case CANCEL_RESERVATION:
-                Reservation resToCancel = (Reservation) request.getData();
-                client.sendToClient(ReservationController.cancelReservation(resToCancel, guiController));
-                break;
+                
             default:
                   System.out.println("Unknown Action: " + request.getAction());
           }
@@ -127,10 +132,6 @@ public class BistroServer extends AbstractServer
       }
   }
    
-  /**
-   * This method overrides the one in the superclass.  Called
-   * when the server starts listening for connections.
-   */
   @Override
   protected void serverStarted()
   {
@@ -140,28 +141,18 @@ public class BistroServer extends AbstractServer
       guiController.serverStatusChanged(true);
   }
 
-  /**
-   * This method overrides the one in the superclass.  Called
-   * when the server stops listening for connections.
-   */
   @Override
   protected void serverStopped()  {
 	guiController.serverStatusChanged(false); // Update GUI to Red
 	dbController.getInstance().disconnectFromDB();
   }
-  /**
-   * This method overrides the one in the superclass.  
-   * Called when client connects to server.
-   */
+  
   @Override
   protected void clientConnected(ConnectionToClient client) {
       guiController.addToConsole("Client connected: " + client.getInetAddress());
       guiController.updateClientList(client, "Connected");
   }
-  /**
-   * This method overrides the one in the superclass.  
-   * Called when client disconnects from server.
-   */
+  
   @Override
   synchronized protected void clientDisconnected(ConnectionToClient client) {
       guiController.updateClientList(client, "Disconnected");

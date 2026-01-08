@@ -41,6 +41,6 @@
       
       <Separator prefWidth="200.0" />
 
-      <Button onAction="#handleLogout" prefWidth="100.0" style="-fx-background-color: #ffcccc;" text="Exit" />
+      <Button onAction="#handleLogout" prefWidth="100.0" style="-fx-background-color: #ffcccc;" text="Log Out" />
    </children>
 </VBox>
