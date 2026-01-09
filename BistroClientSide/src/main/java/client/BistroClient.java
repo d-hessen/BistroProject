@@ -1,17 +1,15 @@
 package client;
 
 import ocsf.client.*;
-import common.Action;
 import common.BistroMessage;
 import common.ChatIF;
 import dataLayer.*;
-import handlers.MemberReservationsController;
 import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
+import handlers.StaffWaitingListController;
 import handlers.VisitDetailsController;
 import handlers.VisitNowController;
-import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
 import java.io.*;
@@ -38,10 +36,9 @@ public class BistroClient extends AbstractClient
   public static boolean operationSuccess = false;
   public static Visit currentVisit;
   public static List<Reservation> reservationsList = null;
+  public static StaffWaitingListController staffWaitingListControllerInstance;
 
-
-
-	 
+  
   public BistroClient(String host, int port, ChatIF clientUI) 
     throws IOException 
   {
@@ -118,6 +115,11 @@ public class BistroClient extends AbstractClient
                 boolean isSuccess = mesg.startsWith("Success");
                 if (staffDashControllerInstance != null) {
                     staffDashControllerInstance.updateCheckInStatus(isSuccess, mesg);
+                }
+                break;
+            case GET_WAITING_LIST:
+                if (staffWaitingListControllerInstance != null) {
+                    staffWaitingListControllerInstance.updateWaitingList((List<Visit>) answer.getData());
                 }
                 break;
 		  	// --- MEMBER ROUTES ---

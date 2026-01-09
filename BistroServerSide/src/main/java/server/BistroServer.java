@@ -5,6 +5,7 @@ import java.util.List;
 
 import databaseController.GetCommands;
 import databaseController.dbController;
+import domain.WaitingList;
 import domainLogic.*;
 import common.*;
 import dataLayer.*;
@@ -54,6 +55,15 @@ public class BistroServer extends AbstractServer
             case VERIFY_MEMBER_ARRIVAL:
                 String cardCode = (String) request.getData();
                 client.sendToClient(StaffController.verifyMemberArrival(cardCode, guiController));
+                break;
+            case GET_WAITING_LIST:
+                List<Visit> currentQueue = WaitingList.getInstance().getWaitingListAsVisits();
+                BistroMessage response = new BistroMessage(Action.GET_WAITING_LIST, currentQueue);
+                try {
+                    client.sendToClient(response);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
                 
           	// --- MEMBER ROUTES ---

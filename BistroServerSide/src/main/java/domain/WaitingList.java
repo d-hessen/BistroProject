@@ -3,10 +3,11 @@ package domain;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
+import dataLayer.Visit;
 
 import dataLayer.Guest;
-import domain.WaitingList.Party;
 
 public final class WaitingList {  
 	
@@ -116,15 +117,22 @@ public final class WaitingList {
 		return false;
 	 }
 	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
+	 /**
+     * Returns the entire waiting list converted to a list of Visit objects.
+     * This is used to send the data to the client.
+     */
+	 public synchronized List<Visit> getWaitingListAsVisits() {
+		 List<Visit> visits = new ArrayList<>();
+        for (Party party : queue) {
+            // Convert internal Party object to shared Visit object
+            Visit v = new Visit(party.guest(), null); //'party.guest()' the client familiar with, and 'null' for the date because its irrelevant for the queue right now
+            
+            // adding the last details that the Visit object dont have
+            v.setVisitId(party.id()); 
+            v.setPartySize(party.partySize());
+            visits.add(v);
+        }
+        return visits;
+    }	 
+	 	 
 }
