@@ -1,10 +1,13 @@
 package domainLogic;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import common.Action;
 import common.BistroMessage;
+import dataLayer.Member;
 import dataLayer.Reservation;
 import databaseController.CreateCommands;
 import databaseController.DeleteCommands;
@@ -58,12 +61,18 @@ public class ReservationController {
 	}
 
 	public static String generateVerificationCode() {
-		String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		SecureRandom random = new SecureRandom();
-		 String result = random.ints(10, 0, chars.length())
-	                .mapToObj(chars::charAt)
-	                .map(Object::toString)
-	                .collect(Collectors.joining());
+		String result = String.valueOf((int) (Math.random() * 9000) + 1000);
 		return result;
+	}
+
+	public static BistroMessage getMemberReservations(String phoneNumber, ServerFrameController guiController) {
+		List<Reservation> memberReservations = new ArrayList<>();
+		memberReservations = GetCommands.getReservationsByPhoneNumber(phoneNumber, guiController); 
+		System.out.println("2");
+	    if (memberReservations != null) {
+	        return new BistroMessage(Action.GET_MEMBER_RESERVATIONS, memberReservations);
+	    } else {
+	        return new BistroMessage(Action.MEMBER_NOT_FOUND, phoneNumber);
+	    }
 	}
 }

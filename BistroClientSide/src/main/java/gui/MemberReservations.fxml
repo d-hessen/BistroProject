@@ -18,10 +18,8 @@
         <columns>
           <TableColumn fx:id="orderNumColumn" prefWidth="80.0" text="Order #" />
           
-          <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date" />
-          
-          <TableColumn fx:id="timeColumn" prefWidth="90.0" text="Time" />
-          
+          <TableColumn fx:id="dateColumn" prefWidth="100.0" text="Date and Time" />
+                    
           <TableColumn fx:id="dinersColumn" prefWidth="90.0" text="Diners" />
           
           <TableColumn fx:id="statusColumn" prefWidth="90.0" text="Status" />

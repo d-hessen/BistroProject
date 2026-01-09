@@ -135,6 +135,52 @@ public class GetCommands {
         return foundReservation;
     }
 
+	// Retrieve reservations by phone number
+	public static List<Reservation> getReservationsByPhoneNumber(String phoneNumber,ServerFrameController guiController) {
+	    List<Reservation> reservations = new ArrayList<>();
+	    Connection conn = dbController.getInstance().getConnection();
+	    String sql = "SELECT * FROM reservation WHERE guest_phone = ?";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, phoneNumber);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                Reservation reservation = new Reservation(rs.getInt("reservation_number"),
+	                		new DateTime(
+                            rs.getString("reservation_date"),
+                            rs.getString("reservation_time")
+	                        ),
+	                        rs.getInt("number_of_guests"),
+	                        rs.getInt("member_id"),
+	                        new Guest(
+	                                rs.getString("guest_full_name"),
+	                                rs.getString("guest_phone"),
+	                                rs.getString("email"))
+	                );
+	                Status status = Status.valueOf(rs.getString("status"));
+	                reservation.setStatus(status);
+	                reservation.setDateOfPlacingReservation(
+	                        rs.getString("created_at")
+	                );
+	                reservations.add(reservation);
+	            }
+	        }
+
+	    } catch (SQLException e) {
+	        guiController.addToConsole(
+	                "Error fetching reservations by phone: " + e.getMessage()
+	        );
+	    }
+
+	    if (reservations.isEmpty()) {
+	        guiController.addToConsole(
+	                "No reservations found for phone number: " + phoneNumber
+	        );
+	    }
+
+	    return reservations;
+	}
+
 	//======================================
 	//GET GUEST
 	//======================================

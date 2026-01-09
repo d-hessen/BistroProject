@@ -10,6 +10,7 @@ public enum Action {
     RESERVATION_NOT_FOUND,
     GET_VERIFICATION_CODE,
     SEND_VERIFICATION_CODE,
+    GET_MEMBER_RESERVATIONS,
     
     // Guest Actions
     GET_GUEST,

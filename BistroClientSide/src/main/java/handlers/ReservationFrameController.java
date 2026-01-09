@@ -25,7 +25,7 @@ public class ReservationFrameController {
     private Button findButton;
     
     @FXML
-    private Button exitBtn;
+    private Button backBtn;
     
     private String getVerificationCodeInput() {
         return orderNumberField.getText();
@@ -82,11 +82,8 @@ public class ReservationFrameController {
         primaryStage.show();           
     }
     
-    public void getExitBtn(ActionEvent event) throws Exception {
-        if (BistroClient.memberInstance != null) {
-            SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
-        } else {
-            SceneLoader.closeWindow(event);
-        }
+    public void handleBackBtn(ActionEvent event) throws Exception {
+        SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+
     }
 }

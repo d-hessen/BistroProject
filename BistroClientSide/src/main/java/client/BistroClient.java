@@ -5,11 +5,13 @@ import common.Action;
 import common.BistroMessage;
 import common.ChatIF;
 import dataLayer.*;
+import handlers.MemberReservationsController;
 import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
 import handlers.VisitDetailsController;
 import handlers.VisitNowController;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
 import java.io.*;
@@ -24,7 +26,7 @@ public class BistroClient extends AbstractClient
   public static StaffLoginController staffLoginControllerInstance;
   public static StaffDashboardController staffDashControllerInstance;
   public static VisitNowController visitNowControllerInstance;
-  
+
   public static Reservation  reservationInstance = null;
   public static List<Visit> visitsList = null;
   public static ArrayList<Table> tables = new ArrayList<>();
@@ -35,6 +37,9 @@ public class BistroClient extends AbstractClient
   public static boolean awaitResponse = false;
   public static boolean operationSuccess = false;
   public static Visit currentVisit;
+  public static List<Reservation> reservationsList = null;
+
+
 
 	 
   public BistroClient(String host, int port, ChatIF clientUI) 
@@ -169,6 +174,19 @@ public class BistroClient extends AbstractClient
 		  	        System.out.println("Failed to delete reservation.");
 		  	    }
 		  	    break;
+		  	case GET_MEMBER_RESERVATIONS:
+		  		List<Reservation> reservations = new ArrayList<>();
+		  		
+		  		if(answer.getData() instanceof List<?>) {
+		  			List<?> list = (List<?>) answer.getData();
+		  			for (Object item : (List<?>) answer.getData()) {
+		  	            if (item instanceof Reservation) {
+		  	                reservations.add((Reservation) item);
+		  	            }
+		  	        }
+		  		}
+		  		reservationsList = reservations;
+		  		break;
 		  	// ---VISITS ROUTES---
 		  	case GET_MEMBER_VISITS:
 		  	case GET_ACTIVE_VISITS:
