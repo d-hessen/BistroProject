@@ -101,9 +101,7 @@ public class BistroServer extends AbstractServer
                 client.sendToClient(ReservationController.cancelReservation(resToCancel, guiController));
                 break;
             case GET_MEMBER_RESERVATIONS:
-            	System.out.println("1");
             	String phoneNumber= (String)request.getData();
-            	System.out.println("1");
             	client.sendToClient(ReservationController.getMemberReservations(phoneNumber, guiController));
                 break;
             case GET_VERIFICATION_CODE:

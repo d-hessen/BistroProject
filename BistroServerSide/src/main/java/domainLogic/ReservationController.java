@@ -68,7 +68,6 @@ public class ReservationController {
 	public static BistroMessage getMemberReservations(String phoneNumber, ServerFrameController guiController) {
 		List<Reservation> memberReservations = new ArrayList<>();
 		memberReservations = GetCommands.getReservationsByPhoneNumber(phoneNumber, guiController); 
-		System.out.println("2");
 	    if (memberReservations != null) {
 	        return new BistroMessage(Action.GET_MEMBER_RESERVATIONS, memberReservations);
 	    } else {
