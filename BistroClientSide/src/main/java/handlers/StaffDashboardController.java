@@ -15,6 +15,9 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import client.BistroClient;
@@ -23,6 +26,7 @@ import common.Action;
 import common.BistroMessage;
 import dataLayer.Member;
 import dataLayer.Table;
+import dataLayer.Visit;
 
 public class StaffDashboardController implements Initializable {
 
@@ -54,6 +58,9 @@ public class StaffDashboardController implements Initializable {
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private ArrayList<Table> tables;
 
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    
+    // --- INITILIAZING ---
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         BistroClient.staffDashControllerInstance = this;
@@ -68,24 +75,30 @@ public class StaffDashboardController implements Initializable {
             }
         }
         setupComboBoxes();
-        refreshTables();
+        Runnable refreshTables = new Runnable() {
+        	public void run() {
+        		BistroClient.tables = new ArrayList<>();
+        		getAllTables();
+        	}
+        };
+        executor.scheduleAtFixedRate(refreshTables, 0, 10, TimeUnit.SECONDS);
     }
-
+    //Helper method to initialize
     private void setupComboBoxes() {
-    	statusComboBox.getItems().addAll("Available", "Occupied", "Reserved", "Deleted");
+    	statusComboBox.getItems().addAll("Available", "Occupied");
         if(reportTypeCombo != null) 
-            reportTypeCombo.setItems(FXCollections.observableArrayList("Reservations", "Waiting Lists"));
+            reportTypeCombo.setItems(FXCollections.observableArrayList("Visit Timings", "Reservations", "Waiting Lists"));
         if(monthCombo != null)
-            monthCombo.setItems(FXCollections.observableArrayList("January", "February", "March", "April"));
+            monthCombo.setItems(FXCollections.observableArrayList("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"));
     }
 
     // --- TABLE MANAGEMENT ---
-    
-    private void refreshTables() {
+    //Helper method to get all tables from DB
+    private void getAllTables() {
         ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES, null));
     }
 
-    // Called by BistroClient
+    //Called by BistroClient to update Table Layout
     public void updateTableGrid(ArrayList<Table> tables) {
         Platform.runLater(() -> {
         	this.tables = tables;
@@ -93,31 +106,26 @@ public class StaffDashboardController implements Initializable {
             int col = 0;
             int row = 0;
             
-            for (Table t : tables) {
-                if(!t.isActive()) continue; // Skip deleted tables
+            for (Table table : tables) {
+                if(!table.isActive()) continue; // Skip deleted tables
                 
-                ToggleButton btn = new ToggleButton("Table " + t.getTableNumber() + "\nCapacity:(" + t.getTableCapacity() + " ppl)");
-                btn.setPrefSize(100, 80);
+                ToggleButton btn = new ToggleButton(table.getTableNumber().toString());
+                btn.setPrefSize(70, 70);
                 
-                if (t.isOccupied()) {
-                    btn.setStyle("-fx-background-color: #ff6666; -fx-text-fill: white;"); // Red
-                    btn.setSelected(true);
-                } else {
-                    btn.setStyle("-fx-background-color: lightgreen; -fx-text-fill: black;"); // Green
-                    btn.setSelected(false);
-                }
+                setButtonStatus(table,btn);
                 
                 btn.setOnAction(e -> {
                     try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TableManagement.fxml"));
-                        Parent root = loader.load();
+                       setButtonStatus(table,btn);
+                       FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TableManagement.fxml"));
+                       Parent root = loader.load();
                         
-                        TableManagementController controller = loader.getController();
-                        controller.setTableDetails(t);
+                       TableManagementController controller = loader.getController();
+                       controller.setTableDetails(table);
                         
                        Stage stage = new Stage();
                        stage.setScene(new Scene(root));
-                       stage.setTitle("Manage Table " + t.getTableNumber());
+                       stage.setTitle("Manage Table " + table.getTableNumber());
                        stage.show();
                         
                     } catch (Exception ex) {
@@ -133,6 +141,14 @@ public class StaffDashboardController implements Initializable {
                 }
             }
         });
+    }
+    //Helper method to update button selection
+    private void setButtonStatus(Table table, ToggleButton button) {
+    	if (table.isOccupied()) {
+            button.setSelected(true);
+        } else {
+            button.setSelected(false);
+        }
     }
     
     @FXML
@@ -167,15 +183,19 @@ public class StaffDashboardController implements Initializable {
     	ClientUI.chat.accept(new BistroMessage(Action.ADD_TABLE,toCreate));
     	if(BistroClient.operationSuccess) {
     		BistroClient.operationSuccess = false;
-    		BistroClient.tables = new ArrayList<>();
-        	ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES,null));
+    		handleRefreshTables(event);
         	tableNumberField.clear();
         	capacityField.clear();
     	}
     }
-
+    //Refresh table layout
+    @FXML
+    void handleRefreshTables(ActionEvent event) {
+    	BistroClient.tables = new ArrayList<>();
+    	getAllTables();
+    }
+    
     // --- CHECK IN ---
-
     @FXML
     void handleMemberCheckIn(ActionEvent event) {
         String code = memberCodeField.getText(); 
@@ -192,18 +212,25 @@ public class StaffDashboardController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, code.trim()));
     }
     
-    // Add this to update UI based on response
-    public void updateCheckInStatus(boolean success, String message) {
+    //Response from server on checking in reservation
+    public void updateCheckInStatus(Object response) {
         Platform.runLater(() -> {
-            checkInStatusLabel.setText(message);
-            if (success) {
-                checkInStatusLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-                memberCodeField.clear();
-                // Refresh tables to show the new red table
-                ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES, null)); 
-            } else {
-                checkInStatusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
-            }
+        	if(response instanceof String) {
+		  		String message = (String)response;
+		  		if(message.startsWith("Error")) {
+		  			checkInStatusLabel.setText(message);
+			  		checkInStatusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+		  		} else { //Wait
+		  			checkInStatusLabel.setText("Started preparing table for this reservation. Wait when table is ready!");
+		  			checkInStatusLabel.setStyle("-fx-text-fill: orange; -fx-font-weight: bold;");
+		  			memberCodeField.clear();
+		  		}	
+	  		} else {
+	  			Visit created = (Visit)response;
+	  			checkInStatusLabel.setText(created.getGuest().getFullName() +" checked in successfully to table: " +created.getTable().getTableNumber());
+	  			checkInStatusLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+	  			memberCodeField.clear();
+	  		}
         });
     }
     // --- MEMBER REGISTRATION ---

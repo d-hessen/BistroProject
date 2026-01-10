@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import common.BistroMessage;
 import dataLayer.*;
 import domainLogic.ServerFrameController;
 
@@ -53,8 +54,6 @@ public class UpdateCommands {
             return false;
         }
     }   
-    
-    
 	//======================================
 	//TABLE UPDATES
 	//======================================
@@ -77,7 +76,6 @@ public class UpdateCommands {
             return false;
         }
     }
-    
 	//======================================
 	//BILL UPDATES
 	//======================================
@@ -102,5 +100,37 @@ public class UpdateCommands {
             System.err.println("Error updating bill: " + e.getMessage());
             return false;
         }
+    }
+    
+	//======================================
+	//VISIT UPDATES
+	//======================================
+    //Update Visit according to requeted action
+    public static boolean updateVisit(BistroMessage toUpdate, ServerFrameController guiController) {
+    	Connection conn = dbController.getInstance().getConnection();
+    	
+    	if(toUpdate.getData() instanceof Visit) {
+    		Visit recieved = (Visit)toUpdate.getData();
+    		Integer affectedRows = null;
+        	switch (toUpdate.getAction()) {
+    		case START_VISIT:
+    			String sql = "UPDATE visits SET start_time = NOW() WHERE visit_id = ?";
+    	        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    	        	ps.setInt(1, recieved.getVisitId());
+    	            affectedRows = ps.executeUpdate();
+    	        } catch (SQLException e) {
+    	            guiController.addToConsole("Error updating visit: " + e.getMessage());
+    	        }
+    			break;
+
+    		default:
+    			guiController.addToConsole(toUpdate.getAction() + " - UNKNOW ACTION IN UPDATE VISIT");
+    			break;
+    		}
+	        return affectedRows != null;
+    	} else {
+    		guiController.addToConsole("UpdateCommands.updateVisit() CAN RECIEVE ONLY VISIT TYPE");
+    		return false;
+    	}
     }
 }

@@ -15,11 +15,20 @@ public class Visit implements Serializable {
 	private Bill billOfVisit;
 	private Integer partySize;
 	private String verificationCode;
+	private Integer waitingId;
 	
 	public Visit(Reservation reservation, Table table) {
 		if(reservation != null) {
-			this.guest = reservation.getGuest();
-			setTable(table);		}
+			this.reservation = reservation;
+			if(reservation.getGuest() instanceof Member) {
+				this.guest = (Member)reservation.getGuest();
+			}else {
+				this.guest = reservation.getGuest();
+			}
+			setActive(false);
+			this.table = table;
+			setPartySize(reservation.getNumberOfGuests());
+			}
 		else {
 			System.err.println("Use another constructor Visit(Guest)");
 		}
@@ -40,8 +49,13 @@ public class Visit implements Serializable {
 	}
 	
 	public Visit(Guest guest, Table table) {
-		this.guest = guest;
+		if(guest instanceof Member) {
+			this.guest = (Member) guest;
+		} else {
+			this.guest = guest;
+		}
 		setTable(table);
+		setActive(false);
 	}
 	
 	
@@ -123,6 +137,14 @@ public class Visit implements Serializable {
 
 	public void setVerificationCode(String verificationCode) {
 		this.verificationCode = verificationCode;
+	}
+
+	public Integer getWaitingId() {
+		return waitingId;
+	}
+
+	public void setWaitingId(Integer waitingId) {
+		this.waitingId = waitingId;
 	}
 	
 }

@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import common.Action;
 import common.BistroMessage;
-import dataLayer.Member;
 import dataLayer.Reservation;
+import dataLayer.Visit;
 import databaseController.CreateCommands;
 import databaseController.DeleteCommands;
 import databaseController.GetCommands;
@@ -31,8 +31,7 @@ public class ReservationController {
 	}
 
 	public static BistroMessage createReservation(Reservation reservationToCreate, ServerFrameController guiController) {
-        // 1. Call DB to create reservation. 
-        // returns the Reservation object with the new ID set inside it.
+        reservationToCreate.setVerificationCode(generateVerificationCode());
         Reservation createdReservation = CreateCommands.createReservation(reservationToCreate, guiController);
         
         // 2. Check if creation was successful (object is not null)
@@ -53,15 +52,24 @@ public class ReservationController {
 	}
 	
 	public static BistroMessage codeVerification(String code, ServerFrameController guiController) {
-		Reservation res = GetCommands.getReservationVerificationCode(code, guiController);
-		if(res != null) {
-			return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+		Reservation reservation = GetCommands.getReservationVerificationCode(code, guiController);
+		if(reservation != null) {
+			return new BistroMessage(Action.GET_VERIFICATION_CODE, reservation);
 		}
-		return new BistroMessage(Action.GET_VERIFICATION_CODE, res);
+		Visit waiting = GetCommands.getWaitingVisit(code, guiController);
+		if(waiting != null) {
+			return new BistroMessage(Action.GET_VERIFICATION_CODE, waiting);
+		}
+		return new BistroMessage(Action.GET_VERIFICATION_CODE, "Error: Verification Code wasn't found");
 	}
 
 	public static String generateVerificationCode() {
-		String result = String.valueOf((int) (Math.random() * 9000) + 1000);
+		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		SecureRandom random = new SecureRandom();
+		String result = random.ints(5, 0, chars.length())
+                .mapToObj(chars::charAt)
+                .map(Object::toString)
+                .collect(Collectors.joining());
 		return result;
 	}
 

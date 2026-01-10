@@ -48,10 +48,6 @@ public class BistroServer extends AbstractServer
           		Table tableToUpdate = (Table)request.getData();
           		client.sendToClient(StaffController.updateTable(tableToUpdate, guiController));
           		break;
-            case CHECK_IN_CUSTOMER:
-                String code = (String) request.getData();
-                client.sendToClient(StaffController.checkInCustomer(code, guiController));
-                break;
             case VERIFY_MEMBER_ARRIVAL:
                 String cardCode = (String) request.getData();
                 client.sendToClient(StaffController.verifyMemberArrival(cardCode, guiController));
@@ -65,7 +61,14 @@ public class BistroServer extends AbstractServer
                     e.printStackTrace();
                 }
                 break;
-                
+            case CHECK_IN_CUSTOMER:
+            	if(request.getData() instanceof Reservation) {
+                	client.sendToClient(VisitController.createReservatedVisit((Reservation)request.getData(), guiController));
+            	}
+            	else {//Visit
+            		client.sendToClient(VisitController.createWalkInVisit((Visit)request.getData(), guiController));
+            	}
+            	break;
           	// --- MEMBER ROUTES ---
           	case MEMBER_IDENTIFICATION:
           		Member memberRecieved = (Member)request.getData();
@@ -104,15 +107,13 @@ public class BistroServer extends AbstractServer
             	String phoneNumber= (String)request.getData();
             	client.sendToClient(ReservationController.getMemberReservations(phoneNumber, guiController));
                 break;
-            case GET_VERIFICATION_CODE:
-            	String ver_code = (String)request.getData();
-            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
-                break;
-
             // --- VISIT ROUTES ---
-            case CREATE_VISIT:
-            	Visit visitToCreate = (Visit)request.getData();
-            	client.sendToClient(VisitController.createVisitByReservation(visitToCreate, guiController));
+//            case CREATE_VISIT:
+//            	Visit visitToCreate = (Visit)request.getData();
+//            	client.sendToClient(VisitController.createVisitByReservation(visitToCreate, guiController));
+//            	break;
+            case START_VISIT:
+            	client.sendToClient(VisitController.updateVisit(request,guiController));
             	break;
             case GET_MEMBER_VISITS:
                 Integer memberId = (Integer) request.getData();
@@ -125,9 +126,13 @@ public class BistroServer extends AbstractServer
                 break;
             case VISIT_NOW:
             	Visit toCreate = (Visit)request.getData();
-            	client.sendToClient(VisitController.createVisit(toCreate, guiController));
+            	client.sendToClient(VisitController.createWalkInVisit(toCreate, guiController));
             	break;
-
+            case GET_VERIFICATION_CODE:
+            	String ver_code = (String)request.getData();
+            	//Sends back instance of Reservation or Visit
+            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
+                break;
              // --- CLIENT DISCONNECTS ---
             case DISCONNECT:
             	guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");

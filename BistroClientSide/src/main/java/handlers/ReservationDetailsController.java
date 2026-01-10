@@ -27,24 +27,19 @@ public class ReservationDetailsController {
 
     @FXML
     public void initialize() {
-        // --- DISABLE READ-ONLY FIELDS ---
         orderIdField.setDisable(true);
         statusField.setDisable(true);
         memberIdField.setDisable(true);
         placedDateField.setDisable(true);
         
-        // Load data
         Reservation currentRes = BistroClient.reservationInstance;
         if (currentRes != null) {
-            
-            // 1. Order ID / Verification Code
             if (currentRes.getVerificationCode() != null) {
                 orderIdField.setText(currentRes.getVerificationCode());
             } else if (currentRes.getReservationId() != null) {
                  orderIdField.setText(String.valueOf(currentRes.getReservationId()));
             }
-            
-            // 2. Date and Time
+
             if (currentRes.getReservationDate() != null) {
                 try {
                     String dateStr = currentRes.getReservationDate().getDate();
@@ -57,24 +52,20 @@ public class ReservationDetailsController {
                 }
             }
             
-            // 3. Guests
             if (currentRes.getNumberOfGuests() != null) {
                 dinersField.setText(String.valueOf(currentRes.getNumberOfGuests()));
             }
             
-            // 4. Status
             if (currentRes.getStatus() != null) {
                 statusField.setText(currentRes.getStatus().name());
             }
 
-            // 5. Member ID
-            if (currentRes.getMemberId() != null) {
+            if (currentRes.getMemberId() != 0) {
                 memberIdField.setText(String.valueOf(currentRes.getMemberId()));
             } else {
-                memberIdField.setText("Guest / N/A");
+                memberIdField.setText("Guest");
             }
 
-            // 6. Date of Placing Order
             if (currentRes.getDateOfPlacingReservation() != null) {
                 placedDateField.setText(currentRes.getDateOfPlacingReservation());
             }
@@ -107,7 +98,7 @@ public class ReservationDetailsController {
             } else {
                 // Client logic
                 ButtonType returnBtn = new ButtonType("Return to Main Menu");
-                ButtonType exitBtn = new ButtonType("Exit");
+                ButtonType exitBtn = new ButtonType("Close");
                 alert.getButtonTypes().setAll(returnBtn, exitBtn);
                 
                 Optional<ButtonType> res = alert.showAndWait();
@@ -116,8 +107,7 @@ public class ReservationDetailsController {
                     if (res.get() == returnBtn) {
                         SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
                     } else { 
-                        Platform.exit(); 
-                        System.exit(0); 
+                        alert.close();
                     }
                 }
             }

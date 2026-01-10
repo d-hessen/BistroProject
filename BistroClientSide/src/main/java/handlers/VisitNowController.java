@@ -36,7 +36,9 @@ public class VisitNowController implements Initializable {
 
     // Regular expression for basic email validation
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
-
+    private boolean hasAssignedTable;
+    private boolean isWaiting;
+    private Visit createdVisit;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		BistroClient.visitNowControllerInstance = this;
@@ -110,6 +112,22 @@ public class VisitNowController implements Initializable {
         }
         toCreate.setPartySize(Integer.valueOf(diners));
         ClientUI.chat.accept(new BistroMessage(Action.VISIT_NOW, toCreate));
+        if(hasAssignedTable) {
+        	hasAssignedTable = false;
+        	SceneLoader.switchScreen(
+        		    event, 
+        		    "/gui/VisitDetails.fxml", 
+        		    "Visit Details", 
+        		    (VisitDetailsController controller) -> {
+        		        // This code runs after the controller is loaded
+        		        controller.loadVisit(createdVisit);
+        		    }
+        		);
+        }
+        if(isWaiting) {
+        	isWaiting = false;
+        	SceneLoader.loadScene(event, "/gui/ClientWaiting.fxml", "Waiting");
+        }
     }
 
     // Navigates back to the previous screen.
@@ -122,19 +140,27 @@ public class VisitNowController implements Initializable {
     	}
     }
     
-    public void randomVisitCreated(String message) {
+    public void walkInVisitNotCreated(String message) {
     	Platform.runLater(() -> {
-    		if(!message.startsWith("Error")) {
-        		generatedCodeLabel.setText(message);
+    		if(message.startsWith("Error")) {
+        		SceneLoader.showAlert(Alert.AlertType.ERROR, "Creating walk-in visit failed", message);
+    		}else if(message.startsWith("Wait")) {
+    			isWaiting = true;
+    		}
+    		else {
+        		generatedCodeLabel.setText(message); //Show verification code to identify when table is ready
                 confirmationArea.setVisible(true);
                 generateCodeBtn.setDisable(true); // Disable button after successful generation
-    		}else {
-        		SceneLoader.showAlert(Alert.AlertType.ERROR, "Creating random visit failed", message);
     		}
-    		if(BistroClient.memberInstance == null && BistroClient.staffInstance == null) {
+    		if(BistroClient.memberInstance == null && BistroClient.staffInstance == null && createdVisit == null) {
     			ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
     		}
 
     	});
+    }
+    
+    public void walkInVisitCreated(Visit visit) {
+    	createdVisit = visit;
+		hasAssignedTable = true;
     }
 }

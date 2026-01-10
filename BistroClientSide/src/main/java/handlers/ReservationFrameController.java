@@ -33,35 +33,18 @@ public class ReservationFrameController {
     
     public void Find_Reservation(ActionEvent event) throws Exception {
         String codeInput = getVerificationCodeInput();
-        FXMLLoader loader = new FXMLLoader();
         
         try {
             if (codeInput == null || codeInput.trim().isEmpty()) {
                 SceneLoader.showAlert(Alert.AlertType.WARNING, "Input Error", "You must enter a verification code.");
                 return;
             }
-            
-            // 1. Reset static instance
             BistroClient.reservationInstance = null;
 
-            // 2. Request from server
             ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, codeInput));
-            
-            // 3. Check result
             if (BistroClient.reservationInstance != null) {
                 System.out.println("Reservation Found");
-                
-                // Hide current window
-                ((Node)event.getSource()).getScene().getWindow().hide();
-                
-                // Load ReservationDetails.fxml
-                Stage primaryStage = new Stage();
-                Pane root = loader.load(getClass().getResource("/gui/ReservationDetails.fxml").openStream());
-                
-                Scene scene = new Scene(root);          
-                primaryStage.setTitle("Reservation Details");
-                primaryStage.setScene(scene);       
-                primaryStage.show();
+                SceneLoader.loadScene(event, "/gui/ReservationDetails.fxml", "Reservation Details");
                 
             } else {
                 SceneLoader.showAlert(Alert.AlertType.ERROR, "Not Found", "No reservation found with this verification code.");

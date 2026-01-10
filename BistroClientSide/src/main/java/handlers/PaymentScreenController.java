@@ -27,13 +27,15 @@ public class PaymentScreenController {
 
     @FXML
     private Label priceLabel;
-
+    
+    private Visit visitToPay = null;
     @FXML
     public void initialize() {
         statusLabel.setVisible(false);
-        if (BistroClient.currentVisit != null) {
-            //String price = String.valueOf(BistroClient.currentVisit.getBillOfVisit().getFinalAmount());
-            //priceLabel.setText(String.format("Total Price: ₪%.2f", price));
+        visitToPay = VisitDetailsController.visitInstance;
+        if (visitToPay != null) {
+            String price = String.valueOf(visitToPay.getBillOfVisit().getFinalAmount());
+            priceLabel.setText("Total Price: ₪"+price);
         }
     }
 
@@ -73,7 +75,7 @@ public class PaymentScreenController {
         VisitSessionManager.clear();
         showSuccess("Payment completed successfully");
         SceneLoader.loadScene(event, "/gui/ReceiptScreen.fxml", "Receipt");
-        // TODO: Send to server
+        // TODO: Send to server that bill was paid
     }
 
 
@@ -99,4 +101,9 @@ public class PaymentScreenController {
         statusLabel.setTextFill(Color.web("#2e7d32"));
         statusLabel.setVisible(true);
     }
+
+	public void payVisit(Visit visitInstance) {
+		visitToPay = visitInstance;
+		
+	}
 }

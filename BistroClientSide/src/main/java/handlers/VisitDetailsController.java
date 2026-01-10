@@ -22,42 +22,39 @@ import handlers.VisitSessionManager;
 
 public class VisitDetailsController {
 
-    @FXML
-    private Label tableIdLabel;
-
-    @FXML
-    private Label orderIdLabel;
-
-    @FXML
-    private Label startTimeLabel;
-
-    @FXML
-    private Label dinersLabel;
-
-    @FXML
-    private Button startVisitBtn;
-    
-    @FXML
-    private Button endtVisitBtn;
+    @FXML private Label tableIdLabel;
+    @FXML private Label orderIdLabel;
+    @FXML private Label startTimeLabel;
+    @FXML private Label dinersLabel;
+    @FXML private Button startVisitBtn;
+    @FXML private Button endVisitBtn;
+    @FXML private Label labelForVisitNumber;
 
     private Timeline countdown;
     private int secondsLeft = 15 * 60; // 15 minutes
     private boolean visitStarted = false;
-    private Visit globalVisit = null;
+    public static Visit visitInstance;
     
     @FXML
     public void initialize() {
+    	BistroClient.visitDetailsControllerInstance = this;
+    	endVisitBtn.setDisable(true);
     	if (VisitSessionManager.hasActiveTimer()) {
+    		labelForVisitNumber.setText("Visit Number:");
             startTimeLabel.setText("Started");
             startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
-    	    orderIdLabel.setText(String.valueOf(BistroClient.reservationInstance.getReservationId()));
-    	    dinersLabel.setText(String.valueOf(BistroClient.reservationInstance.getNumberOfGuests()));
+    	    orderIdLabel.setText(String.valueOf(visitInstance.getVisitId()));
+    	    dinersLabel.setText(String.valueOf(visitInstance.getPartySize()));
+    	    if(visitInstance.getTable().getTableNumber() != null) {
+    	    	tableIdLabel.setText(String.valueOf(visitInstance.getTable().getTableNumber()));
+    	    }
             startVisitBtn.setDisable(true);
-            //TODO: tableIdLabel.setText();
+            endVisitBtn.setDisable(false);
         } else {
             secondsLeft = 15 * 60;
             VisitSessionManager.setSecondsLeft(secondsLeft);
             startCountdown();
+            
         }
     }
 
@@ -95,41 +92,35 @@ public class VisitDetailsController {
     // User clicked "Start Visit"
     @FXML
     private void handleStartVisit() {
-        visitStarted = true;
-        VisitSessionManager.setVisitStarted(true);
-
         if (countdown != null) {
             countdown.stop();
         }
+        ClientUI.chat.accept(new BistroMessage(Action.START_VISIT, visitInstance));
+    }
+    
+    public void visitStarted(boolean isStarted) {
+    	Platform.runLater(()->{
+    		if(isStarted) {
+    	        visitStarted = true;
+    	        VisitSessionManager.setVisitStarted(true);
+                startTimeLabel.setText("Started");
+                startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
+                startVisitBtn.setDisable(true);
+                endVisitBtn.setDisable(false);
+    		}else {
+    			startTimeLabel.setText("Error Starting Visit - speak to manager");
+    			startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: red;");
+    		}
 
-        startTimeLabel.setText("Started");
-        startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
-        startVisitBtn.setDisable(true);
-
-        // TODO:
-        // 1. Notify server that visit has started - Done
-        // 2. Lock table as active
-        // 3. Change random logic
-        int randomTableNum = (int)(Math.random() * (5 - 1 + 1) + 1);
-        Table randomTable = new Table(randomTableNum, 3, true);
-        Visit visit = new Visit(BistroClient.reservationInstance,randomTable,true);
-        globalVisit = visit;
-        BistroMessage msg = new BistroMessage(Action.CREATE_VISIT, visit);
-        ClientUI.chat.accept(msg);
-        System.out.println("Message sent to server: CREATE_VISIT");
+    	});
     }
 
     // User clicked "End Meal"
     @FXML
     private void handleEndMeal(ActionEvent event) {
-        visitStarted = false;
+    	visitStarted = false;
         VisitSessionManager.setVisitStarted(false);
-
-        // TODO:
-        // 1. Notify server to close visit
-        // 2. Release table
-     BistroClient.currentVisit = globalVisit;
-   	 SceneLoader.loadScene(event, "/gui/PaymentScreen.fxml", "Payment Screen");
+        SceneLoader.loadScene(event, "/gui/PaymentScreen.fxml", "Payment Screen");
     }
 
 
@@ -144,15 +135,15 @@ public class VisitDetailsController {
         // 4. Navigate back to main screen
     }
 
-	public void loadReservation(Reservation reservation) {
-		if (reservation == null) {
-	        return;
-	    }
-
-	    orderIdLabel.setText(String.valueOf(reservation.getReservationId()));
-	    dinersLabel.setText(String.valueOf(reservation.getNumberOfGuests()));
-        //TODO: tableIdLabel.setText();
-	}
+//	public void loadReservation(Reservation reservation) {
+//		if (reservation == null) {
+//	        return;
+//	    }
+//
+//	    orderIdLabel.setText(String.valueOf(reservation.getReservationId()));
+//	    dinersLabel.setText(String.valueOf(reservation.getNumberOfGuests()));
+//        //TODO: tableIdLabel.setText();
+//	}
 
 	public static void visitCreated(Integer visitId) {
 		Platform.runLater(() -> {
@@ -163,5 +154,14 @@ public class VisitDetailsController {
     		}
     	});
 		
+	}
+	
+	public void loadVisit(Visit visit) {
+		if(visit == null) return;
+		
+		orderIdLabel.setText(String.valueOf(visit.getVisitId()));
+		dinersLabel.setText(String.valueOf(visit.getPartySize()));
+		tableIdLabel.setText(String.valueOf(visit.getTable().getTableNumber()));
+		visitInstance = visit;
 	}
 }

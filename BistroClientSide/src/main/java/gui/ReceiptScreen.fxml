@@ -5,40 +5,22 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER"
-      spacing="20"
-      prefWidth="450"
-      prefHeight="500"
-      xmlns="http://javafx.com/javafx/21"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="handlers.ReceiptScreenController">
+<VBox alignment="CENTER" prefHeight="500" prefWidth="450" spacing="20" styleClass="card" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ReceiptScreenController">
 
     <padding>
-        <Insets top="30" bottom="30" left="40" right="40"/>
+        <Insets bottom="30" left="40" right="40" top="30" />
     </padding>
 
-    <Label text="Payment Receipt"
-           style="-fx-font-size: 26px; -fx-font-weight: bold;" />
+    <Label styleClass="header-label" stylesheets="@style.css" text="Payment Receipt" />
 
-    <Label text="Thank you for your payment!"
-           style="-fx-font-size: 16px; -fx-text-fill: #555555;" />
+    <Label style="-fx-font-size: 16px;" stylesheets="@style.css" text="Thank you for your payment!" />
 
-    <Label fx:id="reservationIdLabel"
-           text="Reservation ID: "
-           style="-fx-font-size: 16px;" />
+    <Label fx:id="reservationIdLabel" stylesheets="@style.css" text="Reservation ID: " />
 
-    <Label fx:id="tableIdLabel"
-           text="Table Number: "
-           style="-fx-font-size: 16px;" />
+    <Label fx:id="tableIdLabel" stylesheets="@style.css" text="Table Number: " />
 
-    <Label fx:id="amountLabel"
-           text="Total Paid: ₪0.00"
-           style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;" />
+    <Label fx:id="amountLabel" styleClass="header-label" stylesheets="@style.css" text="Total Paid: ₪0.00" />
 
-    <Button text="Finish"
-            prefWidth="200"
-            prefHeight="40"
-            style="-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-weight: bold;"
-            onAction="#handleFinish"/>
+    <Button onAction="#handleFinish" prefHeight="40" prefWidth="200" styleClass="primary-button" stylesheets="@style.css" text="Finish" />
 
 </VBox>

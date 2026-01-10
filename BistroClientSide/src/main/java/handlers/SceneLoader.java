@@ -1,7 +1,7 @@
 package handlers;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -12,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 // Class to navigation
 
@@ -68,13 +69,11 @@ public class SceneLoader {
     }
     
     public static void showAlert(Alert.AlertType type, String title, String content) {
-    	Platform.runLater(() -> {
     		Alert alert = new Alert(type);
     		alert.setTitle(title);
     		alert.setHeaderText(null);
     		alert.setContentText(content);
     		alert.showAndWait();
-    	});
     }
     
     public static boolean showConfirmationAlert(String title, String content){
@@ -89,4 +88,26 @@ public class SceneLoader {
         return false;
     }
 
+    public static <T> void switchScreen(Event event, String fxmlPath, String title, Consumer<T> setupAction) {
+        try {
+            ((Node) event.getSource()).getScene().getWindow().hide();
+            FXMLLoader loader = new FXMLLoader(SceneLoader.class.getResource(fxmlPath));
+            Parent root = loader.load();
+            
+            //Get the Controller and run the setup logic
+            T controller = loader.getController();
+            if (setupAction != null) {
+                setupAction.accept(controller);
+            }
+            //Show the new window
+            Stage stage = new Stage();
+            stage.setTitle(title);
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle the error (e.g., show an alert)
+        }
+    }
 }

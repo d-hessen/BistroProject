@@ -12,12 +12,12 @@ import dataLayer.Guest;
 public final class WaitingList {  
 	
 	private static final WaitingList INSTANCE = new WaitingList();
-	public record Party(int id, Guest guest, int partySize, Instant readyAt) {} // creates small class with fields and getters (id is validation code)
+	public record Party(Integer waitingId, Guest guest, Integer partySize, Instant readyAt) {} // creates small class with fields and getters (id is validation code)
 	private final LinkedList <Party> queue= new LinkedList<>();  // Queue that represents the Waiting List
 	private WaitingList() {}
 	private int nextId = 1;
 	
-	public synchronized int join (Guest guest, int partySize) { // joining the queue one at a time and returns unique waitingId
+	public synchronized int join (Guest guest, Integer partySize) { // joining the queue one at a time and returns unique waitingId
 		
 		if(guest == null) throw new IllegalArgumentException("guest is null");
 		if(partySize <= 0) throw new IllegalArgumentException("party sizee must be at least 1");
@@ -31,9 +31,9 @@ public final class WaitingList {
 		if(isGuestInQueue(guest.getPhoneNumber(),guest.getEmail())) {
 			throw new IllegalArgumentException("Customer already in waiting list");
 		}
-		int id = nextId++;
-        queue.addLast(new Party(id, guest, partySize, null)); // add to end of queue 
-        return id;
+		Integer waitingId = nextId++;
+        queue.addLast(new Party(waitingId, guest, partySize, null)); // add to end of queue 
+        return waitingId;
 
 	}
 	public static WaitingList getInstance() { // returns WaitingList INSTANCE
@@ -54,7 +54,7 @@ public final class WaitingList {
 	
 	 public synchronized boolean exitGuestFromList(int waitingId) { // if party wants to be removed from waitingList by verification code
 		 for(int i = 0; i < queue.size(); i++) {
-			 if(queue.get(i).id == waitingId) {
+			 if(queue.get(i).waitingId == waitingId) {
 				 queue.remove(i);
 				 return true;
 			 }
@@ -68,7 +68,7 @@ public final class WaitingList {
 		 
 		 if (head.readyAt() != null) return head.guest; // if the party was already notified
 		 //returns party with the time and date of this method execution for notification time
-		 Party updatedParty = new Party(head.id, head.guest, head.partySize, Instant.now());
+		 Party updatedParty = new Party(head.waitingId, head.guest, head.partySize, Instant.now());
 		 queue.set(0, updatedParty); 
 		 return head.guest;
 	 }
@@ -78,7 +78,7 @@ public final class WaitingList {
 		 removeExpiredTimeParty(maxLateMinutes);
 		 for(int i = 0; i < queue.size(); i++) {
 			Party party = queue.get(i); 
-			if(party.id() == waitingId) { 
+			if(party.waitingId() == waitingId) { 
 				if(party.readyAt == null) { return null;} // has not been notified before confirming arrival
 				long timePassed = Duration.between(party.readyAt(), Instant.now()).toMinutes();
 				if (timePassed >= maxLateMinutes) { // reject party for being too late for order time
@@ -128,7 +128,7 @@ public final class WaitingList {
             Visit v = new Visit(party.guest(), null); //'party.guest()' the client familiar with, and 'null' for the date because its irrelevant for the queue right now
             
             // adding the last details that the Visit object dont have
-            v.setVisitId(party.id()); 
+            v.setVisitId(party.waitingId()); 
             v.setPartySize(party.partySize());
             visits.add(v);
         }

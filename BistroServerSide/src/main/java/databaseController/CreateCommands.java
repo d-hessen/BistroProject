@@ -169,53 +169,38 @@ public class CreateCommands {
 	//VISIT CREATION
 	//======================================
 	//Create visit for reservation 
-	public static boolean createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController){
+	public static Visit createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
-        /*
-        String checkSql = "SELECT 1 FROM visits WHERE reservation_number = ? LIMIT 1";
-
-        try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
-            checkPs.setInt(1, reservationId);
-            ResultSet rs = checkPs.executeQuery();
-            if (rs.next()) {
-                guiController.addToConsole("Visit already exists for reservation number=" + reservationId);
-                return false;
-            }
-        }
-        catch (SQLException e) {
-        	return false;
-        }
-        */
-        // Start time = Current time
-        Date now = new Date();
-        Timestamp startTime = new Timestamp(now.getTime());
         Reservation reservation = GetCommands.getReservation(reservationId, guiController);
-        
-        String sql = "INSERT INTO visits (table_id, reservation_number, start_time, is_active, party_size) VALUES (?, ?, ?, 1, ?)";
-        
+        Visit created = null;
+        String sql = "INSERT INTO visits (reservation_number,table_id, is_active, party_size, member_id, guest_full_name, guest_phone, email) VALUES (?, ?, 1, ?, ?, ?, ?, ?)";        
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, tableId);
-            ps.setInt(2, reservationId);
-            ps.setTimestamp(3, startTime);
-            ps.setInt(4, reservation.getNumberOfGuests());
+            ps.setInt(1, reservationId);
+        	ps.setInt(2, tableId);
+            ps.setInt(3, reservation.getNumberOfGuests());
+            ps.setObject(4, reservation.getMemberId());
+            ps.setObject(5, reservation.getGuest().getFullName());
+            ps.setObject(6, reservation.getGuest().getPhoneNumber());
+            ps.setObject(7, reservation.getGuest().getEmail());
+            
             int affectedRows = ps.executeUpdate();
             if(affectedRows > 0) {
             	try(ResultSet generatedKeys = ps.getGeneratedKeys()){
             		if(generatedKeys.next()) {
             			Integer visitId = generatedKeys.getInt(1);
-            			createBill(visitId,guiController);
+                        // Also create the bill for this new visit
+            			createBill(visitId, guiController);
+            			created = GetCommands.getVisit(visitId, guiController);
             		}
             	}
-            	return true;
             }
-            return false;
         } catch (SQLException e) {
-            guiController.addToConsole("Error creating visit: " + e.getMessage());
-            return false;
+            guiController.addToConsole("Error creating directly seated walk-in visit: " + e.getMessage());
         }
+        return created;
     }
-	//Create visit to random visits(waiting_list) 
-	public static boolean createRandomVisit(Visit toCreate, ServerFrameController guiController) {
+	//Create an visit that enters waiting_list 
+	public static Visit createWaitingWalkInVisit(Visit toCreate, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         Guest mainGuest = toCreate.getGuest();
         Integer memberId = null;
@@ -223,9 +208,10 @@ public class CreateCommands {
         	Member member = (Member) mainGuest;
         	memberId = member.getMemberId();
         }
+        Visit created = null;
         String sql = "INSERT INTO waiting_list (member_id, guest_full_name, guest_phone, email, number_of_guests, verification_code) VALUES (?, ?, ?, ?, ?, ?)";
         
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         	ps.setObject(1, memberId);
         	ps.setString(2, mainGuest.getFullName());
         	ps.setString(3, mainGuest.getPhoneNumber());
@@ -233,11 +219,59 @@ public class CreateCommands {
         	ps.setInt(5, toCreate.getPartySize());
         	ps.setString(6, toCreate.getVerificationCode());
             int affectedRows = ps.executeUpdate();
-            return affectedRows > 0;
+            if(affectedRows > 0) {
+            	try(ResultSet generatedKeys = ps.getGeneratedKeys()){
+            		if(generatedKeys.next()) {
+            			created = GetCommands.getWaitingVisit(toCreate.getVerificationCode(), guiController);
+            			Integer waitingId = generatedKeys.getInt(1);
+            			created.setVisitId(waitingId);
+            		}
+            	}
+            }
         } catch (SQLException e) {
             guiController.addToConsole("Error creating random visit: " + e.getMessage());
-            return false;
         }
+        return created;
+    }
+
+    // Create an immediate active visit for a walk-in (Seated immediately)
+    public static Visit createSeatedWalkInVisit(Visit visitToCreate, Integer tableId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        Visit toReturn = null;
+        Guest guest = visitToCreate.getGuest();
+        Integer memberId = null;
+        if(guest instanceof Member) {
+        	Member member = (Member) guest;
+        	memberId = member.getMemberId();
+        }
+        //For a immediately seated walk-in, we have only visit_id.
+        //For others walk-ins we insert into waiting_list first -> then convert to visit.
+        String sql = "INSERT INTO visits (table_id, is_active, party_size, member_id, waiting_id, guest_full_name, guest_phone, email) VALUES (?, 1, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, tableId);
+            ps.setInt(2, visitToCreate.getPartySize());
+            ps.setObject(3, memberId);
+            ps.setObject(4, visitToCreate.getWaitingId());
+            ps.setObject(5, guest.getFullName());
+            ps.setObject(6, guest.getPhoneNumber());
+            ps.setObject(7, guest.getEmail());
+            
+            int affectedRows = ps.executeUpdate();
+            if(affectedRows > 0) {
+            	try(ResultSet generatedKeys = ps.getGeneratedKeys()){
+            		if(generatedKeys.next()) {
+            			Integer visitId = generatedKeys.getInt(1);
+                        // Also create the bill for this new visit
+            			createBill(visitId, guiController);
+            			toReturn = GetCommands.getVisit(visitId, guiController);
+            		}
+            	}
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error creating directly seated walk-in visit: " + e.getMessage());
+        }
+        return toReturn;
     }
 	//======================================
 	//BILL CREATION
@@ -246,19 +280,18 @@ public class CreateCommands {
 	public static boolean createBill(Integer visitId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         Visit visit = GetCommands.getVisit(visitId, guiController);
-        Member member = new Member(null,null,null,null);
-        Guest guest = visit.getGuest();
-        if(guest instanceof Member) {
-        	member = (Member) guest;
+        Integer memberId = null;
+        if(visit.getReservation() != null) {
+        	memberId = visit.getReservation().getMemberId();
         }
         
         String sql = "INSERT INTO bills (visit_id, member_id, total_amount, discount_amount, final_amount, is_paid) VALUES (?, ?, ?, ?, ?, 0)";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, visit.getVisitId());
-            ps.setObject(2, member.getMemberId());
+            ps.setObject(2, memberId);
             ps.setDouble(3, 0);
-            if(member.getMemberId() != null) {
+            if(memberId != null) {
             	ps.setDouble(4, 10.00);
             } else {ps.setDouble(4, 0.00);}
             ps.setDouble(5, 0);

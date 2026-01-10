@@ -10,6 +10,7 @@ import common.BistroMessage;
 import dataLayer.Member;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -32,12 +33,12 @@ public class MemberLoginController {
     private Label errorLabel;
 
     @FXML
-    private void handleLogin(ActionEvent event) {
+    void handleLogin(ActionEvent event) {
     	String rawInput = usernameField.getText();
         String password = passwordField.getText();
 
         if (rawInput.isEmpty() || password.isEmpty()) {
-            errorLabel.setText("Please enter both username and password.");
+            errorMessage("Please enter both username and password.");
             return;
         }
         
@@ -50,14 +51,16 @@ public class MemberLoginController {
         	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
         }
         else {
-        	errorLabel.setText("Some details are wrong!");
-        	usernameField.setText("");
-        	passwordField.setText("");
+        	errorMessage("Some details are wrong!");
         	memberToCheck = new Member(null,null,null,null);
         	ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
         	return;
         }
 
+    }
+    
+    private void errorMessage(String message) {
+    	SceneLoader.showAlert(Alert.AlertType.ERROR, "Login error", message);
     }
     /**
      * Checks if the input string is a valid email address.

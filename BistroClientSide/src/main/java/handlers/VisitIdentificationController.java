@@ -1,14 +1,20 @@
 package handlers;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 import client.BistroClient;
 import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
+import dataLayer.Reservation;
+import dataLayer.Visit;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -21,7 +27,7 @@ import javafx.stage.Stage;
 
 // Controller for the Visit Identification screen.
 
-public class VisitIdentificationController {
+public class VisitIdentificationController implements Initializable {
 
     @FXML
     private TextField visitCodeField;
@@ -32,51 +38,70 @@ public class VisitIdentificationController {
     @FXML
     private Label statusLabel;
 
+    public boolean sentRequest;
+    private Visit created = null;
+    private ActionEvent event;
+    
+    @Override
+	public void initialize(URL arg0, ResourceBundle arg1) {
+		BistroClient.visitIdentificationControllerInstance = this;
+	}
 
     // Handles the identification process when the user clicks the "Identify Visit" button.
     @FXML
     private void handleIdentification(ActionEvent event) throws IOException {
         String code = visitCodeField.getText().trim();
-		FXMLLoader loader = new FXMLLoader();
-
-
         // Validate that the code field is not empty
         if (code.isEmpty()) {
             statusLabel.setText("Please enter your visit code.");
             statusLabel.setTextFill(Color.RED);
             return;
         }
-        
+        sentRequest = true;
         ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, code));
-        
-        //TODO: If table ready  move to VisitDetails, if table is not ready move to ClientWaiting
-
-        if(BistroClient.wantedVerCode == null || !BistroClient.wantedVerCode.equals(code))
-		{
-			ClientUI.chat.display("Wrong verification code");
-			statusLabel.setText("There is no table with this verification code");
-            statusLabel.setTextFill(Color.RED);
-			return;
-		}
-		else {
-			System.out.println("Reservation Found");
-			((Node)event.getSource()).getScene().getWindow().hide();
-			Stage primaryStage = new Stage();
-			Pane root = loader.load(getClass().getResource("/gui/VisitDetails.fxml").openStream());
-			if (BistroClient.reservationInstance == null) {
-			    statusLabel.setText("Reservation not loaded. Please try again.");
-			    statusLabel.setTextFill(Color.RED);
-			    return;
-			}
-			VisitDetailsController visitDetailsController = loader.getController();		
-			visitDetailsController.loadReservation(BistroClient.reservationInstance);
-		
-			Scene scene = new Scene(root);
-			primaryStage.setTitle("Visit Details");
-			primaryStage.setScene(scene);		
-			primaryStage.show();
-		}
-		
+        this.event = event;
+    }
+    //BistroClient calls this method - if verification code found - try to create new visit
+    //response can be Reservation/Waiting Visit/String
+    public void checkIn(Object response) {
+    	 Platform.runLater(() -> {
+    		 sentRequest = false;
+    		 if(response instanceof String) {
+  		  		String message = (String)response;
+  		  		statusLabel.setText(message);
+  		  		statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+  	  		} else{
+  	  			//Response here is either Reservation(from reservations) or Visit(from waiting_list)
+  	  			ClientUI.chat.accept(new BistroMessage(Action.CHECK_IN_CUSTOMER, response));
+  	  		}
+         });
+    }
+    //BistroClient calls this method - if customer checked in return his visit from visits
+    //If recieved wait message - customer waits
+    //If recieved error show error
+    public void customerCheckedIn(Object answer) {
+    	Platform.runLater(() -> {
+    		if(answer instanceof String) {
+        		String message = (String)answer;
+        		if(message.startsWith("Wait")) {
+        			SceneLoader.loadScene(event, "/gui/ClientWaiting.fxml", "Waiting");
+        		}else {
+        			statusLabel.setText(message);
+     		  		statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        		}
+        	} else {
+        		created = (Visit)answer;
+        		SceneLoader.switchScreen(
+            		    event, 
+            		    "/gui/VisitDetails.fxml", 
+            		    "Visit Details", 
+            		    (VisitDetailsController controller) -> {
+            		        // This code runs after the controller is loaded
+            		        controller.loadVisit(created);
+            		    }
+            		);
+        	}
+    	});
     }
 
     // Handles the "Forgot my code" action.

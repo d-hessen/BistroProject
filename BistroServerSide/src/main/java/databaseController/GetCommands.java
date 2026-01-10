@@ -74,7 +74,7 @@ public class GetCommands {
   	}
   	
   	//Method that gets reservation by member card code
-    public Reservation findUpcomingReservationByCode(String cardCode, ServerFrameController guiController) {
+    public static Reservation findUpcomingReservationByCode(String cardCode, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         Reservation foundReservation = null;
         int memberId = -1;
@@ -133,6 +133,38 @@ public class GetCommands {
             guiController.addToConsole("Error finding reservation: " + e.getMessage());
         }
         return foundReservation;
+    }
+    
+    //Get reservations between start time and end time for today
+    public static List<Reservation> getUpcomingReservationsInTimeRange(LocalTime start, LocalTime end, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        List<Reservation> upcoming = new ArrayList<>();
+        String today = LocalDate.now().toString();
+
+        // Check reservations that start between the window
+        String sql = "SELECT * FROM reservation WHERE reservation_date = ? " +
+                     "AND reservation_time >= ? AND reservation_time <= ? AND status != 'CANCELLED'";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, today);
+            ps.setString(2, start.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            ps.setString(3, end.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    upcoming.add(new Reservation(
+                        rs.getInt("reservation_number"),
+                        new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+                        rs.getInt("number_of_guests"),
+                        rs.getInt("member_id"),
+                        null // Guest info not needed for logic check
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching upcoming reservations: " + e.getMessage());
+        }
+        return upcoming;
     }
 
 	// Retrieve reservations by phone number
@@ -250,8 +282,6 @@ public class GetCommands {
 		return null;
 	}
 	
-	
-	
 	//======================================
 	//GET MEMBER
 	//======================================
@@ -308,7 +338,7 @@ public class GetCommands {
 	        return null;
 	}
 	//Get member by card code
-	public Member getMemberByCode(String code) {
+	public static Member getMemberByCode(String code, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         String sql = "SELECT * FROM members WHERE card_code = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -319,7 +349,32 @@ public class GetCommands {
         } catch (Exception e) {}
         return null;
     }
-	
+	//Get member by memberId
+	public static Member getMemberById(Integer memberId, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+        
+	    String sql = "SELECT * FROM members WHERE member_id = ?";
+	        
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	    	ps.setInt(1, memberId);
+	        try (ResultSet rs = ps.executeQuery()) {
+	        	if (rs.next()) {
+	        		Member toReturn = new Member(
+	        				rs.getString("full_name"),
+	                        rs.getString("phone"),
+	                        rs.getString("email"),
+	                        rs.getString("password")
+	                    );
+	        		toReturn.setMemberId(rs.getInt("member_id"));
+	        		toReturn.setCardCode(rs.getString("card_code"));
+	        		return toReturn;
+	                }
+	            }
+	       	} catch (SQLException e) {
+	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
+	        }
+	        return null;
+	}
 	//======================================
 	//GET TABLE
 	//======================================
@@ -346,7 +401,7 @@ public class GetCommands {
 		        return null;
 	}
 	//Method to find available table for @partySize
-	public Integer getAvailableTableId(int partySize) {
+	public static Integer getAvailableTableId(int partySize) {
         Connection conn = dbController.getInstance().getConnection();
         // Find a table with enough capacity that is active (exists) and NOT occupied (no active visit)
         String sql = "SELECT t.table_id FROM tables t " +
@@ -366,9 +421,8 @@ public class GetCommands {
         }
         return null; // No table found
     }
-	
 	//Fetch all tables and check if they are currently occupied
-	public ArrayList<Table> getAllTablesWithStatus(ServerFrameController guiController) {
+	public static ArrayList<Table> getAllTablesWithStatus(ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         ArrayList<Table> tables = new ArrayList<>();
         
@@ -400,22 +454,14 @@ public class GetCommands {
         }
         return null;
     }
-	
+	//Get reservation with verificationCode
 	public static Reservation getReservationVerificationCode(String codeStr, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
-		
-		int code;
-		try {
-			code = Integer.parseInt(codeStr);
-		} catch (NumberFormatException e) {
-			guiController.addToConsole("Invalid verification code format: " + codeStr);
-			return null;
-		}
 
 		String sql = "SELECT * FROM reservation WHERE verification_code = ?";
 
 		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, code); 
+			ps.setString(1, codeStr); 
 			
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
@@ -440,7 +486,7 @@ public class GetCommands {
 					
 					return toReturn;
 				} else {
-					guiController.addToConsole("Reservation not found for verification code: " + code);
+					guiController.addToConsole("Reservation not found for verification code: " + codeStr);
 				}
 			}
 		} catch (SQLException e) {
@@ -449,7 +495,6 @@ public class GetCommands {
 		}
 		return null;
 	}
-	
 	//======================================
 	//GET STAFF
 	//======================================
@@ -482,9 +527,6 @@ public class GetCommands {
 	        }
 	        return null;
 	}
-	
-	
-	
 	//======================================
 	//GET VISIT
 	//======================================
@@ -499,45 +541,50 @@ public class GetCommands {
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
 	        		toReturn = constructVisitFromResultSet(rs, conn, guiController);
-	        		Table assignedTable = getTable(rs.getInt("table_id"), guiController);
-	        		if(rs.getObject("reservation_number") != null) { //If visit were reserved
-	        			Reservation assignedReservation = getReservation((Integer)rs.getObject("reservation_number"),guiController);
-	        			toReturn = new Visit(assignedReservation, assignedTable);
-	        			toReturn.setPartySize(assignedReservation.getNumberOfGuests());
-	        		}else {
-	        			Guest assignedGuest = getGuest(rs.getInt("waiting_id"), guiController);
-	        			toReturn = new Visit(assignedGuest, assignedTable);
-	        			toReturn.setPartySize(rs.getInt("party_size"));
-	        		}
-	        		if(toReturn != null) {
-	        			//Timestamps of start and end visit
-	        			LocalDateTime localStartDateTime = rs.getTimestamp("start_time").toLocalDateTime();
-	        			if(rs.getObject("end_time") != null) {
-	        				LocalDateTime localEndDateTime = rs.getTimestamp("end_time").toLocalDateTime();
-	        				toReturn.setEndTime(new DateTime(localEndDateTime.toLocalDate().toString(), localEndDateTime.toLocalTime().toString()));
-	        			}
-	        			toReturn.setActive(rs.getBoolean("is_active"));
-	        			toReturn.setStartTime(new DateTime(localStartDateTime.toLocalDate().toString(), localStartDateTime.toLocalTime().toString()));
-	        			toReturn.setVisitId(visitId);
-	        			toReturn.setBillOfVisit(getBill(visitId, guiController));
-	        		}
 	            }
 	        }
 	      } catch (SQLException e) {
-	       		guiController.addToConsole("Error fetching staff: " + e.getMessage());
+	       		guiController.addToConsole("Error fetching visit: " + e.getMessage());
 	      }
 	      return toReturn;
 	}
-	
+	//Get visit by verification code from waiting list
+	public static Visit getWaitingVisit(String verificationCode, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+        
+	    String sql = "SELECT * FROM waiting_list WHERE verification_code = ?";
+	    Visit toReturn = null;
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	    	ps.setString(1, verificationCode);
+	        try (ResultSet rs = ps.executeQuery()) {
+	        	if (rs.next()) {
+	        		Integer memberId = (Integer) rs.getObject("member_id");
+	        		Guest guest = new Guest(rs.getString("guest_full_name")
+	        							,rs.getString("guest_phone")
+	        							,rs.getString("email"));
+	        		if(memberId != null) {
+	        			Member member = getMemberById(memberId,guiController);
+	        			toReturn = new Visit(member, null);
+	        		} else {
+	        			toReturn = new Visit(guest, null);
+	        		}
+	        		toReturn.setWaitingId(rs.getInt("waiting_id"));
+	        		toReturn.setVerificationCode(rs.getString("verification_code"));
+	        		toReturn.setPartySize(rs.getInt("number_of_guests"));
+	            }
+	        }
+	      } catch (SQLException e) {
+	       		guiController.addToConsole("Error fetching visit: " + e.getMessage());
+	      }
+	      return toReturn;
+	}	
 	//Get all visits for specific member
 	public static ArrayList<Visit> getMemberVisits(Integer memberId, ServerFrameController guiController) {
 	    Connection conn = dbController.getInstance().getConnection();
 	    ArrayList<Visit> visits = new ArrayList<>();
 	    
 	    // Join visits with reservation to filter by member_id
-	    String sql = "SELECT v.* FROM visits v " +
-	                 "JOIN reservation r ON v.reservation_id = r.reservation_number " +
-	                 "WHERE r.member_id = ?";
+	    String sql = "SELECT * FROM visits WHERE member_id = ?";
 
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        ps.setInt(1, memberId);
@@ -552,7 +599,6 @@ public class GetCommands {
 	    }
 	    return visits;
 	}
-	
 	//Get current dinning sessions in restaurant
 	public static ArrayList<Visit> getActiveVisits(ServerFrameController guiController) {
 	    Connection conn = dbController.getInstance().getConnection();
@@ -576,29 +622,34 @@ public class GetCommands {
 	//Helper method to construct visit
 	private static Visit constructVisitFromResultSet(ResultSet rs, Connection conn, ServerFrameController guiController) throws SQLException {
 		Visit visit = null;
-	    int visitId = rs.getInt("visit_id");
-
 	    Table assignedTable = getTable(rs.getInt("table_id"), guiController);
-
+	    Integer visitId = rs.getInt("visit_id");
+	    Integer memberId = (Integer)rs.getObject("member_id");
 		if(rs.getObject("reservation_number") != null) { //If visit were reserved
 			Reservation assignedReservation = getReservation((Integer)rs.getObject("reservation_number"),guiController);
-			visit = new Visit(assignedReservation, assignedTable);
-			visit.setPartySize(assignedReservation.getNumberOfGuests());
-		}else {
+			visit = new Visit(assignedReservation, assignedTable);	
+		}
+		else if(memberId != null) {
+			Member assignedMember = (Member)getMemberById(rs.getInt("member_id"), guiController);
+			visit = new Visit(assignedMember, assignedTable);
+			visit.setPartySize(rs.getInt("party_size"));
+		}
+		else {
 			Guest assignedGuest = getGuest(rs.getInt("waiting_id"), guiController);
 			visit = new Visit(assignedGuest, assignedTable);
 			visit.setPartySize(rs.getInt("party_size"));
 		}
-
 		if(visit != null) {
 			//Timestamps of start and end visit
-			LocalDateTime localStartDateTime = rs.getTimestamp("start_time").toLocalDateTime();
+			if(rs.getObject("start_time") != null) {
+				LocalDateTime localStartDateTime = rs.getTimestamp("start_time").toLocalDateTime();
+				visit.setStartTime(new DateTime(localStartDateTime.toLocalDate().toString(), localStartDateTime.toLocalTime().toString()));
+			}
 			if(rs.getObject("end_time") != null) {
 				LocalDateTime localEndDateTime = rs.getTimestamp("end_time").toLocalDateTime();
 				visit.setEndTime(new DateTime(localEndDateTime.toLocalDate().toString(), localEndDateTime.toLocalTime().toString()));
 			}
 			visit.setActive(rs.getBoolean("is_active"));
-			visit.setStartTime(new DateTime(localStartDateTime.toLocalDate().toString(), localStartDateTime.toLocalTime().toString()));
 			visit.setVisitId(visitId);
 			visit.setBillOfVisit(getBill(visitId, guiController));
 		}

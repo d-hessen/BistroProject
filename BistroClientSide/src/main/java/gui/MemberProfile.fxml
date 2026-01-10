@@ -6,30 +6,18 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.MemberProfileController">
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="350.0" spacing="20.0" styleClass="card" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.MemberProfileController">
    <padding>
       <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
    <children>
-      <Label text="My Profile">
-         <font>
-            <Font name="System Bold" size="24.0" />
-         </font>
-      </Label>
+      <Label styleClass="header-label" text="My Profile" />
       <Separator prefWidth="200.0" />
       <VBox alignment="CENTER_LEFT" maxWidth="250.0" spacing="10.0">
          <children>
-            <Label fx:id="nameLabel" style="-fx-font-size: 14px;" text="Name: " />
-            <Label fx:id="phoneLabel" style="-fx-font-size: 14px;" text="Phone: " />
-            <Label fx:id="emailLabel" style="-fx-font-size: 14px;" text="Email: " />
-         </children>
+            <Label fx:id="nameLabel" text="Name: " /> <Label fx:id="phoneLabel" text="Phone: " /> <Label fx:id="emailLabel" text="Email: " /> </children>
       </VBox>
-      <Separator prefWidth="200.0" />
-      <Label style="-fx-font-size: 16px; -fx-font-weight: bold;" text="Your Digital Card" />
-      <ImageView fx:id="digitalCardImageView" fitHeight="200.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0);" />
-      <Separator prefWidth="200.0" />
-      <Button mnemonicParsing="false" onAction="#handleBack" prefWidth="100.0" text="Back" />
+      <Label style="-fx-font-weight: bold; -fx-font-size: 16px;" text="Your Digital Card" /> <ImageView fx:id="digitalCardImageView" fitHeight="180.0" fitWidth="180.0" pickOnBounds="true" preserveRatio="true" style="-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);" /> <Button onAction="#handleBack" prefWidth="120.0" text="Back" />
    </children>
 </VBox>

@@ -16,25 +16,29 @@ public class ReceiptScreenController {
 
     @FXML
     private Label amountLabel;
+    
+    private Visit paid;
 
     @FXML
     public void initialize() {
-
-        Visit visit = BistroClient.currentVisit;
-        if (visit == null) {
+    	paid = VisitDetailsController.visitInstance;
+        if (paid == null) {
             return;
         }
 
-        reservationIdLabel.setText("Reservation ID: " + visit.getReservation().getReservationId());
-
-        tableIdLabel.setText("Table Number: " + visit.getTable().getTableNumber());
-
-        //amountLabel.setText(String.format("Total Paid: ₪%.2f",visit.getBillOfVisit().getFinalAmount()));
+        reservationIdLabel.setText("Visit Number: " + paid.getVisitId());
+        tableIdLabel.setText("Table Number: " + paid.getTable().getTableNumber());
+        amountLabel.setText("Total Paid: ₪" + paid.getBillOfVisit().getFinalAmount());
     }
 
     @FXML
     private void handleFinish(ActionEvent event) {
-        BistroClient.currentVisit = null;
-      	 SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Payment Screen");
+    	//TODO
+    	//ADD LOGIC OF LEAVING TABLE
+      	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Payment Screen");
+    }
+    
+    public void visitPaid(Visit paid) {
+    	this.paid = paid;
     }
 }

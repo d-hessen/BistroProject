@@ -9,39 +9,34 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" prefHeight="500.0" prefWidth="400.0" spacing="20.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.VisitDetailsController">   <padding>
+<VBox alignment="CENTER" prefHeight="550.0" prefWidth="420.0" spacing="25.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.VisitDetailsController">
+   <padding>
       <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
    </padding>
 
    <children>
-
-      <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;" text="Visit Confirmed!" />
+      <Label style="-fx-text-fill: #2e7d32;" styleClass="header-label" text="Visit Confirmed!" />
 
       <Separator prefWidth="200.0" />
 
-      <VBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #f9f9f9; -fx-border-color: #cccccc;                    -fx-border-radius: 10; -fx-background-radius: 10;">         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
+      <VBox alignment="CENTER" spacing="10.0" style="-fx-padding: 20;" styleClass="card">
          <children>
             <Label style="-fx-font-size: 14px; -fx-text-fill: #666666;" text="Your Assigned Table:" />
-
-            <Label fx:id="tableIdLabel" style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1976d2;" text="--" />
+            <Label fx:id="tableIdLabel" style="-fx-font-size: 56px; -fx-font-weight: bold; -fx-text-fill: #1976d2;" text="--" />
          </children>
       </VBox>
 
       <GridPane hgap="10" vgap="15">
          <columnConstraints>
-            <ColumnConstraints halignment="RIGHT" prefWidth="120" />
-            <ColumnConstraints halignment="LEFT" prefWidth="180" />
+            <ColumnConstraints halignment="RIGHT" prefWidth="140" />
+            <ColumnConstraints halignment="LEFT" prefWidth="160" />
          </columnConstraints>
 
          <children>
-            <Label style="-fx-font-weight: bold;" text="Reservation Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <Label fx:id="labelForVisitNumber" style="-fx-font-weight: bold;" text="Reservation Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
             <Label fx:id="orderIdLabel" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
             <Label style="-fx-font-weight: bold;" text="Start Time:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-
-            <!-- Countdown Timer -->
             <Label fx:id="startTimeLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;" text="15:00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
             <Label style="-fx-font-weight: bold;" text="Diners:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
@@ -56,10 +51,12 @@
 
       <Separator prefWidth="200.0" />
 
-      <!-- Buttons -->
-      <Button fx:id="startVisitBtn" onAction="#handleStartVisit" prefWidth="150" style="-fx-background-color: #008000; -fx-text-fill: white; -fx-font-weight: bold;" text="Start Visit" />
 
-      <Button fx:id="endVisitBtn" onAction="#handleEndMeal" prefWidth="150" style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-weight: bold;" text="End Visit" />
-
+      <VBox alignment="CENTER" spacing="15.0">
+         <children>
+            <Button fx:id="startVisitBtn" onAction="#handleStartVisit" prefHeight="45.0" prefWidth="200.0" styleClass="primary-button" text="Start Visit" />
+            <Button fx:id="endVisitBtn" onAction="#handleEndMeal" prefHeight="45.0" prefWidth="200.0" styleClass="danger-button" text="End Visit" />
+         </children>
+      </VBox>
    </children>
 </VBox>

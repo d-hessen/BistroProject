@@ -26,8 +26,7 @@ public class Reservation implements Serializable {
         this.guest = guest;
         
         // Set creation time and generate verification code automatically
-        setDateOfPlacingReservation(null); 
-        generateVerificationCode();        
+        setDateOfPlacingReservation(null);       
         setStatus(null); // Default status will be pending
     }
 
@@ -40,11 +39,6 @@ public class Reservation implements Serializable {
         this(reservationDate, numberOfGuests, memberId, guest);
         // Set the ID from the database
         this.reservationId = reservationId; 
-    }
-
-    // generates a random 4-digit verification code
-    private void generateVerificationCode() {
-    	this.verificationCode = String.valueOf((int) (Math.random() * 9000) + 1000);
     }
 
     // getter and setter for Date of Placing

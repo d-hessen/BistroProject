@@ -9,6 +9,7 @@ import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
 import handlers.StaffWaitingListController;
 import handlers.VisitDetailsController;
+import handlers.VisitIdentificationController;
 import handlers.VisitNowController;
 import javafx.scene.control.Alert;
 
@@ -24,6 +25,8 @@ public class BistroClient extends AbstractClient
   public static StaffLoginController staffLoginControllerInstance;
   public static StaffDashboardController staffDashControllerInstance;
   public static VisitNowController visitNowControllerInstance;
+  public static VisitIdentificationController visitIdentificationControllerInstance;
+  public static VisitDetailsController visitDetailsControllerInstance;
 
   public static Reservation  reservationInstance = null;
   public static List<Visit> visitsList = null;
@@ -34,11 +37,9 @@ public class BistroClient extends AbstractClient
   public static Staff staffInstance = null;
   public static boolean awaitResponse = false;
   public static boolean operationSuccess = false;
-  public static Visit currentVisit;
   public static List<Reservation> reservationsList = null;
   public static StaffWaitingListController staffWaitingListControllerInstance;
 
-  
   public BistroClient(String host, int port, ChatIF clientUI) 
     throws IOException 
   {
@@ -104,19 +105,12 @@ public class BistroClient extends AbstractClient
             	}
             	break;
             // --- MANAGEMENT ROUTES ---
-            case CHECK_IN_CUSTOMER: // Response from check-in
-                String result = (String) answer.getData();
-                if(staffDashControllerInstance != null) {
-                    staffDashControllerInstance.updateCheckInStatus(result.startsWith("Success"), result);
-                }
-                break;
             case VERIFY_MEMBER_ARRIVAL:
-                String mesg = (String) answer.getData();
-                boolean isSuccess = mesg.startsWith("Success");
-                if (staffDashControllerInstance != null) {
-                    staffDashControllerInstance.updateCheckInStatus(isSuccess, mesg);
-                }
-                break;
+            	staffDashControllerInstance.updateCheckInStatus(answer.getData());
+		  		break;
+            case CHECK_IN_CUSTOMER:
+            	visitIdentificationControllerInstance.customerCheckedIn(answer.getData());
+            	break;
             case GET_WAITING_LIST:
                 if (staffWaitingListControllerInstance != null) {
                     staffWaitingListControllerInstance.updateWaitingList((List<Visit>) answer.getData());
@@ -143,14 +137,11 @@ public class BistroClient extends AbstractClient
 		  		wantedReservationId = reservationInstance.getReservationId();
 		  		break;
 		  	case GET_VERIFICATION_CODE:
-		  		if (answer.getData() == null) {
-                    reservationInstance = null;
-                    wantedVerCode = null;
-                    return;
+		  		if(visitIdentificationControllerInstance.sentRequest) {
+		  			visitIdentificationControllerInstance.checkIn(answer.getData());
+		  		}else {
+		  			reservationInstance = (Reservation)answer.getData();
 		  		}
-		  		reservationInstance = (Reservation)answer.getData();
-		  		wantedVerCode = reservationInstance.getVerificationCode();
-
 		  		break;
 		  	case UPDATE_RESERVATION:
 		  		if((boolean) answer.getData()) System.out.println("Update succeeded");
@@ -181,7 +172,7 @@ public class BistroClient extends AbstractClient
 		  		
 		  		if(answer.getData() instanceof List<?>) {
 		  			List<?> list = (List<?>) answer.getData();
-		  			for (Object item : (List<?>) answer.getData()) {
+		  			for (Object item : list) {
 		  	            if (item instanceof Reservation) {
 		  	                reservations.add((Reservation) item);
 		  	            }
@@ -205,14 +196,22 @@ public class BistroClient extends AbstractClient
 		  		}
 		  	    visitsList = visits;
 		  	    break;
-		  	case CREATE_VISIT:
-		  		Integer visitId = (Integer)answer.getData();
-		  		VisitDetailsController.visitCreated(visitId);
-		  	    break;
-		  	    
+//		  	case CREATE_VISIT:
+//		  		Integer visitId = (Integer)answer.getData();
+//		  		VisitDetailsController.visitCreated(visitId);
+//		  	    break;
+		  	case START_VISIT:
+		  		boolean isStarted = (boolean)answer.getData();
+		  		visitDetailsControllerInstance.visitStarted(isStarted);
+		  		break;
 		  	case VISIT_NOW:
-		  		String recieved = (String)answer.getData();
-		  		visitNowControllerInstance.randomVisitCreated(recieved);
+		  		if(answer.getData() instanceof String) {
+			  		String recieved = (String)answer.getData();
+			  		visitNowControllerInstance.walkInVisitNotCreated(recieved);
+		  		} else {
+		  			Visit created = (Visit)answer.getData();
+		  			visitNowControllerInstance.walkInVisitCreated(created);
+		  		}
 		  		break;
 		  	default:
 	            System.out.println("Unknown Action: " + answer.getAction());
@@ -254,7 +253,7 @@ public class BistroClient extends AbstractClient
     }
     catch(IOException e)
     {
-      SceneLoader.showAlert(Alert.AlertType.ERROR, "Connection to server", "Could not send message to server: Terminating client.");
+      SceneLoader.showAlert(Alert.AlertType.ERROR, "Connection to server", "Server is unreacheable now: Terminating client.");
       quit();
     }
   }

@@ -8,6 +8,7 @@ import dataLayer.Member;
 import dataLayer.Reservation;
 import dataLayer.Staff;
 import dataLayer.Table;
+import dataLayer.Visit;
 import databaseController.CreateCommands;
 import databaseController.DeleteCommands;
 import databaseController.GetCommands;
@@ -34,56 +35,29 @@ public class StaffController {
 	}
 	
 	public static BistroMessage getAllTables(ServerFrameController guiController) {
-        GetCommands getCmd = new GetCommands();
-        ArrayList<Table> tables = getCmd.getAllTablesWithStatus(guiController);
+        ArrayList<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
         return new BistroMessage(Action.GET_ALL_TABLES, tables);
     }
-	
-	public static BistroMessage checkInCustomer(String verificationCode, ServerFrameController guiController) {
-		Reservation reservation = GetCommands.getReservationVerificationCode(verificationCode, guiController);
-        
-        if (reservation != null) {
-            // Logic to start visit would go here (CreateCommands.startVisit...)
-            // For now, we return success
-            return new BistroMessage(Action.CHECK_IN_CUSTOMER, "Check-in Successful for Res #" + reservation.getReservationId());
-        } else {
-            return new BistroMessage(Action.CHECK_IN_CUSTOMER, "Invalid Code");
-        }
-    }
-	
-	public static BistroMessage verifyMemberArrival(String memberCode, ServerFrameController guiController) {
-        GetCommands getCmd = new GetCommands();
-        CreateCommands createCmd = new CreateCommands();
-        
+
+	public static BistroMessage verifyMemberArrival(String memberCode, ServerFrameController guiController) { 
         //Check if reservation exists for this member within 30 mins
-        Reservation res = getCmd.findUpcomingReservationByCode(memberCode, guiController);
+        Reservation reservation = GetCommands.findUpcomingReservationByCode(memberCode, guiController);
         
-        if (res == null) {
+        if (reservation == null) {
             return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, "Error: No reservation found for this member in the next 30 minutes.");
         }
         
-        //Find an available table for the party size
-        Integer tableId = getCmd.getAvailableTableId(res.getNumberOfGuests());
-        
-        if (tableId == null) {
-            // Reservation exists, but no table is free
-            return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, "Error: Reservation found, but no matching table is currently free.");
-        }
-        
-        //Create the Visit (Check In)
-        boolean success = createCmd.createVisit(res.getReservationId(), tableId, guiController);
-        
-        if (success) {
-            //Send Notifications (Mock)
-            Member m = getCmd.getMemberByCode(memberCode);
+        //Find an available table for the party 
+        BistroMessage response = VisitController.createReservatedVisit(reservation, guiController);
+        if(response.getData() instanceof Visit) {
+        	Visit created = (Visit)response.getData();
+        	Member m = GetCommands.getMemberByCode(memberCode, guiController);
             String contact = (m != null) ? m.getEmail() : "Member";
-            
-            guiController.addToConsole("Sent Email to " + contact + ": Your table #" + tableId + " is ready!");
+            guiController.addToConsole("Sent Email to " + contact + ": Your table #" + created.getTable().getTableNumber() + " is ready!");
             guiController.addToConsole("Sent SMS: Visit confirmed.");
-            
-            return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, "Success: Checked in at Table " + tableId);
-        } else {
-            return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, "Error: Database failed to create visit.");
+            return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, created);
+        }else {//Response is String
+        	return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, response.getData());
         }
     }
 
