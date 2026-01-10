@@ -50,10 +50,12 @@ public class MemberReservationsController {
         dinersColumn.setStyle("-fx-alignment: CENTER;");
         statusColumn.setStyle("-fx-alignment: CENTER;");
         
+        reservationsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
         reservationsTable.setItems(reservationsList);
         
         loadReservations();
-    }
+        }
 
     private void loadReservations() {
     	ArrayList<Reservation> reservations = new ArrayList<>();

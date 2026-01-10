@@ -169,8 +169,23 @@ public class CreateCommands {
 	//VISIT CREATION
 	//======================================
 	//Create visit for reservation 
-	public static boolean createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController) {
+	public static boolean createVisit(Integer reservationId, Integer tableId, ServerFrameController guiController){
         Connection conn = dbController.getInstance().getConnection();
+        /*
+        String checkSql = "SELECT 1 FROM visits WHERE reservation_number = ? LIMIT 1";
+
+        try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+            checkPs.setInt(1, reservationId);
+            ResultSet rs = checkPs.executeQuery();
+            if (rs.next()) {
+                guiController.addToConsole("Visit already exists for reservation number=" + reservationId);
+                return false;
+            }
+        }
+        catch (SQLException e) {
+        	return false;
+        }
+        */
         // Start time = Current time
         Date now = new Date();
         Timestamp startTime = new Timestamp(now.getTime());
