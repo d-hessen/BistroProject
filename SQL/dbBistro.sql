@@ -7,7 +7,7 @@ USE `bistro`;
 CREATE TABLE IF NOT EXISTS `restaurant_config` (
   `restaurant_id` INT NOT NULL DEFAULT 1,
   `open_time` TIME NOT NULL DEFAULT '12:00:00',
-  `close_timet` TIME NOT NULL DEFAULT '23:00:00',
+  `close_time` TIME NOT NULL DEFAULT '23:00:00',
   `reservation_duration_hours` INT NOT NULL DEFAULT 2, 
   `max_late_minutes` INT NOT NULL DEFAULT 15, 
   PRIMARY KEY (`restaurant_id`)
@@ -48,14 +48,16 @@ CREATE TABLE IF NOT EXISTS `members` (
 
 -- Reservations (include details of guests)
 CREATE TABLE IF NOT EXISTS `reservation` (
-  `reservation_number` INT NOT NULL AUTO_INCREMENT,
-  `reservation_date` DATETIME NOT NULL, -- Date of reservation
+  `reservation_number` INT NOT NULL auto_increment,
+  `reservation_date` DATE NOT NULL, -- Date of reservation
+  `reservation_time` TIME NOT NULL, -- Time of reservation
   `number_of_guests` INT NOT NULL, -- Number of guests in reservation
-  `verification_code` VARCHAR(20) NOT NULL, -- Code to start visit 
+  `verification_code` VARCHAR(20) NOT NULL unique, -- Code to start visit 
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `member_id` INT NULL, -- NULL if it's guest
   `guest_full_name` VARCHAR(100) NULL, -- Fill if there's no member_id
   `guest_phone` VARCHAR(20) NULL, -- Fill if there's no member_id
+  `email` VARCHAR(100) NULL,
   `status` ENUM('pending', 'approved', 'seated', 'cancelled', 'no_show') DEFAULT 'pending',
   PRIMARY KEY (`reservation_number`),
   CONSTRAINT `fk_res_subscribers`
@@ -67,8 +69,10 @@ CREATE TABLE IF NOT EXISTS `reservation` (
 CREATE TABLE IF NOT EXISTS `waiting_list` (
   `waiting_id` INT NOT NULL AUTO_INCREMENT, -- Applies to guest when enters
   `member_id` INT NULL,
+  `verification_code` VARCHAR(20) NOT NULL unique, -- Code to start visit
   `guest_full_name` VARCHAR(100) NULL,
   `guest_phone` VARCHAR(20) NULL,
+  `email` VARCHAR(100) NULL,
   `number_of_guests` INT NOT NULL,
   `entered_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Time of entering waiting list
   `notified_at` DATETIME NULL, -- When was notified about free place
@@ -86,10 +90,14 @@ CREATE TABLE IF NOT EXISTS `visits` (
   -- Has guest booked or joined from waiting list (for reports)
   `reservation_number` INT NULL, 
   `waiting_id` INT NULL,
-  
-  `start_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- when sitted
-  `end_time` DATETIME NULL, -- actual end time
-  
+  `member_id` INT NULL,
+  -- If guest joined immediately
+  `guest_full_name` VARCHAR(100) NULL,
+  `guest_phone` VARCHAR(20) NULL,
+  `email` VARCHAR(100) NULL,
+  `party_size` INT NULL,
+  `start_time` TIMESTAMP NULL, -- when sitted
+  `end_time` TIMESTAMP NULL, -- actual end time
   -- Active (1) / Finished (0)
   `is_active` TINYINT DEFAULT 1,
   
@@ -105,14 +113,14 @@ CREATE TABLE IF NOT EXISTS `visits` (
 -- Bills
 CREATE TABLE IF NOT EXISTS `bills` (
   `bill_id` INT NOT NULL AUTO_INCREMENT,
-  `visit_id` INT NOT NULL,
+  `visit_id` INT NOT NULL UNIQUE,
   `member_id` INT NULL, -- To know if we need to apply 10% discount
   
   `total_amount` DECIMAL(10, 2) NOT NULL DEFAULT 0.00, -- Entered by staff
   `discount_amount` DECIMAL(10, 2) DEFAULT 0.00, -- Set 10% if member_id != null
   `final_amount` DECIMAL(10, 2) NOT NULL DEFAULT 0.00, -- To pay
   
-  `payment_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `payment_time` TIMESTAMP NULL,
   `is_paid` TINYINT DEFAULT 0,
   
   PRIMARY KEY (`bill_id`),
