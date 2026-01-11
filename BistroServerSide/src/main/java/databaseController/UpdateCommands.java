@@ -37,22 +37,23 @@ public class UpdateCommands {
 	//======================================
     //Update an existing reservation
     //IN RESERVATION FIELDS THAT CAN BE UPDATED ARE: numberOfGuests, reservationDate, status
-    public static boolean updateMember(Member memberToUpdate, ServerFrameController guiController) {
+    public static Member updateMember(Member memberToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
         //SQL QUERY TO UPDATE TABLE CHECK FIELDS IN DATABASE BEFORE CHANGE
-        String sql = "UPDATE members SET full_name = ?, phone = ?, email = ?, password = ?, WHERE table_number = ?";
-        
+        String sql = "UPDATE members SET phone = ?, email = ? WHERE member_id = ?";
+        Member toReturn = null;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(0, memberToUpdate.getFullName());
             ps.setString(1, memberToUpdate.getPhoneNumber());
             ps.setString(2, memberToUpdate.getEmail());
-            ps.setString(3, memberToUpdate.getPassword());
+            ps.setInt(3, memberToUpdate.getMemberId());
             int result = ps.executeUpdate();
-            return result > 0;
+            if(result>0) {
+            	toReturn = GetCommands.getMemberById(memberToUpdate.getMemberId(), guiController);
+            }
         } catch (SQLException e) {
-            System.err.println("Error updating member: " + e.getMessage());
-            return false;
+        	guiController.addToConsole("Error updating member: " + e.getMessage());
         }
+        return toReturn;
     }   
 	//======================================
 	//TABLE UPDATES

@@ -82,7 +82,9 @@ public class BistroServer extends AbstractServer
           		Member memberToDelete = (Member)request.getData();
           		client.sendToClient(GuestController.memberDelete(memberToDelete, guiController));
           		break;
-          		
+          	case UPDATE_MEMBER:
+          		client.sendToClient(GuestController.updateMemberDetails((Member)request.getData(),guiController));
+          		break;
             // --- RESERVATION ROUTES ---
             case GET_RESERVATION:
                 Integer resId = (Integer)request.getData(); 

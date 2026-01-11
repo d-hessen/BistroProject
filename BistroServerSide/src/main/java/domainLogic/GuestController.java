@@ -71,5 +71,10 @@ public class GuestController {
 		}
 		return new BistroMessage(Action.MEMBER_NOT_FOUND, null);
 	}
+	
+	public static BistroMessage updateMemberDetails(Member toUpdate, ServerFrameController guiController) {
+		Member memberUpdated = UpdateCommands.updateMember(toUpdate, guiController);
+		return new BistroMessage(Action.UPDATE_MEMBER, memberUpdated);
+	}
 
 }

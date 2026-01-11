@@ -4,6 +4,7 @@ import ocsf.client.*;
 import common.BistroMessage;
 import common.ChatIF;
 import dataLayer.*;
+import handlers.MemberProfileController;
 import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
@@ -27,6 +28,7 @@ public class BistroClient extends AbstractClient
   public static VisitNowController visitNowControllerInstance;
   public static VisitIdentificationController visitIdentificationControllerInstance;
   public static VisitDetailsController visitDetailsControllerInstance;
+  public static MemberProfileController memberProfileControllerInstance;
 
   public static Reservation  reservationInstance = null;
   public static List<Visit> visitsList = null;
@@ -131,6 +133,9 @@ public class BistroClient extends AbstractClient
                 if(staffDashControllerInstance != null)
                     staffDashControllerInstance.memberCreated(false, (String)answer.getData());
                 break;
+		  	case UPDATE_MEMBER:
+		  		memberProfileControllerInstance.isUpdated((Member)answer.getData());
+		  		break;
 		  	// --- RESERVATION ROUTES --
 		  	case GET_RESERVATION:
 		  		reservationInstance = (Reservation)answer.getData();
@@ -151,15 +156,13 @@ public class BistroClient extends AbstractClient
 		  		break;
 		  	case RESERVATION_NOT_FOUND:
 		  		wantedReservationId = (Integer)answer.getData();
-		  		break;
-		  		
+		  		break; 		
 		  	case CREATE_RESERVATION:
 		  		Reservation newRes = (Reservation) answer.getData();		  	    
 		  	    reservationInstance = newRes;
 		  	    wantedReservationId = newRes.getReservationId(); 	  	    
 		  	    System.out.println("Reservation created successfully. ID: " + wantedReservationId);
 		  	    break;
-		  	    
 		  	case CANCEL_RESERVATION:
 		  	    if ((boolean) answer.getData()) {
 		  	        System.out.println("Reservation deleted successfully.");
