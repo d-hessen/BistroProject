@@ -53,7 +53,7 @@
                     <children>
                         <Button onAction="#handleNewReservation" prefHeight="60" prefWidth="Infinity" text="New Reservation" GridPane.columnIndex="0" GridPane.rowIndex="0" /> 
                         <Button onAction="#handleFindReservation" prefHeight="60" prefWidth="Infinity" text="Find Reservation" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                        <Button onAction="#handleInsertParty" prefHeight="60" prefWidth="Infinity" text="Add to Waiting List" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Button onAction="#handleInsertParty" prefHeight="60" prefWidth="Infinity" text="Get A Table Now" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                         <Button onAction="#handleWaitingList" prefHeight="60" prefWidth="Infinity" text="View Waiting List" GridPane.columnIndex="1" GridPane.rowIndex="1" /> 
                         <Button onAction="#handleCustomerArrival" prefHeight="60" prefWidth="Infinity" text="Visit Identification" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                         <Button onAction="#handleCurrentVisits" prefHeight="60" prefWidth="Infinity" text="Dining Sessions" GridPane.columnIndex="1" GridPane.rowIndex="2" />
@@ -163,24 +163,27 @@
             </VBox>
         </Tab>
 
-        <Tab fx:id="managerAdminTab" text="Administration"> 
-            <VBox spacing="15" style="-fx-padding: 20;">
-                <HBox spacing="15">
-                    <Button styleClass="primary-button" text="View All Users" />
-                    <Button text="System Settings" /> 
-                </HBox>
-                <Label text="System Activity Log:" /> 
-                <TableView fx:id="logsTable" VBox.vgrow="ALWAYS"> 
-                    <columns>
-                        <TableColumn prefWidth="150" text="Time" />
-                        <TableColumn prefWidth="100" text="User" />
-                        <TableColumn prefWidth="500" text="Action" />
-                    </columns>
-                    <columnResizePolicy>
-      					<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-   					</columnResizePolicy>
-                </TableView>
-            </VBox>
-        </Tab>
+		<Tab fx:id="managerAdminTab" text="Administration"> 
+		    <VBox spacing="15" style="-fx-padding: 20;">
+		        <HBox spacing="15">
+		            <Button fx:id="btnShowMembers" onAction="#showMembers" styleClass="primary-button" text="View All Members" />
+		            
+		            <Button onAction="#openSystemSettings" text="System Settings" /> 
+		        </HBox>
+		        
+		        <Label text="Members List:" /> 
+		        
+		        <TableView fx:id="membersTable" VBox.vgrow="ALWAYS" styleClass="members-table"> 
+		            <columns>
+		                <TableColumn fx:id="colMemberName" prefWidth="200.0" text="Full Name" />
+		                <TableColumn fx:id="colMemberPhone" prefWidth="200.0" text="Phone" />
+		                <TableColumn fx:id="colMemberEmail" prefWidth="200.0" text="Email" />
+		            </columns>
+		            <columnResizePolicy>
+		                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+		            </columnResizePolicy>
+		        </TableView>
+		    </VBox>
+		</Tab>
     </TabPane>
 </VBox>

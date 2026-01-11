@@ -118,6 +118,12 @@ public class BistroClient extends AbstractClient
                     staffWaitingListControllerInstance.updateWaitingList((List<Visit>) answer.getData());
                 }
                 break;
+            case GET_ALL_MEMBERS:
+                ArrayList<Member> receivedMembers = (ArrayList<Member>) answer.getData();                
+                if (staffDashControllerInstance != null) {
+                    staffDashControllerInstance.updateMembersList(receivedMembers);
+                }
+                break;
 		  	// --- MEMBER ROUTES ---
 		  	case MEMBER_IDENTIFICATION:
 		  		memberInstance = (Member)answer.getData();

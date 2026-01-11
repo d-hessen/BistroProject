@@ -301,3 +301,8 @@
 .check-box:focused > .box {
     -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.4), 8, 0, 0, 0);
 }
+
+.members-table .column-header .label {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 10 0 10; 
+}

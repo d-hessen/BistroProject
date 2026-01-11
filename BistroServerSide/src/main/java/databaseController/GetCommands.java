@@ -811,5 +811,35 @@ public class GetCommands {
 	    }
 	    return list;
 	}
-
+    
+    // ======================================
+    //RETRIEVE ALL MEMBERS
+    // ======================================
+    public static List<Member> getAllMembers(ServerFrameController guiController) {
+        List<Member> members = new ArrayList<>();
+        Connection conn = dbController.getInstance().getConnection();
+        String sql = "SELECT * FROM members";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                Member m = new Member(
+                    rs.getString("full_name"),
+                    rs.getString("phone"),
+                    rs.getString("email"),
+                    rs.getString("password")
+                );
+                m.setMemberId(rs.getInt("member_id"));
+                m.setCardCode(rs.getString("card_code"));
+                // Add any other fields if needed
+                
+                members.add(m);
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching all members: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return members;
+    }
 }
