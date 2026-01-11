@@ -31,6 +31,7 @@ public class GetCommands {
                 	Reservation toReturn = new Reservation(
                         	rs.getInt("reservation_number"),
                         	new DateTime(rs.getString("reservation_date"),rs.getString("reservation_time")),
+	                		rs.getString("verification_code"),
                         	rs.getInt("number_of_guests"),
                         	rs.getInt("member_id"),
                             new Guest(rs.getString("guest_full_name"), 
@@ -121,6 +122,7 @@ public class GetCommands {
                         foundReservation = new Reservation(
                         		 rs.getInt("reservation_number"),
                                  dt,
+     	                		rs.getString("verification_code"),
                                  rs.getInt("number_of_guests"),
                                  rs.getInt("member_id"),
                                  guestInfo
@@ -155,6 +157,7 @@ public class GetCommands {
                     upcoming.add(new Reservation(
                         rs.getInt("reservation_number"),
                         new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+                		rs.getString("verification_code"),
                         rs.getInt("number_of_guests"),
                         rs.getInt("member_id"),
                         null // Guest info not needed for logic check
@@ -182,6 +185,7 @@ public class GetCommands {
                             rs.getString("reservation_date"),
                             rs.getString("reservation_time")
 	                        ),
+	                		rs.getString("verification_code"),
 	                        rs.getInt("number_of_guests"),
 	                        rs.getInt("member_id"),
 	                        new Guest(
@@ -467,7 +471,8 @@ public class GetCommands {
 				if (rs.next()) {
 					Reservation toReturn = new Reservation(
 						rs.getInt("reservation_number"),
-						new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")), 
+						new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+                		rs.getString("verification_code"),
 						rs.getInt("number_of_guests"),
 						rs.getInt("member_id"), 
 						new Guest(

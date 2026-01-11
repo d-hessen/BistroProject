@@ -34,11 +34,13 @@ public class Reservation implements Serializable {
     // Constructor 2: For retrieving an existing reservation
     // Used when fetching data from the DB.
     // ==========================================
-    public Reservation(Integer reservationId, DateTime reservationDate, Integer numberOfGuests, Integer memberId, Guest guest) {
+    public Reservation(Integer reservationId, DateTime reservationDate,String verificationCode, Integer numberOfGuests, Integer memberId, Guest guest) {
         // Call the first constructor
         this(reservationDate, numberOfGuests, memberId, guest);
         // Set the ID from the database
         this.reservationId = reservationId; 
+        this.verificationCode = verificationCode; 
+
     }
 
     // getter and setter for Date of Placing

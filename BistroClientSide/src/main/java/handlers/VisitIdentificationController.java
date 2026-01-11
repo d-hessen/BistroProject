@@ -108,6 +108,10 @@ public class VisitIdentificationController implements Initializable {
     @FXML
     private void handleForgotPassword(ActionEvent event) {
     	// TODO: send the client code via email and SMS
+    	if(BistroClient.memberInstance != null) {
+            ClientUI.chat.accept(new BistroMessage(Action.GET_MEMBER_RESERVATIONS, BistroClient.memberInstance.getPhoneNumber()));
+    		EmailSend.sendReservationsTableByEmail(BistroClient.reservationsList);    		
+    	}
         statusLabel.setText("If the code exists, it has been sent to your Email/SMS.");
         statusLabel.setTextFill(Color.web("#1976d2"));
     }
