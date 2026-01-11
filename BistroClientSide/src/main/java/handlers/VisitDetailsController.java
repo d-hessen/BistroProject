@@ -103,6 +103,7 @@ public class VisitDetailsController {
     		if(isStarted) {
     	        visitStarted = true;
     	        VisitSessionManager.setVisitStarted(true);
+    			Platform.runLater(() -> EmailSend.sendConfirmationNotifications("Table Assigned : " + visitInstance.getTable().getTableNumber()));
                 startTimeLabel.setText("Started");
                 startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
                 startVisitBtn.setDisable(true);

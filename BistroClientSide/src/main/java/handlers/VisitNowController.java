@@ -11,8 +11,17 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 import java.net.URL;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import client.BistroClient;
 import client.ClientUI;
@@ -162,5 +171,6 @@ public class VisitNowController implements Initializable {
     public void walkInVisitCreated(Visit visit) {
     	createdVisit = visit;
 		hasAssignedTable = true;
+		Platform.runLater(() -> EmailSend.sendConfirmationNotifications("Table Assigned : " + visit.getTable() ));
     }
 }
