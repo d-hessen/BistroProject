@@ -1,7 +1,9 @@
 package handlers;
 
 import client.BistroClient;
+import dataLayer.Guest;
 import dataLayer.Member;
+import dataLayer.Reservation;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -28,6 +30,8 @@ public class MakeReservationController implements Initializable {
     @FXML private DatePicker datePicker;
     @FXML private TextField dinersField;
     @FXML private Label errorLabel; // Ensure this matches fx:id in FXML
+    
+    public static Guest guestInstance = null;
 
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
 
@@ -98,11 +102,12 @@ public class MakeReservationController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TimeSlot.fxml"));
             Parent root = loader.load();
-
+            
+            guestInstance = new Guest(fullName,phone,email);
             // Get the next controller and pass the data
             TimeSlotController controller = loader.getController();
             controller.initData(date, fullName, email, phone, numDiners);
-
+            
             // Replace the scene in the current window
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
