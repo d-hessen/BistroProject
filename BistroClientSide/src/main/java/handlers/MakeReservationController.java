@@ -31,8 +31,6 @@ public class MakeReservationController implements Initializable {
     @FXML private TextField dinersField;
     @FXML private Label errorLabel; // Ensure this matches fx:id in FXML
     
-    public static Guest guestInstance = null;
-
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
 
     @Override
@@ -103,7 +101,6 @@ public class MakeReservationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TimeSlot.fxml"));
             Parent root = loader.load();
             
-            guestInstance = new Guest(fullName,phone,email);
             // Get the next controller and pass the data
             TimeSlotController controller = loader.getController();
             controller.initData(date, fullName, email, phone, numDiners);

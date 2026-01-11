@@ -39,7 +39,7 @@ public class VisitIdentificationController implements Initializable {
     private Label statusLabel;
 
     public boolean sentRequest;
-    private Visit created = null;
+    public static Visit created = null;
     private ActionEvent event;
     
     @Override

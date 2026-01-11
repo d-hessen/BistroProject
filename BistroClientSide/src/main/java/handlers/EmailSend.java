@@ -11,22 +11,23 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import client.BistroClient;
+import dataLayer.Reservation;
 import javafx.scene.control.Alert;
 public class EmailSend{
 	public static void sendConfirmationNotifications(String messageInfo) {
 		String recipientEmail;
 		String recipientName;
 		String recipientPhone;
-
+		Reservation res = VisitIdentificationController.created.getReservation();
 		if(BistroClient.memberInstance != null) {
             recipientEmail = BistroClient.memberInstance.getEmail();
             recipientName = BistroClient.memberInstance.getFullName();
             recipientPhone = BistroClient.memberInstance.getPhoneNumber();
 		}
 		else{
-			recipientEmail = MakeReservationController.guestInstance.getEmail();
-            recipientName = MakeReservationController.guestInstance.getFullName();
-            recipientPhone = MakeReservationController.guestInstance.getPhoneNumber();
+			recipientEmail = res.getGuest().getEmail();
+            recipientName = res.getGuest().getFullName();
+            recipientPhone = res.getGuest().getPhoneNumber();
 		}
         if (recipientEmail != null && !recipientEmail.isEmpty()) {
             new Thread(() -> {
