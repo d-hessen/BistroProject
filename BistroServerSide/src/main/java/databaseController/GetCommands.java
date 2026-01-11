@@ -688,4 +688,47 @@ public class GetCommands {
 	    }
 	    return toReturn;
 	}
+	
+	// ======================================
+    // GET WAITING LIST
+    // ======================================
+    public static List<Visit> getWaitingList(ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        List<Visit> waitingList = new ArrayList<>();
+        
+        String sql = "SELECT * FROM waiting_list WHERE status IN ('waiting', 'notified') ORDER BY entered_at ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Visit visit = null;
+                Integer memberId = (Integer) rs.getObject("member_id");
+                
+                Guest guest = new Guest(
+                    rs.getString("guest_full_name"),
+                    rs.getString("guest_phone"),
+                    rs.getString("email")
+                );
+
+                //client or member
+                if (memberId != null && memberId > 0) {
+                     Member member = getMemberById(memberId, guiController);
+                     visit = new Visit(member, null); 
+                } else {
+                     visit = new Visit(guest, null);
+                }
+
+                // fill fields for the waiting list
+                visit.setWaitingId(rs.getInt("waiting_id"));
+                visit.setVerificationCode(rs.getString("verification_code"));
+                visit.setPartySize(rs.getInt("number_of_guests"));
+                
+                waitingList.add(visit);
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching waiting list: " + e.getMessage());
+        }
+        return waitingList;
+    }
 }

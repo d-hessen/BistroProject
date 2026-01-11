@@ -53,7 +53,7 @@ public class BistroServer extends AbstractServer
                 client.sendToClient(StaffController.verifyMemberArrival(cardCode, guiController));
                 break;
             case GET_WAITING_LIST:
-                List<Visit> currentQueue = WaitingList.getInstance().getWaitingListAsVisits();
+            	List<Visit> currentQueue = GetCommands.getWaitingList(guiController);              
                 BistroMessage response = new BistroMessage(Action.GET_WAITING_LIST, currentQueue);
                 try {
                     client.sendToClient(response);
@@ -69,6 +69,19 @@ public class BistroServer extends AbstractServer
             		client.sendToClient(VisitController.createWalkInVisit((Visit)request.getData(), guiController));
             	}
             	break;
+            case REMOVE_FROM_WAITING_LIST:
+                if (request.getData() instanceof Integer) {
+                    int waitingIdToRemove = (Integer) request.getData();
+                    boolean success = databaseController.DeleteCommands.deleteWaitingListEntry(waitingIdToRemove, guiController);
+                    
+                    if (success) {
+                        guiController.addToConsole("Removed waiting ID: " + waitingIdToRemove);
+                        client.sendToClient(new BistroMessage(Action.REMOVE_FROM_WAITING_LIST, true));
+                    } else {
+                        client.sendToClient(new BistroMessage(Action.REMOVE_FROM_WAITING_LIST, false));
+                    }
+                }
+                break;
           	// --- MEMBER ROUTES ---
           	case MEMBER_IDENTIFICATION:
           		Member memberRecieved = (Member)request.getData();

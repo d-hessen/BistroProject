@@ -8,6 +8,8 @@ import client.BistroClient;
 import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
+import dataLayer.Guest; 
+import dataLayer.Member; 
 import dataLayer.Visit;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -24,7 +26,7 @@ import javafx.scene.control.TableView;
 
 /**
  * Controller for the Staff Waiting List management screen.
- * Allows staff to view the current queue, refresh it, and remove customers (mark as seated).
+ * Allows staff to view the current queue, refresh it, and remove customers.
  */
 public class StaffWaitingListController implements Initializable {
 
@@ -37,52 +39,60 @@ public class StaffWaitingListController implements Initializable {
     // Observable list to hold the data for the table
     private ObservableList<Visit> waitingList = FXCollections.observableArrayList();
 
-    /**
-     * Initializes the controller class.
-     * Sets up the table columns and loads the initial data.
-     */
+
+    //Sets up the table columns and loads the initial data.
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Register this controller instance in the client to receive updates from server
         BistroClient.staffWaitingListControllerInstance = this;
 
-        setupTableColumns();       
+        setupTableColumns();        
         handleRefresh(null); // Load data when opening the screen
     }
 
-    /**
-     * Configures the TableView columns to map data from the Visit object.
-     */
+	//Configures the TableView columns to map data from the Visit object.
     private void setupTableColumns() {
-        // Map "Verification Code" to the Visit ID 
+        // Map Verification Code
         codeCol.setCellValueFactory(cellData -> {
-            // If Visit doesn't have a dedicated "code" field, we use its ID or a placeholder
-            return new SimpleStringProperty(String.valueOf(cellData.getValue().getVisitId()));
+            String vCode = cellData.getValue().getVerificationCode();
+            // If verification code is missing, fallback to ID
+            if (vCode != null && !vCode.isEmpty()) {
+                return new SimpleStringProperty(vCode);
+            }
+            return new SimpleStringProperty(String.valueOf(cellData.getValue().getWaitingId()));
         });
 
-        // Map "Customer Name" from the nested Guest object
+        // Map Customer Name - Check if the guest is a Member
         nameCol.setCellValueFactory(cellData -> {
-            if (cellData.getValue().getGuest() != null) {
-                return new SimpleStringProperty(cellData.getValue().getGuest().getFullName());
+            Visit v = cellData.getValue();
+            Guest g = v.getGuest(); 
+            
+            if (g instanceof Member) {
+                return new SimpleStringProperty(g.getFullName() + " (Member)");
+            } else if (g != null) {
+                return new SimpleStringProperty(g.getFullName());
             }
             return new SimpleStringProperty("Unknown");
         });
 
-        // Map "Diners" directly from the Visit property
+        // Map Diners directly from the Visit property
         sizeCol.setCellValueFactory(cellData -> 
             new SimpleObjectProperty<>(cellData.getValue().getPartySize()));
 
-        // Map "Contact Info" (Phone or Email) from the nested Guest object
+        // Map Contact Info
         contactCol.setCellValueFactory(cellData -> {
-            var guest = cellData.getValue().getGuest();
-            if (guest != null) {
-                if (guest.getPhoneNumber() != null && !guest.getPhoneNumber().isEmpty()) {
-                    return new SimpleStringProperty(guest.getPhoneNumber());
-                } else if (guest.getEmail() != null) {
-                    return new SimpleStringProperty(guest.getEmail());
+            Visit v = cellData.getValue();
+            Guest g = v.getGuest();
+            String contactInfo = "-";
+            
+            if (g != null) {
+                if (g.getPhoneNumber() != null && !g.getPhoneNumber().isEmpty()) {
+                    contactInfo = g.getPhoneNumber();
+                } else if (g.getEmail() != null && !g.getEmail().isEmpty()) {
+                    contactInfo = g.getEmail();
                 }
             }
-            return new SimpleStringProperty("-");
+            return new SimpleStringProperty(contactInfo);
         });
 
         // Bind the data list to the table
@@ -100,7 +110,7 @@ public class StaffWaitingListController implements Initializable {
     }
 
     /**
-     * Handles the removal of a customer from the list (for example, when they are seated).
+     * Handles the removal of a customer from the list.
      */
     @FXML
     private void handleRemoveCustomer(ActionEvent event) {
@@ -114,15 +124,19 @@ public class StaffWaitingListController implements Initializable {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Confirm Removal");
         confirmAlert.setHeaderText("Remove Customer from Queue?");
-        confirmAlert.setContentText("Are you sure you want to remove " + selectedVisit.getGuest().getFullName() + "?");
+        
+        String name = "Unknown";
+        if (selectedVisit.getGuest() != null) {
+            name = selectedVisit.getGuest().getFullName();
+        }
+        
+        confirmAlert.setContentText("Are you sure you want to remove " + name + "?");
 
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                // Send request to remove the customer/visit using its ID
-                BistroMessage msg = new BistroMessage(Action.REMOVE_FROM_WAITING_LIST, selectedVisit.getVisitId());
-                ClientUI.chat.accept(msg);
-                
-                // Optimistically remove from the view (or wait for refresh)
+                // Send request to remove the customer using waiting ID
+                BistroMessage msg = new BistroMessage(Action.REMOVE_FROM_WAITING_LIST, selectedVisit.getWaitingId());
+                ClientUI.chat.accept(msg);                
                 waitingList.remove(selectedVisit);
             }
         });
@@ -138,10 +152,7 @@ public class StaffWaitingListController implements Initializable {
         SceneLoader.closeWindow(event);
     }
 
-    /**
-     * Method called by BistroClient when the server sends the updated waiting list.
-     * @param list The list of Visit objects representing the queue.
-     */
+    //Method called by BistroClient when the server sends the updated waiting list.
     public void updateWaitingList(List<Visit> list) {
         Platform.runLater(() -> {
             waitingList.clear();

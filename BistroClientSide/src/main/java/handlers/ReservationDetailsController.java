@@ -5,7 +5,6 @@ import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
 import dataLayer.Reservation;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -75,30 +74,51 @@ public class ReservationDetailsController {
     @FXML
     private void handleSave(ActionEvent event) {
         try {
-            // Collect updated data
-            String id = orderIdField.getText();
-            String date = (datePicker.getValue() != null) ? datePicker.getValue().toString() : "";
-            String time = timeField.getText();
-            String guests = dinersField.getText();
+            // Input Validation
+            if (datePicker.getValue() == null || timeField.getText().isEmpty() || dinersField.getText().isEmpty()) {
+                SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Please fill all fields");
+                return;
+            }
+
+            // Update Local Object with UI Data
+            Reservation resToUpdate = BistroClient.reservationInstance;
             
-            // Note: Verification Code does not change on update, so we don't need to show it as "new" here,
-            // but we can confirm the update.
-            String message = String.format("Changes saved for reservation %s.\nNew Date: %s\nTime: %s\nGuests: %s", 
-                                           id, date, time, guests);
+            // Update Date and Time
+            if (resToUpdate.getReservationDate() != null) {
+                resToUpdate.getReservationDate().setDate(datePicker.getValue().toString());
+                resToUpdate.getReservationDate().setTime(timeField.getText());
+            }
             
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Reservation Updated");
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            
+            // Update Guest Count
+            try {
+                int guests = Integer.parseInt(dinersField.getText());
+                resToUpdate.setNumberOfGuests(guests);
+            } catch (NumberFormatException e) {
+                SceneLoader.showAlert(Alert.AlertType.ERROR, "Input Error", "Guests must be a valid number");
+                return;
+            }
+
+            // Send Update Request to Server 
             if (BistroClient.staffInstance != null) {
-                // Staff logic
-                alert.showAndWait();
+                // If the user is a staff member, send the update request to the server
+                ClientUI.chat.accept(new BistroMessage(Action.UPDATE_RESERVATION, resToUpdate));
+                
+                // Show success message
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Reservation Updated");
+                alert.setHeaderText(null);
+                alert.setContentText("Update request sent to server successfully.");
+                alert.showAndWait();               
                 SceneLoader.closeWindow(event);
+                
             } else {
-                // Client logic
+                // Client side logic
                 ButtonType returnBtn = new ButtonType("Return to Main Menu");
                 ButtonType exitBtn = new ButtonType("Close");
+                
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Changes Saved");
+                alert.setContentText("Changes saved locally.");
                 alert.getButtonTypes().setAll(returnBtn, exitBtn);
                 
                 Optional<ButtonType> res = alert.showAndWait();
@@ -114,6 +134,7 @@ public class ReservationDetailsController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "An error occurred while saving.");
         }
     }
 

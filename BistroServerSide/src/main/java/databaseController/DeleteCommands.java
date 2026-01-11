@@ -65,4 +65,21 @@ public class DeleteCommands {
 	        return false;
 	        }
 	}
+	
+	// ======================================
+    // WAITING LIST DELETION
+    // ======================================
+    public static boolean deleteWaitingListEntry(int waitingId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        String sql = "DELETE FROM waiting_list WHERE waiting_id = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, waitingId);
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error deleting from waiting list: " + e.getMessage());
+            return false;
+        }
+    }
 }
