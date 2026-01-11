@@ -54,10 +54,21 @@ public class MemberReservationsController {
         
         reservationsTable.setItems(reservationsList);
         
+        reservationsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                onReservationSelected(newSelection);
+            }
+        });
+        
         loadReservations();
         }
 
-    private void loadReservations() {
+    private void onReservationSelected(Reservation newSelection) {
+        BistroClient.reservationInstance = newSelection;
+        SceneLoader.openNewWindow("/gui/ReservationDetails.fxml","Client Dashboard");
+	}
+
+	private void loadReservations() {
     	ArrayList<Reservation> reservations = new ArrayList<>();
         if (BistroClient.memberInstance == null) {
             return;
