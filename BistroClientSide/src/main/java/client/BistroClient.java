@@ -142,11 +142,12 @@ public class BistroClient extends AbstractClient
 		  		wantedReservationId = reservationInstance.getReservationId();
 		  		break;
 		  	case GET_VERIFICATION_CODE:
-		  		if(visitIdentificationControllerInstance != null && visitIdentificationControllerInstance.sentRequest) {
+		  		if(visitIdentificationControllerInstance != null) {
 		  			visitIdentificationControllerInstance.checkIn(answer.getData());	  		
-		  		}else {
-		  			reservationInstance = (Reservation)answer.getData();
 		  		}
+		  		break;
+		  	case FIND_RESERVATION:
+		  		reservationInstance = (Reservation)answer.getData();
 		  		break;
 		  	case UPDATE_RESERVATION:
 		  		if((boolean) answer.getData()) System.out.println("Update succeeded");

@@ -41,7 +41,7 @@ public class ReservationFrameController {
             }
             BistroClient.reservationInstance = null;
 
-            ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, codeInput));
+            ClientUI.chat.accept(new BistroMessage(Action.FIND_RESERVATION, codeInput));
             if (BistroClient.reservationInstance != null) {
                 System.out.println("Reservation Found");
                 SceneLoader.loadScene(event, "/gui/ReservationDetails.fxml", "Reservation Details");

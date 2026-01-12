@@ -137,8 +137,16 @@ public class ReservationController {
 	    }
 	}
 	
-	public static BistroMessage codeVerification(String code, ServerFrameController guiController) {
+	public static BistroMessage codeVerification(BistroMessage request, ServerFrameController guiController) {
+		String code = (String)request.getData();
 		Reservation reservation = GetCommands.getReservationVerificationCode(code, guiController);
+		if(request.getAction().name().equals("FIND_RESERVATION")) {
+			if(reservation != null) {
+				return new BistroMessage(Action.FIND_RESERVATION, reservation);
+			} else {
+				return new BistroMessage(Action.FIND_RESERVATION, "Error: Haven't found any reservation with this code");
+			}
+		}
 		if(reservation != null) {
 			LocalTime now = LocalTime.now();
             LocalTime fifteenMinsBefore = now.minusMinutes(15);

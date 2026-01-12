@@ -142,9 +142,9 @@ public class BistroServer extends AbstractServer
             	client.sendToClient(VisitController.createWalkInVisit(toCreate, guiController));
             	break;
             case GET_VERIFICATION_CODE:
-            	String ver_code = (String)request.getData();
+            case FIND_RESERVATION:
             	//Sends back instance of Reservation or Visit
-            	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
+            	client.sendToClient(ReservationController.codeVerification(request, guiController));
                 break;
             // --- BILL ROUTES ---
             case UPDATE_BILL:

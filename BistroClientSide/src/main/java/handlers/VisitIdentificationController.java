@@ -40,7 +40,7 @@ public class VisitIdentificationController implements Initializable {
     @FXML
     private Label statusLabel;
 
-    public boolean sentRequest;
+
     public static Visit created = null;
     private ActionEvent event;
     
@@ -59,7 +59,6 @@ public class VisitIdentificationController implements Initializable {
             statusLabel.setTextFill(Color.RED);
             return;
         }
-        sentRequest = true;
         ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, code));
         this.event = event;
     }
@@ -67,7 +66,6 @@ public class VisitIdentificationController implements Initializable {
     //response can be Reservation/Waiting Visit/String
     public void checkIn(Object response) {
     	 Platform.runLater(() -> {
-    		 sentRequest = false;
     		 if(response instanceof String) {
   		  		String message = (String)response;
   		  		statusLabel.setText(message);
