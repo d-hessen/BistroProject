@@ -29,21 +29,32 @@ public class GetCommands {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                	Reservation toReturn = new Reservation(
-                        	rs.getInt("reservation_number"),
-                        	new DateTime(rs.getString("reservation_date"),rs.getString("reservation_time")),
-	                		rs.getString("verification_code"),
-                        	rs.getInt("number_of_guests"),
-                        	(Integer)rs.getObject("member_id"),
-                            new Guest(rs.getString("guest_full_name"), 
-                            		rs.getString("guest_phone"), 
-                            		rs.getString("email"))
+                    Integer memberId = (Integer)rs.getObject("member_id");
+                    Guest guest = null;
+                    if (memberId != null && memberId > 0) {
+                        guest = getMemberById(memberId, guiController);
+                    }
+                    if (guest == null) {
+                        guest = new Guest(
+                            rs.getString("guest_full_name"), 
+                            rs.getString("guest_phone"), 
+                            rs.getString("email")
                         );
-                	Status status = Status.valueOf(rs.getString("status"));
-                	toReturn.setStatus(status);
-                	toReturn.setDateOfPlacingReservation(rs.getString("created_at"));
-                	toReturn.setVerificationCode(rs.getString("verification_code"));
-                	return toReturn;
+                    }
+                    Reservation toReturn = new Reservation(
+                        rs.getInt("reservation_number"),
+                        new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+                        rs.getString("verification_code"),
+                        rs.getInt("number_of_guests"),
+                        memberId,
+                        guest // Now passing the correct Member/Guest object
+                    );
+
+                    Status status = Status.valueOf(rs.getString("status"));
+                    toReturn.setStatus(status);
+                    toReturn.setDateOfPlacingReservation(rs.getString("created_at"));
+                    toReturn.setVerificationCode(rs.getString("verification_code"));
+                    return toReturn;
                 }
                 else {
 					guiController.addToConsole("Reservation not found for ID: " + id);
@@ -644,7 +655,7 @@ public class GetCommands {
 				DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 				String endTime = endDateTime.format(timeFormatter);
 				String endDate = endDateTime.format(dateFormatter);	
-				visit.setStartTime(new DateTime(endDate, endTime));
+				visit.setEndTime(new DateTime(endDate, endTime));
 			}
 			visit.setActive(rs.getBoolean("is_active"));
 			visit.setVisitId(visitId);

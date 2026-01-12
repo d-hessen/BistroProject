@@ -59,7 +59,7 @@ public class ReservationDetailsController {
                 statusField.setText(currentRes.getStatus().name());
             }
 
-            if (currentRes.getMemberId() != 0) {
+            if (currentRes.getMemberId() != null) {
                 memberIdField.setText(String.valueOf(currentRes.getMemberId()));
             } else {
                 memberIdField.setText("Guest");
