@@ -122,7 +122,10 @@ public class BistroServer extends AbstractServer
             	String phoneNumber= (String)request.getData();
             	client.sendToClient(ReservationController.getMemberReservations(phoneNumber, guiController));
                 break;
-            // --- VISIT ROUTES ---
+            case CHECK_RESERVATION_AVAILABILITY:
+                Reservation resForArrangement = (Reservation) request.getData();
+                client.sendToClient(ReservationController.checkAvailability(resForArrangement, guiController));
+                break;
 //            case CREATE_VISIT:
 //            	Visit visitToCreate = (Visit)request.getData();
 //            	client.sendToClient(VisitController.createVisitByReservation(visitToCreate, guiController));

@@ -12,6 +12,7 @@ import handlers.StaffWaitingListController;
 import handlers.VisitDetailsController;
 import handlers.VisitIdentificationController;
 import handlers.VisitNowController;
+import handlers.TimeSlotController;
 import javafx.scene.control.Alert;
 
 import java.io.*;
@@ -25,6 +26,7 @@ public class BistroClient extends AbstractClient
   //STATIC REFERENCES TO ACTIVE CONTROLLERS
   public static StaffLoginController staffLoginControllerInstance;
   public static StaffDashboardController staffDashControllerInstance;
+  public static TimeSlotController timeSlotControllerInstance;
   public static VisitNowController visitNowControllerInstance;
   public static VisitIdentificationController visitIdentificationControllerInstance;
   public static VisitDetailsController visitDetailsControllerInstance;
@@ -162,12 +164,31 @@ public class BistroClient extends AbstractClient
 		  	    reservationInstance = newRes;
 		  	    wantedReservationId = newRes.getReservationId(); 	  	    
 		  	    System.out.println("Reservation created successfully. ID: " + wantedReservationId);
+		  	    operationSuccess = true;
+		  	  if (timeSlotControllerInstance != null) {
+		          timeSlotControllerInstance.goToReservationDetails();
+		      }
+		  	    break;
+		  	case RESERVATION_NOT_CREATED:
+		  	    String errorMessage = (String) answer.getData();
+		  	    SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation Failed", errorMessage);
+		  	    operationSuccess = false;
+		        reservationInstance = null;
 		  	    break;
 		  	case CANCEL_RESERVATION:
 		  	    if ((boolean) answer.getData()) {
 		  	        System.out.println("Reservation deleted successfully.");
 		  	    } else {
 		  	        System.out.println("Failed to delete reservation.");
+		  	    }
+		  		break;
+		  	case CHECK_RESERVATION_AVAILABILITY:
+		  	    if (answer.getData() instanceof List<?>) {
+		  	        List<String> times = (List<String>) answer.getData();
+		  	        if (timeSlotControllerInstance != null) {
+		  	            timeSlotControllerInstance.updateAvailableTimes(times);
+		  	        }
+		  	        awaitResponse = false; // Stop waiting
 		  	    }
 		  	    break;
 		  	case GET_MEMBER_RESERVATIONS:

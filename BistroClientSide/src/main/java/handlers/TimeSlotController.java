@@ -8,9 +8,13 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.application.Platform;
+import javafx.stage.Stage;
+import javafx.scene.layout.TilePane;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 import java.time.LocalDate;
 
 import client.BistroClient;
@@ -25,13 +29,14 @@ import dataLayer.Reservation;
 public class TimeSlotController {
 
     @FXML private Label selectedDateLabel;
-    @FXML private FlowPane timeSlotsPane;
+    @FXML private TilePane timeSlotsPane;
 
-    private LocalDate reservationDate;
+    private LocalDate reservationDate = LocalDate.now();
     private String email;
     private String phone;
     private String fullName;
     private int numberOfDiners;
+    private List<String> availableTimes = new ArrayList<String>();
 
     public void initData(LocalDate date, String fullName, String email, String phone, int diners) {
         this.reservationDate = date;
@@ -40,85 +45,98 @@ public class TimeSlotController {
         this.phone = phone;
         this.numberOfDiners = diners;
         setSelectedDateText(date.toString());
+        calculateTimeSlots();
     }
 
     @FXML
-    public void initialize() {
-        List<String> availableTimes = Arrays.asList(
-            "12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"
-        );
-        displayTimeSlots(availableTimes);
+    public void initialize() { 
+    	BistroClient.timeSlotControllerInstance = this;
+    }
+    public void updateAvailableTimes(List<String> serverValidTimes) {
+        	Platform.runLater(() -> {
+            this.availableTimes = serverValidTimes;
+            displayTimeSlots(); // show the buttons again
+        });
     }
 
-    private void displayTimeSlots(List<String> times) {
+    private void displayTimeSlots() {
         timeSlotsPane.getChildren().clear();
-        for (String time : times) {
+        if (availableTimes == null || availableTimes.isEmpty()) {
+            Label noSlots = new Label("No slots available.");
+            timeSlotsPane.getChildren().add(noSlots);
+            return;
+        }
+
+        for (String time : availableTimes) {
             Button timeButton = new Button(time);
-            timeButton.setPrefSize(80, 40);
-            timeButton.setStyle("-fx-background-color: white; -fx-border-color: #1976d2; -fx-border-radius: 5; -fx-cursor: hand;");
+            
+            // force the button to never change size
+            timeButton.setMinWidth(80);
+            timeButton.setMaxWidth(80);
+            timeButton.setPrefWidth(80);
+            
+            timeButton.setMinHeight(40);
+            timeButton.setMaxHeight(40);
+            timeButton.setPrefHeight(40);
+
+            String defaultStyle = "-fx-background-color: white; " +
+                                  "-fx-border-color: #1976d2; " +
+                                  "-fx-border-width: 1px; " +
+                                  "-fx-border-radius: 5; " +
+                                  "-fx-background-radius: 5; " +
+                                  "-fx-cursor: hand;";
+
+            String hoverStyle = "-fx-background-color: #e3f2fd; " + 
+                                "-fx-border-color: #1976d2; " +
+                                "-fx-border-width: 1px; " +
+                                "-fx-border-radius: 5; " +
+                                "-fx-background-radius: 5; " +
+                                "-fx-cursor: hand;";
+
+            timeButton.setStyle(defaultStyle);
+            timeButton.setOnMouseEntered(e -> timeButton.setStyle(hoverStyle));
+            timeButton.setOnMouseExited(e -> timeButton.setStyle(defaultStyle));
+            
             timeButton.setOnAction(event -> handleTimeSelection(time, event));
             timeSlotsPane.getChildren().add(timeButton);
         }
     }
-
+    
+    private void calculateTimeSlots() {
+    	Guest guest = new Guest(fullName, phone, email);
+    	DateTime resDateTime = new DateTime(reservationDate.toString(), "12:00");
+        Reservation newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
+        BistroMessage msg = new BistroMessage(Action.CHECK_RESERVATION_AVAILABILITY, newReservation);
+        BistroClient.awaitResponse = true; // waits for response
+        ClientUI.chat.accept(msg);
+    }
+    
+    
     private void handleTimeSelection(String selectedTime, ActionEvent event) {
-        // 1. Create Reservation Object
+        System.out.println("Time selected: " + selectedTime);
         DateTime resDateTime = new DateTime(reservationDate.toString(), selectedTime);
         Guest guest = new Guest(fullName, phone, email);
         Member member = BistroClient.memberInstance; 
+        Reservation newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
         
-        Reservation newReservation;
         if(BistroClient.memberInstance != null) {
             newReservation = new Reservation(resDateTime, numberOfDiners, member.getMemberId(), member);
-        } else {
+        } 
+        else {
             newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
         }
         
-        // 2. Send to Server
-        BistroClient.reservationInstance = null; // Reset to ensure fresh data
         BistroMessage msg = new BistroMessage(Action.CREATE_RESERVATION, newReservation);
         ClientUI.chat.accept(msg);
-        
-        // 3. Get Verification Code from response
-        Reservation createdRes = BistroClient.reservationInstance;
-        String verificationCode = (createdRes != null && createdRes.getVerificationCode() != null) 
-                                   ? createdRes.getVerificationCode() : "N/A";
-
-        // 4. Prepare Alert Message
-        String message = String.format(
-            "Reservation successfully created.\n\nDate: %s\nTime: %s\nVerification Code: %s\n\nPlease save this code for your reference.",
-            reservationDate, selectedTime, verificationCode
-        );
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Reservation Confirmed");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-
-        // 5. Buttons Logic - FIX: Check if NOT staff (covers both Member and Guest)
-        if (BistroClient.staffInstance == null) {
-            // --- CLIENT / GUEST LOGIC ---
-            ButtonType returnToMenuBtn = new ButtonType("Return to Main Menu");
-            ButtonType exitBtn = new ButtonType("Exit");
-
-            alert.getButtonTypes().setAll(returnToMenuBtn, exitBtn);
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            if (result.isPresent()) {
-                if (result.get() == returnToMenuBtn) {
-                    SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
-                } else if (result.get() == exitBtn) {
-                    Platform.exit();
-                    System.exit(0);
-                }
-            }
-        } else {
-            // --- STAFF LOGIC ---
-            // Staff opened this as a popup, so we just close the popup window.
-            alert.showAndWait();
-            SceneLoader.closeWindow(event);
-        }
+        // disable UI in order to prevent double click
+        timeSlotsPane.setDisable(true);
+    }
+    public void goToReservationDetails() {
+        	Platform.runLater(() -> {
+            timeSlotsPane.setDisable(false);
+            Stage stage = (Stage) timeSlotsPane.getScene().getWindow();
+            SceneLoader.loadSceneAgain(stage, "/gui/ReservationDetails.fxml", "Reservation Details");
+        });
     }
 
     @FXML

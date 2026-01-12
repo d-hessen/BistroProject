@@ -87,6 +87,20 @@ public class SceneLoader {
         }
         return false;
     }
+    
+    public static void loadSceneAgain(Stage stage, String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(SceneLoader.class.getResource(fxmlPath));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle(title);
+            stage.show();
+        } catch (IOException e) {
+            System.err.println("Error loading FXML: " + fxmlPath);
+            e.printStackTrace();
+        }
+    }
 
     public static <T> void switchScreen(Event event, String fxmlPath, String title, Consumer<T> setupAction) {
         try {

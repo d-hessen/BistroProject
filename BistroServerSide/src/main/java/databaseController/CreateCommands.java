@@ -62,7 +62,7 @@ public class CreateCommands {
             if (resToCreate.getStatus() != null) {
                 ps.setString(9, resToCreate.getStatus().name());
             } else {
-                ps.setString(9, "PENDING");
+                ps.setString(9, "pending");
             }
             int executionResult = ps.executeUpdate();
 

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -736,4 +737,78 @@ public class GetCommands {
         }
         return waitingList;
     }
+	
+	public static List<Table> getAllActiveTables(ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+		List<Table> tables = new ArrayList<>();
+		String sql = "SELECT table_number, capacity, is_active " + "FROM tables " + "WHERE is_active = 1";
+		
+		try (PreparedStatement ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+	            tables.add(new Table(
+	                    rs.getInt("table_number"),
+	                    rs.getInt("capacity"),
+	                    rs.getBoolean("is_active")));
+			}
+		} catch (SQLException e) {
+	        guiController.addToConsole("Error fetching active tables: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+		return tables;
+	}
+	
+	public static List<Reservation> getReservationOverlap(LocalDateTime windowStart, LocalDateTime windowEnd, ServerFrameController guiController) {
+	    Connection conn = dbController.getInstance().getConnection();
+	    List<Reservation> list = new ArrayList<>();
+
+	    String sql = "SELECT * "
+	            + "FROM reservation "
+	            + "WHERE status NOT IN ('cancelled', 'no_show') "
+	            + "AND CONCAT(reservation_date, ' ', reservation_time) < ? "
+	            + "AND DATE_ADD(CONCAT(reservation_date, ' ', reservation_time), INTERVAL 2 HOUR) > ?";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        
+	        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	        ps.setString(1, windowEnd.format(formatter)); 
+	        ps.setString(2, windowStart.format(formatter));
+	        
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	              
+	                Integer memberId = (Integer) rs.getObject("member_id");
+	                String fullName = rs.getString("guest_full_name");
+	                String phone = rs.getString("guest_phone");
+	                String email = rs.getString("email");
+	                Guest guest = null;
+	                if (fullName != null || phone != null || email != null) {
+	                    guest = new Guest(fullName, phone, email);
+	                }
+	                Reservation r = new Reservation(
+	                        rs.getInt("reservation_number"),
+	                        new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+	                        rs.getString("verification_code"),
+	                        rs.getInt("number_of_guests"),
+	                        memberId,
+	                        guest);
+
+	                String status = rs.getString("status");
+	                if (status != null) {
+	                    r.setStatus(Status.valueOf(status));
+	                }
+	                String code = (String)rs.getObject("verification_code");
+	                if (code != null) {
+	                    r.setVerificationCode(code);
+	                }
+	                list.add(r);
+	            }
+	        }
+	    } catch (SQLException e) {
+	        guiController.addToConsole("Error fetching overlapping reservations: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	    return list;
+	}
+
 }
