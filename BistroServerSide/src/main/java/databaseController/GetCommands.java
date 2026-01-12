@@ -631,12 +631,20 @@ public class GetCommands {
 		if(visit != null) {
 			//Timestamps of start and end visit
 			if(rs.getObject("start_time") != null) {
-				LocalDateTime localStartDateTime = rs.getTimestamp("start_time").toLocalDateTime();
-				visit.setStartTime(new DateTime(localStartDateTime.toLocalDate().toString(), localStartDateTime.toLocalTime().toString()));
+				LocalDateTime startDateTime = rs.getTimestamp("start_time").toLocalDateTime();
+				DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+				DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				String startTime = startDateTime.format(timeFormatter);
+				String startDate = startDateTime.format(dateFormatter);	
+				visit.setStartTime(new DateTime(startDate, startTime));
 			}
 			if(rs.getObject("end_time") != null) {
-				LocalDateTime localEndDateTime = rs.getTimestamp("end_time").toLocalDateTime();
-				visit.setEndTime(new DateTime(localEndDateTime.toLocalDate().toString(), localEndDateTime.toLocalTime().toString()));
+				LocalDateTime endDateTime = rs.getTimestamp("end_time").toLocalDateTime();
+				DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+				DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				String endTime = endDateTime.format(timeFormatter);
+				String endDate = endDateTime.format(dateFormatter);	
+				visit.setStartTime(new DateTime(endDate, endTime));
 			}
 			visit.setActive(rs.getBoolean("is_active"));
 			visit.setVisitId(visitId);

@@ -146,9 +146,10 @@ public class ReservationController {
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss"); 
             String timeStr = reservation.getReservationDate().getTime();
             LocalTime reservationTime = LocalTime.parse(timeStr, timeFormatter);
+            Visit checkedIn = GetCommands.getVisitByVerificationCode(code, guiController);
             // Check if reservation time is between NOW-15m and NOW+15m
             // Allow checking in slightly early (e.g., 15 mins before). 
-            if ((reservationTime.isAfter(fifteenMinsBefore) || reservationTime.equals(now)) && reservationTime.isBefore(fifteenMinsLater)) {
+            if ((reservationTime.isAfter(fifteenMinsBefore) || reservationTime.equals(now)) && reservationTime.isBefore(fifteenMinsLater) || checkedIn != null) {
     			return new BistroMessage(Action.GET_VERIFICATION_CODE, reservation);
             } else {
             	return new BistroMessage(Action.GET_VERIFICATION_CODE, "There's no upcoming reservation in the next 15 minutes:(");

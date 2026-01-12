@@ -54,8 +54,16 @@
 
       <VBox alignment="CENTER" spacing="15.0">
          <children>
-            <Button fx:id="startVisitBtn" onAction="#handleStartVisit" prefHeight="45.0" prefWidth="200.0" styleClass="primary-button" text="Start Visit" />
+            <Button fx:id="startVisitBtn" onAction="#handleStartVisit" prefHeight="45.0" prefWidth="200.0" styleClass="primary-button" text="Start Visit">
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin></Button>
             <Button fx:id="endVisitBtn" onAction="#handleEndMeal" prefHeight="45.0" prefWidth="200.0" styleClass="danger-button" text="End Visit" />
+            <Button fx:id="backBtn" onAction="#handleBack" prefHeight="37.0" prefWidth="120.0" styleClass="arrow-button" text="Back">
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
+            </Button>
          </children>
       </VBox>
    </children>

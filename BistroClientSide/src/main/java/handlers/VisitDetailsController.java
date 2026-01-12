@@ -187,7 +187,7 @@ public class VisitDetailsController {
         SceneLoader.loadScene(event, "/gui/PaymentScreen.fxml", "Payment Screen");
     }
 
-
+    
     //Auto-end if customer didn't end visit after 2 hours
     private void endVisit() {
         System.out.println("Reservation canceled: no show");
@@ -202,5 +202,13 @@ public class VisitDetailsController {
         if (startVisitBtn != null) {
             setupVisitState(visit);
         }
+    }
+    
+    @FXML void handleBack(ActionEvent event) {
+    	if(BistroClient.staffInstance != null) {
+    		SceneLoader.closeWindow(event);
+    	}else {
+    		SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
     }
 }
