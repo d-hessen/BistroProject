@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS `visits` (
   `reservation_number` INT NULL, 
   `waiting_id` INT NULL,
   `member_id` INT NULL,
+   `verification_code` VARCHAR(20) NOT NULL unique, 
   -- If guest joined immediately
   `guest_full_name` VARCHAR(100) NULL,
   `guest_phone` VARCHAR(20) NULL,
