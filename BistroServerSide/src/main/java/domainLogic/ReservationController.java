@@ -90,6 +90,12 @@ public class ReservationController {
 	        if (reservationToCreate == null || reservationToCreate.getReservationDate() == null) {
 	            return new BistroMessage(Action.RESERVATION_NOT_CREATED, "Missing reservation date/time.");
 	        }
+	        if (LocalDateTime.now().plusHours(1).isAfter(changeToLocalDateTime(reservationToCreate.getReservationDate()))) {
+	            return new BistroMessage(Action.RESERVATION_NOT_CREATED, "Reservation time must be at least one hour from now.");
+	        }
+	        if (LocalDateTime.now().plusMonths(1).isBefore(changeToLocalDateTime(reservationToCreate.getReservationDate()))) {
+	            return new BistroMessage(Action.RESERVATION_NOT_CREATED, "Reservation date must be at most one month from now.");
+	        }
 	        if (reservationToCreate.getNumberOfGuests() == null || reservationToCreate.getNumberOfGuests() <= 0) {
 	            return new BistroMessage(Action.RESERVATION_NOT_CREATED, "Invalid number of guests.");
 	        }
@@ -155,8 +161,7 @@ public class ReservationController {
             String timeStr = reservation.getReservationDate().getTime();
             LocalTime reservationTime = LocalTime.parse(timeStr, timeFormatter);
             Visit checkedIn = GetCommands.getVisitByVerificationCode(code, guiController);
-            // Check if reservation time is between NOW-15m and NOW+15m
-            // Allow checking in slightly early (e.g., 15 mins before). 
+             
             if ((reservationTime.isAfter(fifteenMinsBefore) || reservationTime.equals(now)) && reservationTime.isBefore(fifteenMinsLater) || checkedIn != null) {
     			return new BistroMessage(Action.GET_VERIFICATION_CODE, reservation);
             } else {
@@ -225,17 +230,7 @@ public class ReservationController {
 	        return null;
 	    }
 	}
-	//generates random 10 characters code
-	private static String generateCode() {
-		
-		String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		SecureRandom random = new SecureRandom();
 
-		String result = random.ints(10, 0, chars.length()).mapToObj(chars::charAt).map(Object::toString).collect(Collectors.joining());
-		System.out.println(result);
-		return result;
-		}
-		
 	
 	private static Integer findBestArrangementAndWaste(List<Table> tables, List<Reservation> overlap ,Reservation newRes, int timeSlot) {
 		//run algorithm twice, check check largest party amounts first
