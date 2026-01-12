@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import common.Action;
 import common.BistroMessage;
+import common.Status;
 import dataLayer.Reservation;
 import dataLayer.Table;
 import dataLayer.Visit;
@@ -25,12 +26,17 @@ public class VisitController {
     	}else {
     		action = Action.CHECK_IN_CUSTOMER; 
     	}
+    	Visit foundCreated = GetCommands.getVisitByVerificationCode(toCreate.getVerificationCode(), guiController);
+    	if(foundCreated != null) {
+    		return new BistroMessage(action, foundCreated);
+    	}
         Integer foundTableId = findTableForVisit(toCreate, guiController);
 
         if (foundTableId != null) {
             //table is available immediately and doesn't conflict with future reservations
             Visit created = CreateCommands.createSeatedWalkInVisit(toCreate, foundTableId, guiController);
             if(created != null) {
+            	UpdateCommands.updateVisitInWaitingList(toCreate,guiController);
                 return new BistroMessage(action, created);
             } else {
                 return new BistroMessage(action, "Error: DB Failed to create seated visit.");
@@ -150,12 +156,18 @@ public class VisitController {
     }
     
     public static BistroMessage createReservatedVisit(Reservation reservation, ServerFrameController guiController) {
+    	Visit foundCreated = GetCommands.getVisitByVerificationCode(reservation.getVerificationCode(), guiController);
+    	if(foundCreated != null) {
+    		return new BistroMessage(Action.CHECK_IN_CUSTOMER, foundCreated);
+    	}
     	Visit toCreate = new Visit(reservation,null);
         Integer foundTableId = findTableForVisit(toCreate, guiController);
         if (foundTableId != null) {
             //table is available immediately and doesn't conflict with future reservations
             Visit created = CreateCommands.createVisit(reservation.getReservationId(), foundTableId, guiController);
             if(created != null) {
+            	reservation.setStatus(Status.seated);
+            	UpdateCommands.updateReservation(reservation, guiController);
                 return new BistroMessage(Action.CHECK_IN_CUSTOMER, created);
             } else {
                 return new BistroMessage(Action.CHECK_IN_CUSTOMER, "Error: DB Failed to create reservated visit.");
@@ -172,19 +184,8 @@ public class VisitController {
 		return new BistroMessage(Action.START_VISIT, UpdateCommands.updateVisit(toUpdate, guiController));
 	}
         
-//	public static BistroMessage createVisitByReservation(Visit toCreate, ServerFrameController guiController) {
-//		Integer resId = toCreate.getReservation().getReservationId();
-//		Integer tableId = toCreate.getTable().getTableNumber();
-//		if(toCreate.getReservation() == null || resId == null) {
-//			return new BistroMessage(Action.CREATE_VISIT, "Error: There is no reservation");
-//		}
-//		Visit visit = CreateCommands.createVisit(resId,tableId, guiController);
-//		if(visit != null) {
-//			return new BistroMessage(Action.CREATE_VISIT, resId);
-//		}else {
-//			return new BistroMessage(Action.CREATE_VISIT, "Error: Failed during creating visit - SQL error");
-//		}
-//	}
-//	
+	public static BistroMessage updateBillOfVisit(Visit toUpdate, ServerFrameController guiController) {
+		return new BistroMessage(Action.UPDATE_BILL, UpdateCommands.updateBillForVisit(toUpdate, guiController));
+	}
 
 }

@@ -26,8 +26,7 @@ public class BistroServer extends AbstractServer
       BistroMessage request = (BistroMessage) msg;
       try {
           switch (request.getAction()) {
-          	// --- START OF CASES ---
-          	
+          	// --- START OF CASES ---	
           	// --- STAFF ROUTES ---
           	case STAFF_IDENTIFICATION:
           		Staff staffRecieved = (Staff)request.getData();
@@ -126,10 +125,6 @@ public class BistroServer extends AbstractServer
                 Reservation resForArrangement = (Reservation) request.getData();
                 client.sendToClient(ReservationController.checkAvailability(resForArrangement, guiController));
                 break;
-//            case CREATE_VISIT:
-//            	Visit visitToCreate = (Visit)request.getData();
-//            	client.sendToClient(VisitController.createVisitByReservation(visitToCreate, guiController));
-//            	break;
             case START_VISIT:
             	client.sendToClient(VisitController.updateVisit(request,guiController));
             	break;
@@ -151,6 +146,10 @@ public class BistroServer extends AbstractServer
             	//Sends back instance of Reservation or Visit
             	client.sendToClient(ReservationController.codeVerification(ver_code, guiController));
                 break;
+            // --- BILL ROUTES ---
+            case UPDATE_BILL:
+            	client.sendToClient(VisitController.updateBillOfVisit((Visit)request.getData(), guiController));
+            	break;
              // --- CLIENT DISCONNECTS ---
             case DISCONNECT:
             	guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");

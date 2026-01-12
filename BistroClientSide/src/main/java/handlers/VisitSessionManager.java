@@ -1,32 +1,27 @@
 package handlers;
 
-import javafx.animation.Timeline;
-
 public class VisitSessionManager {
 
-    private static Integer secondsLeft;
-    private static Timeline countdown;
+    private static Long targetEndTime;
     private static boolean visitStarted;
 
     public static boolean hasActiveTimer() {
-        return secondsLeft != null && secondsLeft > 0;
+    	return targetEndTime != null && getSecondsLeft() > 0;
     }
 
-    public static void startTimer(int seconds, Timeline timeline) {
-        secondsLeft = seconds;
-        countdown = timeline;
+    public static void startVisitSession(int durationInSeconds) {
+        long currentTime = System.currentTimeMillis();
+        targetEndTime = currentTime + (durationInSeconds * 1000);
+        visitStarted = true;
     }
 
     public static Integer getSecondsLeft() {
-        return secondsLeft;
-    }
-
-    public static void setSecondsLeft(int seconds) {
-        secondsLeft = seconds;
-    }
-
-    public static Timeline getCountdown() {
-        return countdown;
+        if (targetEndTime == null) {
+            return 0;
+        }
+        long currentTime = System.currentTimeMillis();
+        long diff = targetEndTime - currentTime;
+        return (int) (diff / 1000);
     }
 
     public static boolean isVisitStarted() {
@@ -38,11 +33,7 @@ public class VisitSessionManager {
     }
 
     public static void clear() {
-        if (countdown != null) {
-            countdown.stop();
-        }
-        secondsLeft = null;
-        countdown = null;
+        targetEndTime = null;
         visitStarted = false;
     }
 }

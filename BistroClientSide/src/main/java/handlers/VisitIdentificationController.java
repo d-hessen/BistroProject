@@ -8,6 +8,7 @@ import client.BistroClient;
 import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
+import common.Status;
 import dataLayer.Reservation;
 import dataLayer.Visit;
 import javafx.application.Platform;
@@ -17,6 +18,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -72,7 +74,31 @@ public class VisitIdentificationController implements Initializable {
   		  		statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
   	  		} else{
   	  			//Response here is either Reservation(from reservations) or Visit(from waiting_list)
-  	  			ClientUI.chat.accept(new BistroMessage(Action.CHECK_IN_CUSTOMER, response));
+  	  			if(response instanceof Reservation) {
+  	  				Reservation reservation = (Reservation)response;
+  	  				Status reservationStatus = reservation.getStatus();
+  	  				switch (reservationStatus) {
+					case seated:
+					case approved:
+						ClientUI.chat.accept(new BistroMessage(Action.CHECK_IN_CUSTOMER, reservation));
+						break;
+					case pending:
+						SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation not approved", "Your reservation not approved yet.");
+						return;
+					case cancelled:
+						SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation cancelled", "Your reservation was cancelled.");
+						return;
+					case no_show:
+						SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation finished", "Your reservation finished.");
+						return;
+					default:
+						break;
+					}
+  	  			} else if(response instanceof Visit) {
+  	  				Visit visit = (Visit)response;
+  	  				ClientUI.chat.accept(new BistroMessage(Action.CHECK_IN_CUSTOMER, visit));
+  	  			}
+  	  			
   	  		}
          });
     }

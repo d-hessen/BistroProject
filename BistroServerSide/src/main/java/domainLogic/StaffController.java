@@ -81,9 +81,9 @@ public class StaffController {
 	}
 
 	public static Object updateTable(Table tableToUpdate, ServerFrameController guiController) {
-		boolean success = UpdateCommands.updateTable(tableToUpdate, guiController);
-		if(success) {
-			return new BistroMessage(Action.UPDATE_TABLE, tableToUpdate);
+		Table updated = UpdateCommands.updateTable(tableToUpdate, guiController);
+		if(updated != null) {
+			return new BistroMessage(Action.UPDATE_TABLE, updated);
 		} else {
 			return new BistroMessage(Action.UPDATE_TABLE, "Error deleting from database");
 		}

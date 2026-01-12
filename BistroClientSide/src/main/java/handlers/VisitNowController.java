@@ -114,6 +114,7 @@ public class VisitNowController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.VISIT_NOW, toCreate));
         if(hasAssignedTable) {
         	hasAssignedTable = false;
+        	SceneLoader.showAlert(Alert.AlertType.INFORMATION, "You can take table now!", "Your verification code is: " +createdVisit.getVerificationCode() +"\nUse it in order to pay for your visit!\n Bon Appetit!");
         	SceneLoader.switchScreen(
         		    event, 
         		    "/gui/VisitDetails.fxml", 

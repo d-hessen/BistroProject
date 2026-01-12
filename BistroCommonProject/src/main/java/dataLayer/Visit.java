@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import common.Status;
+
 public class Visit implements Serializable {
 	private Table table;
 	private Reservation reservation; //If visit was booked there will be instance
@@ -16,6 +18,7 @@ public class Visit implements Serializable {
 	private Integer partySize;
 	private String verificationCode;
 	private Integer waitingId;
+	private Status status;
 	
 	public Visit(Reservation reservation, Table table) {
 		if(reservation != null) {
@@ -145,6 +148,14 @@ public class Visit implements Serializable {
 
 	public void setWaitingId(Integer waitingId) {
 		this.waitingId = waitingId;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 	
 }

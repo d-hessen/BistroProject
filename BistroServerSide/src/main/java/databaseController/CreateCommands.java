@@ -173,7 +173,15 @@ public class CreateCommands {
         Connection conn = dbController.getInstance().getConnection();
         Reservation reservation = GetCommands.getReservation(reservationId, guiController);
         Visit created = null;
-        String sql = "INSERT INTO visits (reservation_number,table_id, is_active, party_size, member_id, guest_full_name, guest_phone, email) VALUES (?, ?, 1, ?, ?, ?, ?, ?)";        
+        String sql = "INSERT INTO visits (reservation_number"
+        		+ ",table_id"
+        		+ ",is_active"
+        		+ ",party_size"
+        		+ ",member_id"
+        		+ ",guest_full_name"
+        		+ ",guest_phone"
+        		+ ",email"
+        		+ ",verification_code) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?)";        
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, reservationId);
         	ps.setInt(2, tableId);
@@ -182,7 +190,7 @@ public class CreateCommands {
             ps.setObject(5, reservation.getGuest().getFullName());
             ps.setObject(6, reservation.getGuest().getPhoneNumber());
             ps.setObject(7, reservation.getGuest().getEmail());
-            
+            ps.setString(8, reservation.getVerificationCode());
             int affectedRows = ps.executeUpdate();
             if(affectedRows > 0) {
             	try(ResultSet generatedKeys = ps.getGeneratedKeys()){
@@ -233,7 +241,6 @@ public class CreateCommands {
         }
         return created;
     }
-
     // Create an immediate active visit for a walk-in (Seated immediately)
     public static Visit createSeatedWalkInVisit(Visit visitToCreate, Integer tableId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
@@ -246,7 +253,7 @@ public class CreateCommands {
         }
         //For a immediately seated walk-in, we have only visit_id.
         //For others walk-ins we insert into waiting_list first -> then convert to visit.
-        String sql = "INSERT INTO visits (table_id, is_active, party_size, member_id, waiting_id, guest_full_name, guest_phone, email) VALUES (?, 1, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO visits (table_id, is_active, party_size, member_id, waiting_id, guest_full_name, guest_phone, email, verification_code) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, tableId);
@@ -256,7 +263,7 @@ public class CreateCommands {
             ps.setObject(5, guest.getFullName());
             ps.setObject(6, guest.getPhoneNumber());
             ps.setObject(7, guest.getEmail());
-            
+            ps.setString(8, visitToCreate.getVerificationCode());
             int affectedRows = ps.executeUpdate();
             if(affectedRows > 0) {
             	try(ResultSet generatedKeys = ps.getGeneratedKeys()){
@@ -281,8 +288,9 @@ public class CreateCommands {
         Connection conn = dbController.getInstance().getConnection();
         Visit visit = GetCommands.getVisit(visitId, guiController);
         Integer memberId = null;
-        if(visit.getReservation() != null) {
-        	memberId = visit.getReservation().getMemberId();
+        if(visit.getGuest() instanceof Member) {
+        	Member member = (Member)visit.getGuest();
+        	memberId = member.getMemberId();
         }
         
         String sql = "INSERT INTO bills (visit_id, member_id, total_amount, discount_amount, final_amount, is_paid) VALUES (?, ?, ?, ?, ?, 0)";

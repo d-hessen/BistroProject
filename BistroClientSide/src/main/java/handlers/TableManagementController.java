@@ -9,7 +9,10 @@ import client.BistroClient;
 import client.ClientUI;
 import common.Action;
 import common.BistroMessage;
+import dataLayer.Bill;
 import dataLayer.Table;
+import dataLayer.Visit;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -31,11 +34,13 @@ public class TableManagementController {
     @FXML private TextField partySizeField;
     @FXML private TextField startTimeField;
     @FXML private TextField billField;
+    @FXML private TextField discountField;
 
-    private Table currentTable;
+    public static Table currentTable;
 
     @FXML
     public void initialize() {
+    	BistroClient.tableManagementControllerInstance = this;
         // Initialize Combo Box
         statusComboBox.getItems().addAll("Available", "Occupied", "Reserved", "Deleted");
         statusComboBox.setDisable(true);
@@ -49,7 +54,7 @@ public class TableManagementController {
 
     // Method called by StaffDashboardController to pass data
     public void setTableDetails(Table table) {
-        this.currentTable = table; //Table that was clicked
+        TableManagementController.currentTable = table; //Table that was clicked
         tableNumberField.setText(String.valueOf(table.getTableNumber()));
         capacityField.setText(String.valueOf(table.getTableCapacity()));
         
@@ -61,8 +66,10 @@ public class TableManagementController {
             partySizeField.setText(String.valueOf(table.getCurrentVisit().getPartySize()));
             startTimeField.setText(table.getCurrentVisit().getStartTime().toString());
             DecimalFormat amount = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US));
-            Double finalAmount = table.getCurrentVisit().getBillOfVisit().getFinalAmount();
+            Double finalAmount = table.getCurrentVisit().getBillOfVisit().getTotalAmount();
+            Double discountAmount = table.getCurrentVisit().getBillOfVisit().getDiscountAmount();
             billField.setText(amount.format(finalAmount)); 
+            discountField.setText(amount.format(discountAmount));
         } else {
             statusComboBox.setValue("Available");
             
@@ -71,18 +78,27 @@ public class TableManagementController {
 
     @FXML
     void handleEdit(ActionEvent event) {
-        capacityField.setEditable(true);
-        capacityField.setMouseTransparent(false);
-        capacityField.requestFocus();
-        statusComboBox.setDisable(false);
-        deleteTableButton.setVisible(true);
-        deleteTableButton.setManaged(true);
+    	if(!currentTable.isOccupied()) {
+            capacityField.setEditable(true);
+            capacityField.setMouseTransparent(false);
+            capacityField.requestFocus();
+            deleteTableButton.setVisible(true);
+            deleteTableButton.setManaged(true);
+    	} else {
+    		SceneLoader.showAlert(Alert.AlertType.ERROR, "Editing Table", "You can not edit table while there is active visit!");
+    	}
     }
     
     @FXML
     void handlePay(ActionEvent event) {
-    	SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Bill", "Total bill is: " + currentTable.getCurrentVisit().getBillOfVisit().getFinalAmount());
-    	SceneLoader.openNewWindow("/gui/PaymentScreen.fxml", "Payment screen");
+    	VisitDetailsController.visitInstance = currentTable.getCurrentVisit();
+    	SceneLoader.switchScreen(event
+    							,"/gui/PaymentScreen.fxml"
+    							,"Payment screen"
+    							,(PaymentScreenController controller) -> {
+    								// This code runs after the controller is loaded
+    								controller.payVisit(currentTable.getCurrentVisit());
+	    });
     }
 
     @FXML
@@ -108,29 +124,41 @@ public class TableManagementController {
 
     @FXML
     void handleSave(ActionEvent event) {
-        try {
-            Integer newCap = Integer.parseInt(capacityField.getText());
-            if(statusComboBox.getValue().equals("Available")) {
-            	currentTable.setActive(true);
-            } else if(statusComboBox.getValue().equals("Occupied")) {
-            	currentTable.setOccupied(true);;
-            }else {
-            	currentTable.setActive(false);
-            }
-            currentTable.setTableCapacity(newCap);
-            // Send update to Server
-            ClientUI.chat.accept(new BistroMessage(Action.UPDATE_TABLE, currentTable));
-            
-            if(BistroClient.operationSuccess) {
-            	BistroClient.operationSuccess = false;
-            	SceneLoader.closeWindow(event);
-            	BistroClient.tables = new ArrayList<>();
-    			ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES,null));
-            }
-            
-        } catch (NumberFormatException e) {
-            new Alert(Alert.AlertType.ERROR, "Capacity must be a number").show();
-        }
+    	if(currentTable.isOccupied()) {
+    		Double amount = Double.valueOf(billField.getText().trim());
+    		Double discount = Double.valueOf(discountField.getText().trim());
+    		Double finalAmount = (amount - (discount/100)*amount);
+    		Visit toUpdate = currentTable.getCurrentVisit();
+    		toUpdate.getBillOfVisit().setTotalAmount(amount);
+    		toUpdate.getBillOfVisit().setDiscountAmount(discount);
+    		toUpdate.getBillOfVisit().setFinalAmount(finalAmount);
+    		ClientUI.chat.accept(new BistroMessage(Action.UPDATE_BILL, toUpdate));
+    	} else {
+    		Integer capacity = Integer.valueOf(capacityField.getText().trim());
+    		Table toUpdate = currentTable;
+    		toUpdate.setTableCapacity(capacity);
+    		ClientUI.chat.accept(new BistroMessage(Action.UPDATE_TABLE, toUpdate));
+    	}
+    }
+    
+    public void updated(Object updated) {
+    	Platform.runLater(()->{
+    		if(updated == null) {
+    			SceneLoader.showAlert(Alert.AlertType.ERROR, "Error during updating table", "There was an error during saving changes!");
+    			return;
+    		} else {
+    			SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Edit details successful", "Details were updated succesfully!");
+    		}
+    		if(updated instanceof Table) {
+    			Table table = (Table)updated;
+    			setTableDetails(table);
+    			
+    		}else if (updated instanceof Visit) {
+    			Visit visit = (Visit)updated;
+    			TableManagementController.currentTable.setCurrentVisit(visit);
+    			setTableDetails(currentTable);
+    		}
+    	});
     }
 
     @FXML

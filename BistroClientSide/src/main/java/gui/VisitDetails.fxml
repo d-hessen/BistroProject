@@ -33,11 +33,11 @@
          </columnConstraints>
 
          <children>
-            <Label fx:id="labelForVisitNumber" style="-fx-font-weight: bold;" text="Reservation Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <Label fx:id="labelForVisitNumber" style="-fx-font-weight: bold;" text="Visit Number:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
             <Label fx:id="orderIdLabel" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-            <Label style="-fx-font-weight: bold;" text="Start Time:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <Label fx:id="startTimeLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;" text="15:00" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label style="-fx-font-weight: bold;" text="Time Left:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <Label fx:id="startTimeLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #d32f2f;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
             <Label style="-fx-font-weight: bold;" text="Diners:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
             <Label fx:id="dinersLabel" text="N/A" GridPane.columnIndex="1" GridPane.rowIndex="2" />

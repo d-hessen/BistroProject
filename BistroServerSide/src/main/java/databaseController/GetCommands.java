@@ -34,7 +34,7 @@ public class GetCommands {
                         	new DateTime(rs.getString("reservation_date"),rs.getString("reservation_time")),
 	                		rs.getString("verification_code"),
                         	rs.getInt("number_of_guests"),
-                        	rs.getInt("member_id"),
+                        	(Integer)rs.getObject("member_id"),
                             new Guest(rs.getString("guest_full_name"), 
                             		rs.getString("guest_phone"), 
                             		rs.getString("email"))
@@ -42,6 +42,7 @@ public class GetCommands {
                 	Status status = Status.valueOf(rs.getString("status"));
                 	toReturn.setStatus(status);
                 	toReturn.setDateOfPlacingReservation(rs.getString("created_at"));
+                	toReturn.setVerificationCode(rs.getString("verification_code"));
                 	return toReturn;
                 }
                 else {
@@ -53,28 +54,6 @@ public class GetCommands {
         }
         return null;
     }
-    //Method that return List of reserved time slots for @date
-  	public List<DateTime> getReservedTimeSlots(String date, ServerFrameController guiController){
-  		Connection conn = dbController.getInstance().getConnection();
-  		List<DateTime> listOfTakenSlots = new ArrayList<>();
-  		
-  		String sql = "SELECT reservation_time from reservation WHERE reservation_date = ?";
-  		
-  		try (PreparedStatement ps = conn.prepareStatement(sql)){
-  			ps.setString(0, date);
-  			try (ResultSet rs = ps.executeQuery()) {
-                  if (rs.next()) {
-                      listOfTakenSlots.add(new DateTime(rs.getString("reservation_date"),rs.getString("reservation_time")));
-                  }
-                  return listOfTakenSlots;
-              }
-  		} catch(SQLException e) {
-  			guiController.addToConsole("Error during creating list of taken slots: " +e.getMessage());
-  			e.printStackTrace();
-  		}
-  		return null;
-  	}
-  	
   	//Method that gets reservation by member card code
     public static Reservation findUpcomingReservationByCode(String cardCode, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
@@ -137,7 +116,6 @@ public class GetCommands {
         }
         return foundReservation;
     }
-    
     //Get reservations between start time and end time for today
     public static List<Reservation> getUpcomingReservationsInTimeRange(LocalTime start, LocalTime end, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
@@ -170,7 +148,6 @@ public class GetCommands {
         }
         return upcoming;
     }
-
 	// Retrieve reservations by phone number
 	public static List<Reservation> getReservationsByPhoneNumber(String phoneNumber,ServerFrameController guiController) {
 	    List<Reservation> reservations = new ArrayList<>();
@@ -217,7 +194,6 @@ public class GetCommands {
 
 	    return reservations;
 	}
-
 	//======================================
 	//GET GUEST
 	//======================================
@@ -263,7 +239,6 @@ public class GetCommands {
 		}
 		return null;
 	}
-	
 	//Get guest by waitingId from waiting_list
 	public static Guest getGuest(Integer waitingId, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
@@ -295,90 +270,81 @@ public class GetCommands {
 		Connection conn = dbController.getInstance().getConnection();
 	        
 	    String sql = "SELECT * FROM members WHERE phone = ?";
-	        
+	    Member toReturn = null;    
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	    	ps.setInt(1, phone);
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
-	        		Member toReturn = new Member(
-	        				rs.getString("full_name"),
-	                        rs.getString("phone"),
-	                        rs.getString("email"),
-	                        rs.getString("password")
-	                    );
-	        		toReturn.setMemberId(rs.getInt("member_id"));
-	        		toReturn.setCardCode(rs.getString("card_code"));
-	        		return toReturn;
+	        		toReturn = constructMemberFromResultSet(rs, conn, guiController);
 	                }
 	            }
 	       	} catch (SQLException e) {
 	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
 	        }
-	        return null;
+	        return toReturn;
 	}
 	//Get member by email
 	public static Member getMember(String email, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 	        
 	    String sql = "SELECT * FROM members WHERE email = ?";
-	        
+	    Member toReturn = null;
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	    	ps.setString(1, email);
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
-	        		Member toReturn = new Member(
-	        				rs.getString("full_name"),
-	                        rs.getString("phone"),
-	                        rs.getString("email"),
-	                        rs.getString("password")
-	                    );
-	        		toReturn.setMemberId(rs.getInt("member_id"));
-	        		toReturn.setCardCode(rs.getString("card_code"));
-	        		return toReturn;
+	        		toReturn = constructMemberFromResultSet(rs, conn, guiController);
 	                }
 	            }
 	       	} catch (SQLException e) {
 	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
 	        }
-	        return null;
+	        return toReturn;
 	}
 	//Get member by card code
 	public static Member getMemberByCode(String code, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         String sql = "SELECT * FROM members WHERE card_code = ?";
+        Member toReturn = null;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, code);
             try(ResultSet rs = ps.executeQuery()) {
-                if(rs.next()) return new Member(rs.getString("full_name"), rs.getString("phone"), rs.getString("email"), null);
+                if(rs.next()) {
+                	toReturn = constructMemberFromResultSet(rs, conn, guiController);
+                }
             }
         } catch (Exception e) {}
-        return null;
+        return toReturn;
     }
 	//Get member by memberId
 	public static Member getMemberById(Integer memberId, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
         
 	    String sql = "SELECT * FROM members WHERE member_id = ?";
-	        
+	    Member toReturn = null;
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	    	ps.setInt(1, memberId);
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
-	        		Member toReturn = new Member(
-	        				rs.getString("full_name"),
-	                        rs.getString("phone"),
-	                        rs.getString("email"),
-	                        rs.getString("password")
-	                    );
-	        		toReturn.setMemberId(rs.getInt("member_id"));
-	        		toReturn.setCardCode(rs.getString("card_code"));
-	        		return toReturn;
+	        		toReturn = constructMemberFromResultSet(rs, conn, guiController);
 	                }
 	            }
 	       	} catch (SQLException e) {
 	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
 	        }
-	        return null;
+	        return toReturn;
+	}
+	//Helper method to construct visit
+	private static Member constructMemberFromResultSet(ResultSet rs, Connection conn, ServerFrameController guiController) throws SQLException {
+		Member toReturn = new Member(
+				rs.getString("full_name"),
+                rs.getString("phone"),
+                rs.getString("email"),
+                rs.getString("password")
+            );
+		toReturn.setMemberId(rs.getInt("member_id"));
+		toReturn.setCardCode(rs.getString("card_code"));
+		return toReturn;
 	}
 	//======================================
 	//GET TABLE
@@ -554,6 +520,24 @@ public class GetCommands {
 	      }
 	      return toReturn;
 	}
+	//Get visit by verification code from visits table 
+	public static Visit getVisitByVerificationCode(String verificationCode, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+        
+	    String sql = "SELECT * FROM visits WHERE verification_code = ?";
+	    Visit toReturn = null;
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	    	ps.setString(1, verificationCode);
+	        try (ResultSet rs = ps.executeQuery()) {
+	        	if (rs.next()) {
+	        		toReturn = constructVisitFromResultSet(rs, conn, guiController);
+	            }
+	        }
+	      } catch (SQLException e) {
+	       		guiController.addToConsole("Error fetching visit: " + e.getMessage());
+	      }
+	      return toReturn;
+	}
 	//Get visit by verification code from waiting list
 	public static Visit getWaitingVisit(String verificationCode, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
@@ -624,7 +608,6 @@ public class GetCommands {
 	    }
 	    return visits;
 	}
-	
 	//Helper method to construct visit
 	private static Visit constructVisitFromResultSet(ResultSet rs, Connection conn, ServerFrameController guiController) throws SQLException {
 		Visit visit = null;
@@ -658,12 +641,11 @@ public class GetCommands {
 			visit.setActive(rs.getBoolean("is_active"));
 			visit.setVisitId(visitId);
 			visit.setBillOfVisit(getBill(visitId, guiController));
+        	visit.setVerificationCode(rs.getString("verification_code"));
 		}
 
 	    return visit;
 	}
-	
-	
 	//======================================
 	//GET BILL
 	//======================================

@@ -82,11 +82,25 @@ public class PaymentScreenController {
     // Handles "Back" button click
     @FXML
     private void handleBack(ActionEvent event) { 
-    	if(BistroClient.memberInstance != null) {
-    		 SceneLoader.loadScene(event, "/gui/VisitDetails.fxml", "Visit Details");
+    	if(BistroClient.staffInstance != null) {
+    		SceneLoader.switchScreen(event
+					,"/gui/TableManagement.fxml"
+					,"Manage Table " + visitToPay.getTable().getTableNumber()
+					,(TableManagementController controller) -> {
+						// This code runs after the controller is loaded
+						controller.setTableDetails(TableManagementController.currentTable);
+					});
     	}
     	else {
-    		SceneLoader.closeWindow(event);
+    		SceneLoader.switchScreen(
+        		    event, 
+        		    "/gui/VisitDetails.fxml", 
+        		    "Visit Details", 
+        		    (VisitDetailsController controller) -> {
+        		        // This code runs after the controller is loaded
+        		        controller.loadVisit(visitToPay);
+        		    }
+        		);
     	}
     }
 

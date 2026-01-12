@@ -9,6 +9,7 @@ import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
 import handlers.StaffWaitingListController;
+import handlers.TableManagementController;
 import handlers.VisitDetailsController;
 import handlers.VisitIdentificationController;
 import handlers.VisitNowController;
@@ -31,6 +32,7 @@ public class BistroClient extends AbstractClient
   public static VisitIdentificationController visitIdentificationControllerInstance;
   public static VisitDetailsController visitDetailsControllerInstance;
   public static MemberProfileController memberProfileControllerInstance;
+  public static TableManagementController tableManagementControllerInstance;
 
   public static Reservation  reservationInstance = null;
   public static List<Visit> visitsList = null;
@@ -102,11 +104,7 @@ public class BistroClient extends AbstractClient
             	}
             	break;
             case UPDATE_TABLE:
-            	if(answer.getData() instanceof Table) {
-            		operationSuccess = true;
-            	} else {
-            		SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", answer.getData().toString());
-            	}
+            	tableManagementControllerInstance.updated(answer.getData());
             	break;
             // --- MANAGEMENT ROUTES ---
             case VERIFY_MEMBER_ARRIVAL:
@@ -236,6 +234,10 @@ public class BistroClient extends AbstractClient
 		  			Visit created = (Visit)answer.getData();
 		  			visitNowControllerInstance.walkInVisitCreated(created);
 		  		}
+		  		break;
+		  	// --- BILL ROUTES ---
+		  	case UPDATE_BILL:
+		  		tableManagementControllerInstance.updated(answer.getData());
 		  		break;
 		  	default:
 	            System.out.println("Unknown Action: " + answer.getAction());

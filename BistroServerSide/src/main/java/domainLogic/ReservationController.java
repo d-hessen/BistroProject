@@ -1,6 +1,10 @@
 package domainLogic;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,6 +24,7 @@ import common.Action;
 import common.BistroMessage;
 import common.Status;
 import dataLayer.DateTime;
+import dataLayer.Guest;
 import dataLayer.Reservation;
 import dataLayer.Visit;
 import dataLayer.Table;
@@ -135,14 +140,31 @@ public class ReservationController {
 	public static BistroMessage codeVerification(String code, ServerFrameController guiController) {
 		Reservation reservation = GetCommands.getReservationVerificationCode(code, guiController);
 		if(reservation != null) {
-			return new BistroMessage(Action.GET_VERIFICATION_CODE, reservation);
+			LocalTime now = LocalTime.now();
+            LocalTime fifteenMinsBefore = now.minusMinutes(15);
+            LocalTime fifteenMinsLater = now.plusMinutes(15);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss"); 
+            String timeStr = reservation.getReservationDate().getTime();
+            LocalTime reservationTime = LocalTime.parse(timeStr, timeFormatter);
+            // Check if reservation time is between NOW-15m and NOW+15m
+            // Allow checking in slightly early (e.g., 15 mins before). 
+            if ((reservationTime.isAfter(fifteenMinsBefore) || reservationTime.equals(now)) && reservationTime.isBefore(fifteenMinsLater)) {
+    			return new BistroMessage(Action.GET_VERIFICATION_CODE, reservation);
+            } else {
+            	return new BistroMessage(Action.GET_VERIFICATION_CODE, "There's no upcoming reservation in the next 15 minutes:(");
+            }
 		}
 		Visit waiting = GetCommands.getWaitingVisit(code, guiController);
 		if(waiting != null) {
 			return new BistroMessage(Action.GET_VERIFICATION_CODE, waiting);
 		}
+		Visit visit = GetCommands.getVisitByVerificationCode(code, guiController);
+		if(visit != null) {
+			return new BistroMessage(Action.GET_VERIFICATION_CODE, visit);
+		}
 		return new BistroMessage(Action.GET_VERIFICATION_CODE, "Error: Verification Code wasn't found");
 	}
+	
 
 	public static String generateVerificationCode() {
 		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
