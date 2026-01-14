@@ -50,13 +50,13 @@ public class ClientDashboardController implements Initializable {
     @FXML
     private void handleLogout(ActionEvent event) {
     	if(BistroClient.memberInstance != null) {
-        	BistroClient.memberInstance = null;
-        	ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
+        	BistroClient.memberInstance = null; 	
         	SceneLoader.loadScene(event, "/gui/MemberLoginGUI.fxml", "Member Login");
     	}
     	else {
     		SceneLoader.loadScene(event, "/gui/IsMemberGUI.fxml", "Client Login Options");
     	}
+    	ClientUI.chat.accept(new BistroMessage(Action.DISCONNECT, null));
     }
     
     // Handles the action when "My Reservations" button is clicked.

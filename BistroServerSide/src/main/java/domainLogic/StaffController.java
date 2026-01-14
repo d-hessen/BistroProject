@@ -1,6 +1,7 @@
 package domainLogic;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import common.Action;
 import common.BistroMessage;
@@ -40,15 +41,30 @@ public class StaffController {
     }
 
 	public static BistroMessage verifyMemberArrival(String memberCode, ServerFrameController guiController) { 
-        //Check if reservation exists for this member within 30 mins
+        //Check if reservation exists for this member within 15 mins
         Reservation reservation = GetCommands.findUpcomingReservationByCode(memberCode, guiController);
-        
+        List<Visit> waitingList = GetCommands.getWaitingList(guiController);
+        Visit waiting = null;
+        for (Visit visit : waitingList) {
+			if(visit.getGuest() instanceof Member) {
+				Member member = (Member)visit.getGuest();
+				if(member.getCardCode().equals(memberCode)) {
+					waiting = visit;
+				}
+			}
+		}
+        BistroMessage response = null;
         if (reservation == null) {
-            return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, "Error: No reservation found for this member in the next 30 minutes.");
+        	if(waiting == null) {
+                return new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, "Error: No reservation found for this member in the next 15 minutes.");
+        	}else {
+        		response = VisitController.createWalkInVisit(waiting, guiController);
+        	}
+        }else {
+        	response = VisitController.createReservatedVisit(reservation, guiController);
         }
         
         //Find an available table for the party 
-        BistroMessage response = VisitController.createReservatedVisit(reservation, guiController);
         if(response.getData() instanceof Visit) {
         	Visit created = (Visit)response.getData();
         	Member m = GetCommands.getMemberByCode(memberCode, guiController);

@@ -21,7 +21,7 @@ public class ReceiptScreenController {
 
     @FXML
     public void initialize() {
-    	paid = VisitDetailsController.visitInstance;
+    	paid = BistroClient.visitInstance;
         if (paid == null) {
             return;
         }
@@ -33,9 +33,12 @@ public class ReceiptScreenController {
 
     @FXML
     private void handleFinish(ActionEvent event) {
-    	//TODO
-    	//ADD LOGIC OF LEAVING TABLE
-      	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Payment Screen");
+    	if(BistroClient.staffInstance != null) {
+    		SceneLoader.closeWindow(event);
+    	} else {
+          	SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+    	}
+
     }
     
     public void visitPaid(Visit paid) {

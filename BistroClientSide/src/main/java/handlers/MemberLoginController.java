@@ -16,7 +16,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class MemberLoginController {
-	private static Member memberToCheck = new Member(null,null,null,null);
+	private Member memberToCheck = new Member(null,null,null,null);
     // Simple email regex.
     private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
@@ -41,7 +41,7 @@ public class MemberLoginController {
             errorMessage("Please enter both username and password.");
             return;
         }
-        
+        memberToCheck = new Member(null,null,null,null);
         checkInputType(rawInput);
         memberToCheck.setPassword(password);
         ClientUI.chat.accept(new BistroMessage(Action.MEMBER_IDENTIFICATION, memberToCheck));
@@ -90,7 +90,7 @@ public class MemberLoginController {
      * Determines the type of user input.
      * @param input The user input string.
      */
-    public static void checkInputType(String input) {
+    public void checkInputType(String input) {
         if (isValidEmail(input)) {
         	memberToCheck.setEmail(input);
             System.out.println("The input is an email: " + input);

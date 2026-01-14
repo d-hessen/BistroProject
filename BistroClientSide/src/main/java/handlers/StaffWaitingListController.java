@@ -107,6 +107,11 @@ public class StaffWaitingListController implements Initializable {
         // Create a message with the action to get the waiting list
         BistroMessage msg = new BistroMessage(Action.GET_WAITING_LIST, null);
         ClientUI.chat.accept(msg);
+        this.waitingList.clear();
+        if (BistroClient.waitingList != null && !BistroClient.waitingList.isEmpty()) {
+            waitingList.addAll(BistroClient.waitingList);
+        }
+
     }
 
     /**
@@ -155,10 +160,7 @@ public class StaffWaitingListController implements Initializable {
     //Method called by BistroClient when the server sends the updated waiting list.
     public void updateWaitingList(List<Visit> list) {
         Platform.runLater(() -> {
-            waitingList.clear();
-            if (list != null && !list.isEmpty()) {
-                waitingList.addAll(list);
-            }
+
         });
     }
 }

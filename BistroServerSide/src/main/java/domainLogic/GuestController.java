@@ -19,7 +19,7 @@ public class GuestController {
 		String phoneStr = memberToCheck.getPhoneNumber();
 		String email = memberToCheck.getEmail();
 		Member wantedMember = null;
-		
+		System.out.println(memberToCheck.toString());
 		boolean hasPhone = (phoneStr != null && !phoneStr.isEmpty());
 		boolean hasEmail = (email != null && !email.isEmpty());	
 		

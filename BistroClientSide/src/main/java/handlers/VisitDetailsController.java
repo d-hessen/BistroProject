@@ -57,16 +57,18 @@ public class VisitDetailsController {
             endVisitBtn.setDisable(false);
             resumeTimerFromDB(visit.getStartTime().getTime().toString());
         } 
-        else if (VisitSessionManager.isVisitStarted() && VisitSessionManager.hasActiveTimer()) {
-            setupActiveVisitUI();
-            startCountdown();
-        } 
-        else {
-            if (startTimeLabel != null) startTimeLabel.setText("Not Started");
+        else{
+        	if (VisitSessionManager.isVisitStarted()) {
+                VisitSessionManager.clear();
+                if (countdown != null) {
+                    countdown.stop();
+                }
+            }
+        	if (startTimeLabel != null) startTimeLabel.setText("Not Started");
             if (startVisitBtn != null) startVisitBtn.setDisable(false);
             if (endVisitBtn != null) endVisitBtn.setDisable(true);
         }
-    }
+   }
     
     private void resumeTimerFromDB(String dbStartTimeStr) {
         try {
@@ -167,7 +169,6 @@ public class VisitDetailsController {
     			VisitSessionManager.setVisitStarted(true);
     			VisitSessionManager.startVisitSession(MAX_VISIT_TIME_SECONDS);
     			setupActiveVisitUI();
-    			Platform.runLater(() -> EmailSend.sendConfirmationNotifications("Table Assigned : " + visitInstance.getTable().getTableNumber().toString()));
                 startCountdown();
     		}else {
     			startTimeLabel.setText("Error Starting Visit - speak to manager");

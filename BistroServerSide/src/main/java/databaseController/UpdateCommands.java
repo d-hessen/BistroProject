@@ -34,6 +34,20 @@ public class UpdateCommands {
             return false;
         }
     }
+    
+    public static boolean markReminderSent(Integer reservationId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        String sql = "UPDATE reservation SET reminder_sent = TRUE WHERE reservation_number = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reservationId);
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error marking reminder sent: " + e.getMessage());
+            return false;
+        }
+    }
 	//======================================
 	//MEMBER UPDATES
 	//======================================
@@ -108,6 +122,15 @@ public class UpdateCommands {
         return toReturn;
     }
     
+    public static void markBillSent(int visitId, ServerFrameController guiController) {
+        String sql = "UPDATE visits SET bill_sent = TRUE WHERE visit_id = ?";
+        try (PreparedStatement ps = dbController.getInstance().getConnection().prepareStatement(sql)) {
+            ps.setInt(1, visitId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 	//======================================
 	//VISIT UPDATES
 	//======================================
@@ -128,7 +151,15 @@ public class UpdateCommands {
     	            guiController.addToConsole("Error updating visit: " + e.getMessage());
     	        }
     			break;
-
+    		case BILL_PAID:
+    			String query = "UPDATE visits SET end_time = NOW(), is_active = 0 WHERE visit_id = ?";
+    			try (PreparedStatement ps = conn.prepareStatement(query)) {
+    	        	ps.setInt(1, recieved.getVisitId());
+    	            affectedRows = ps.executeUpdate();
+    	        } catch (SQLException e) {
+    	            guiController.addToConsole("Error updating visit: " + e.getMessage());
+    	        }
+    			break;
     		default:
     			guiController.addToConsole(toUpdate.getAction() + " - UNKNOW ACTION IN UPDATE VISIT");
     			break;
@@ -159,6 +190,42 @@ public class UpdateCommands {
         	guiController.addToConsole("Error updating bill: " + e.getMessage());
         }
         return toReturn;
+    }
+    
+    //======================================
+    //WAITING LIST UPDATES
+    //======================================
+    public static boolean updateWaitingListStatus(int waitingId, String status, int tableId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        
+        // We set the status to 'notified' and lock the table_id to this user
+        String sql = "UPDATE waiting_list SET status = ?, table_id = ?, notified_at = NOW() WHERE waiting_id = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, tableId);
+            ps.setInt(3, waitingId);
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error updating waiting list: " + e.getMessage());
+            return false;
+        }
+    }
+    //Cancel waiting visit that haven't arrived after being notified (15 min)
+    public static boolean cancelWaitingListEntry(int waitingId, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+
+        String sql = "UPDATE waiting_list SET status = 'cancelled', table_id = NULL WHERE waiting_id = ?";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, waitingId);
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error cancelling waiting list entry " + waitingId + ": " + e.getMessage());
+            return false;
+        }
     }
     
     public static boolean updateRestaurantConfig(RestaurantConfig config, ServerFrameController guiController) {

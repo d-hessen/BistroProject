@@ -15,6 +15,7 @@ import dataLayer.Visit;
 import databaseController.CreateCommands;
 import databaseController.GetCommands;
 import databaseController.UpdateCommands;
+import utils.EmailSend;
 
 public class VisitController {
     
@@ -45,7 +46,7 @@ public class VisitController {
         	if(toCreate.getWaitingId() == null) {
                 Visit waiting = CreateCommands.createWaitingWalkInVisit(toCreate, guiController);
                 if(waiting != null) {
-                    return new BistroMessage(action, waiting.getVerificationCode());
+                    return new BistroMessage(action, waiting);
                 } else {
                     return new BistroMessage(action, "Error: DB Failed to create waiting visit.");
                 }
@@ -184,8 +185,88 @@ public class VisitController {
 		return new BistroMessage(Action.START_VISIT, UpdateCommands.updateVisit(toUpdate, guiController));
 	}
         
-	public static BistroMessage updateBillOfVisit(Visit toUpdate, ServerFrameController guiController) {
-		return new BistroMessage(Action.UPDATE_BILL, UpdateCommands.updateBillForVisit(toUpdate, guiController));
+	public static BistroMessage updateBillOfVisit(BistroMessage toUpdate, ServerFrameController guiController) {
+		BistroMessage updateResult = new BistroMessage(toUpdate.getAction(), UpdateCommands.updateBillForVisit((Visit)toUpdate.getData(), guiController));
+		if(toUpdate.getAction() == Action.BILL_PAID && updateResult.getData() != null) {
+			UpdateCommands.updateVisit(toUpdate, guiController);
+			EmailSend.sendBillNotification((Visit)toUpdate.getData());
+			checkWaitingListAndNotify(guiController);
+		}
+		return updateResult;
 	}
+	
+    public static void checkWaitingListAndNotify(ServerFrameController guiController) {
+        ArrayList<Table> allTables = GetCommands.getAllTablesWithStatus(guiController);
+        
+        LocalTime now = LocalTime.now();
+        LocalTime twoHoursLater = now.plusHours(2);
+        List<Reservation> upcomingReservations = GetCommands.getUpcomingReservationsInTimeRange(now, twoHoursLater, guiController);
 
+        List<Visit> waitingList = GetCommands.getWaitingList(guiController);
+
+        for (Visit waitingVisit : waitingList) {
+        	if(!waitingVisit.getStatus().name().equals("waiting")) {
+        		return;
+        	}
+
+            Integer foundTableNum = findTable(allTables, upcomingReservations, waitingVisit.getPartySize());
+
+            if (foundTableNum != null) {
+                EmailSend.sendTableReadyNotification(waitingVisit);
+                UpdateCommands.updateWaitingListStatus(waitingVisit.getWaitingId(), "notified", foundTableNum, guiController);
+                
+                guiController.addToConsole("Table " + foundTableNum + " is now held for Waiting Group " + waitingVisit.getWaitingId());
+
+                for (Table t : allTables) {
+                    if (t.getTableNumber() == foundTableNum) {
+                        t.setOccupied(true); 
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    public static void processWaitingListExpirations(ServerFrameController guiController) {
+        List<Visit> expiredList = GetCommands.getExpiredWaitingListEntries(guiController);
+        if (expiredList.isEmpty()) {
+        	return;
+        }
+        boolean tableFreed = false;
+        for (Visit visit : expiredList) {
+            EmailSend.sendWaitingListCancellation(visit);
+            boolean success = UpdateCommands.cancelWaitingListEntry(visit.getWaitingId(), guiController);   
+            if (success) {
+                guiController.addToConsole("Auto-cancelled Waiting Group " + visit.getWaitingId() + " (Time limit exceeded).");
+                tableFreed = true;
+            }
+        }
+        if (tableFreed) {
+            checkWaitingListAndNotify(guiController);
+            tableFreed = false;
+        }
+    }
+    
+    public static void processAutoBilling(ServerFrameController guiController) {
+        List<Visit> dueVisits = GetCommands.getVisitsDueForBilling(guiController);
+        
+        for (Visit visit : dueVisits) {
+            EmailSend.sendBillNotification(visit);
+            
+            UpdateCommands.markBillSent(visit.getVisitId(), guiController);
+            
+            guiController.addToConsole("Sent auto-bill to Visit ID: " + visit.getVisitId());
+        }
+    }
+    
+//    // Ensure this is called when a visit ends
+//    public static BistroMessage endVisit(Visit visit, ServerFrameController guiController) {
+//        boolean success = UpdateCommands.endVisit(visit, guiController);
+//        if (success) {
+//            // Trigger the check immediately after a table frees up
+//            checkWaitingListAndNotify(guiController);
+//            return new BistroMessage(Action.END_VISIT, true);
+//        }
+//        return new BistroMessage(Action.END_VISIT, false);
+//    }
 }

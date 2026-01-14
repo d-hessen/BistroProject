@@ -12,6 +12,7 @@ public enum Action {
     GET_MEMBER_RESERVATIONS,
     CHECK_RESERVATION_AVAILABILITY,
     FIND_RESERVATION,
+    FORGOT_CODE,
     // Connection Actions
     DISCONNECT,
     //Member Actions
@@ -27,8 +28,10 @@ public enum Action {
     END_VISIT, //NOT IN USE
     CANCEL_VISIT, //NOT IN USE
     VISIT_NOW,
+    GET_VISIT,
     //BILL ACTIONS
-    UPDATE_BILL, 
+    UPDATE_BILL,
+    BILL_PAID,
     //STAFF ACTIONS
     STAFF_IDENTIFICATION,
     STAFF_NOT_FOUND,

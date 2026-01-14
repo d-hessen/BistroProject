@@ -160,6 +160,16 @@ public class VisitNowController implements Initializable {
     	});
     }
     
+    public void walkInVisitWaiting(Visit visit) {
+        BistroClient.waitingVisit = visit;
+        isWaiting = true;
+        
+        Platform.runLater(() -> {
+            SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Added to Waiting List", 
+                "No tables available.\nVerification Code: " + visit.getVerificationCode());
+        });
+    }
+    
     public void walkInVisitCreated(Visit visit) {
     	createdVisit = visit;
 		hasAssignedTable = true;

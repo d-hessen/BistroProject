@@ -1,31 +1,20 @@
 package server;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import common.*;
+import dataLayer.*;
+import databaseController.*;
+import domainLogic.*;
+import ocsf.server.*;
 
-import common.Action;
-import common.BistroMessage;
-import dataLayer.Member;
-import dataLayer.Reservation;
-import dataLayer.RestaurantConfig;
-import dataLayer.Staff;
-import dataLayer.Table;
-import dataLayer.Visit;
-import databaseController.DeleteCommands;
-import databaseController.GetCommands;
-import databaseController.UpdateCommands;
-import databaseController.dbController;
-import domainLogic.GuestController;
-import domainLogic.ReservationController;
-import domainLogic.ServerFrameController;
-import domainLogic.StaffController;
-import domainLogic.VisitController;
-import ocsf.server.AbstractServer;
-import ocsf.server.ConnectionToClient;
-
-public class BistroServer extends AbstractServer {
+public class BistroServer extends AbstractServer 
+{
 	private ServerFrameController guiController; // Reference to the GUI Controller
-
+	private ScheduledExecutorService scheduler;
 	public BistroServer(int port, ServerFrameController controller) {
 		super(port);
 		this.guiController = controller;
@@ -36,41 +25,46 @@ public class BistroServer extends AbstractServer {
 		BistroMessage request = (BistroMessage) msg;
 		try {
 			switch (request.getAction()) {
+			// --- START OF CASES ---
 			// --- STAFF ROUTES ---
 			case STAFF_IDENTIFICATION:
-				Staff staffRecieved = (Staff) request.getData();
+				Staff staffRecieved = (Staff)request.getData();
 				client.sendToClient(StaffController.staffIdentification(staffRecieved, guiController));
 				break;
 			case GET_ALL_TABLES:
 				client.sendToClient(StaffController.getAllTables(guiController));
 				break;
 			case ADD_TABLE:
-				Table tableRecieved = (Table) request.getData();
+				Table tableRecieved = (Table)request.getData();
 				client.sendToClient(StaffController.addNewTable(tableRecieved, guiController));
 				break;
 			case DELETE_TABLE:
-				Table tableToDelete = (Table) request.getData();
+				Table tableToDelete = (Table)request.getData();
 				client.sendToClient(StaffController.deleteTable(tableToDelete, guiController));
 				break;
 			case UPDATE_TABLE:
-				Table tableToUpdate = (Table) request.getData();
+				Table tableToUpdate = (Table)request.getData();
 				client.sendToClient(StaffController.updateTable(tableToUpdate, guiController));
 				break;
 			case VERIFY_MEMBER_ARRIVAL:
-				String cardCode = (String) request.getData();
+				String cardCode = (String)request.getData();
 				client.sendToClient(StaffController.verifyMemberArrival(cardCode, guiController));
 				break;
 			case GET_WAITING_LIST:
 				List<Visit> currentQueue = GetCommands.getWaitingList(guiController);
 				BistroMessage response = new BistroMessage(Action.GET_WAITING_LIST, currentQueue);
-				client.sendToClient(response);
+				try {
+                    client.sendToClient(response);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 				break;
 			case CHECK_IN_CUSTOMER:
-				if (request.getData() instanceof Reservation) {
+				if(request.getData() instanceof Reservation) {
 					client.sendToClient(
-							VisitController.createReservatedVisit((Reservation) request.getData(), guiController));
-				} else { // Handle walk-in visit
-					client.sendToClient(VisitController.createWalkInVisit((Visit) request.getData(), guiController));
+							VisitController.createReservatedVisit((Reservation)request.getData(), guiController));
+				} else { //Visit
+					client.sendToClient(VisitController.createWalkInVisit((Visit)request.getData(), guiController));
 				}
 				break;
 			case REMOVE_FROM_WAITING_LIST:
@@ -86,6 +80,9 @@ public class BistroServer extends AbstractServer {
 					}
 				}
 				break;
+			case FORGOT_CODE:
+				client.sendToClient(ReservationController.recoverLostCode((String)request.getData(), guiController));
+				break;
 			case GET_RESTAURANT_CONFIG:
 				client.sendToClient(new BistroMessage(Action.GET_RESTAURANT_CONFIG,
 						GetCommands.getRestaurantConfig(guiController)));
@@ -98,29 +95,29 @@ public class BistroServer extends AbstractServer {
                 
 			// --- MEMBER ROUTES ---
 			case MEMBER_IDENTIFICATION:
-				Member memberRecieved = (Member) request.getData();
+				Member memberRecieved = (Member)request.getData();
 				client.sendToClient(GuestController.memberIdentification(memberRecieved, guiController));
 				break;
 			case CREATE_MEMBER:
-				Member memberToCreate = (Member) request.getData();
+				Member memberToCreate = (Member)request.getData();
 				client.sendToClient(GuestController.memberCreation(memberToCreate, guiController));
 				break;
 			case DELETE_MEMBER:
-				Member memberToDelete = (Member) request.getData();
+				Member memberToDelete = (Member)request.getData();
 				client.sendToClient(GuestController.memberDelete(memberToDelete, guiController));
 				break;
 			case UPDATE_MEMBER:
-				client.sendToClient(GuestController.updateMemberDetails((Member) request.getData(), guiController));
+				client.sendToClient(GuestController.updateMemberDetails((Member)request.getData(),guiController));
 				break;
                 
 			// --- RESERVATION ROUTES ---
 			case GET_RESERVATION:
-				Integer resId = (Integer) request.getData();
+				Integer resId = (Integer)request.getData();
 				client.sendToClient(ReservationController.getReservation(resId, guiController));
 				break;
 
 			case CREATE_RESERVATION:
-				Reservation reservationToCreate = (Reservation) request.getData();
+				Reservation reservationToCreate = (Reservation)request.getData();
 				client.sendToClient(ReservationController.createReservation(reservationToCreate, guiController));
 				break;
 			case UPDATE_RESERVATION:
@@ -132,7 +129,7 @@ public class BistroServer extends AbstractServer {
 				client.sendToClient(ReservationController.cancelReservation(resToCancel, guiController));
 				break;
 			case GET_MEMBER_RESERVATIONS:
-				String phoneNumber = (String) request.getData();
+				String phoneNumber= (String)request.getData();
 				client.sendToClient(ReservationController.getMemberReservations(phoneNumber, guiController));
 				break;
 			case CHECK_RESERVATION_AVAILABILITY:
@@ -146,7 +143,7 @@ public class BistroServer extends AbstractServer {
 
 			// --- VISIT ROUTES ---
 			case START_VISIT:
-				client.sendToClient(VisitController.updateVisit(request, guiController));
+				client.sendToClient(VisitController.updateVisit(request,guiController));
 				break;
 			case GET_MEMBER_VISITS:
 				Integer memberId = (Integer) request.getData();
@@ -158,17 +155,22 @@ public class BistroServer extends AbstractServer {
 				client.sendToClient(new BistroMessage(Action.GET_ACTIVE_VISITS, activeVisits));
 				break;
 			case VISIT_NOW:
-				Visit toCreate = (Visit) request.getData();
+				Visit toCreate = (Visit)request.getData();
 				client.sendToClient(VisitController.createWalkInVisit(toCreate, guiController));
 				break;
-			case GET_VERIFICATION_CODE:
-				// Sending the full request object because the controller expects BistroMessage
-				client.sendToClient(ReservationController.codeVerification(request, guiController));
+			case GET_VISIT:
+            	client.sendToClient(GetCommands.getVisitByVerificationCode((String)request.getData(),guiController));
 				break;
+			case GET_VERIFICATION_CODE:
+            case FIND_RESERVATION:
+            	//Sends back instance of Reservation or Visit
+            	client.sendToClient(ReservationController.codeVerification(request, guiController));
+                break;
                 
 			// --- BILL ROUTES ---
 			case UPDATE_BILL:
-				client.sendToClient(VisitController.updateBillOfVisit((Visit) request.getData(), guiController));
+			case BILL_PAID:
+				client.sendToClient(VisitController.updateBillOfVisit(request, guiController));
 				break;
                 
 			// --- CLIENT DISCONNECTS ---
@@ -195,12 +197,35 @@ public class BistroServer extends AbstractServer {
 		guiController.addToConsole("SQL connection succeed");
 		guiController.addToConsole("Server listening on port " + getPort());
 		guiController.serverStatusChanged(true);
+      
+		scheduler = Executors.newScheduledThreadPool(1);
+      	// Run checks every 1 minute
+      	scheduler.scheduleAtFixedRate(() -> {
+        	try {
+            	//Check for 15-minute no-shows
+            	ReservationController.processNoShows(guiController);
+            	//Send reminder for upcoming reservations
+              	ReservationController.processReminders(guiController);
+              	//Check if can insert new waiting visit
+              	VisitController.checkWaitingListAndNotify(guiController);
+              	//cancel waiting visits that haven't arrived after notification
+              	VisitController.processWaitingListExpirations(guiController);
+              	//Send bill to visits that are 2 hours or more
+              	VisitController.processAutoBilling(guiController);
+          	} catch (Exception e) {
+              	e.printStackTrace();
+          	}
+      	}, 0, 1, TimeUnit.MINUTES);
+  
 	}
 
 	@Override
 	protected void serverStopped() {
 		guiController.serverStatusChanged(false); // Update GUI to Red
 		dbController.getInstance().disconnectFromDB();
+		if (scheduler != null && !scheduler.isShutdown()) {
+        scheduler.shutdown();
+    	}
 	}
 
 	@Override

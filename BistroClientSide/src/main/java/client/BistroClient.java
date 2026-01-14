@@ -5,6 +5,7 @@ import common.BistroMessage;
 import common.ChatIF;
 import dataLayer.*;
 import handlers.MemberProfileController;
+import handlers.PaymentScreenController;
 import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
@@ -35,7 +36,8 @@ public class BistroClient extends AbstractClient
   public static VisitDetailsController visitDetailsControllerInstance;
   public static MemberProfileController memberProfileControllerInstance;
   public static TableManagementController tableManagementControllerInstance;
-
+  public static StaffWaitingListController staffWaitingListControllerInstance;
+  
   public static Reservation  reservationInstance = null;
   public static List<Visit> visitsList = null;
   public static ArrayList<Table> tables = new ArrayList<>();
@@ -46,8 +48,10 @@ public class BistroClient extends AbstractClient
   public static boolean awaitResponse = false;
   public static boolean operationSuccess = false;
   public static List<Reservation> reservationsList = null;
-  public static StaffWaitingListController staffWaitingListControllerInstance;
-
+  public static Visit waitingVisit = null;
+  public static List<Visit> waitingList = null;
+  public static Visit visitInstance = null;
+  
   public BistroClient(String host, int port, ChatIF clientUI) 
     throws IOException 
   {
@@ -119,6 +123,14 @@ public class BistroClient extends AbstractClient
                 if (staffWaitingListControllerInstance != null) {
                     staffWaitingListControllerInstance.updateWaitingList((List<Visit>) answer.getData());
                 }
+                waitingList = (List<Visit>) answer.getData();
+                break;
+            case REMOVE_FROM_WAITING_LIST:
+                if ((boolean) answer.getData()) {
+                    operationSuccess = true;
+                } else {
+                    operationSuccess = false;
+                }
                 break;
             case GET_ALL_MEMBERS:
                 ArrayList<Member> receivedMembers = (ArrayList<Member>) answer.getData();                
@@ -163,9 +175,14 @@ public class BistroClient extends AbstractClient
 		  		wantedReservationId = reservationInstance.getReservationId();
 		  		break;
 		  	case GET_VERIFICATION_CODE:
-		  		if(visitIdentificationControllerInstance != null) {
-		  			visitIdentificationControllerInstance.checkIn(answer.getData());	  		
+		  		if(visitIdentificationControllerInstance != null && !PaymentScreenController.updateVisit) {
+		  			visitIdentificationControllerInstance.checkIn(answer.getData());
+		  		} else if(answer.getData() instanceof Visit) {
+		  			visitInstance = (Visit)answer.getData();
 		  		}
+		  		break;
+		  	case FORGOT_CODE:
+		  		visitIdentificationControllerInstance.forgotenCode((String)answer.getData());
 		  		break;
 		  	case FIND_RESERVATION:
 		  		reservationInstance = (Reservation)answer.getData();
@@ -240,10 +257,6 @@ public class BistroClient extends AbstractClient
 		  		}
 		  	    visitsList = visits;
 		  	    break;
-//		  	case CREATE_VISIT:
-//		  		Integer visitId = (Integer)answer.getData();
-//		  		VisitDetailsController.visitCreated(visitId);
-//		  	    break;
 		  	case START_VISIT:
 		  		boolean isStarted = (boolean)answer.getData();
 		  		visitDetailsControllerInstance.visitStarted(isStarted);
@@ -254,12 +267,21 @@ public class BistroClient extends AbstractClient
 			  		visitNowControllerInstance.walkInVisitNotCreated(recieved);
 		  		} else {
 		  			Visit created = (Visit)answer.getData();
-		  			visitNowControllerInstance.walkInVisitCreated(created);
+		  			if (created.getWaitingId() != null) {
+		  			    visitNowControllerInstance.walkInVisitWaiting(created);
+		  			} else {
+		  			    visitNowControllerInstance.walkInVisitCreated(created);
+		  			}
 		  		}
 		  		break;
 		  	// --- BILL ROUTES ---
 		  	case UPDATE_BILL:
-		  		tableManagementControllerInstance.updated(answer.getData());
+		  		if(staffInstance != null) {
+			  		tableManagementControllerInstance.updated(answer.getData());
+		  		}
+		  		break;
+		  	case BILL_PAID:
+		  		PaymentScreenController.billWasPaid = true;
 		  		break;
 		  	default:
 	            System.out.println("Unknown Actionblbl: " + answer.getAction());

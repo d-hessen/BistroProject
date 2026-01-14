@@ -57,23 +57,26 @@ public class TableManagementController {
         TableManagementController.currentTable = table; //Table that was clicked
         tableNumberField.setText(String.valueOf(table.getTableNumber()));
         capacityField.setText(String.valueOf(table.getTableCapacity()));
-        
-        if (table.isOccupied()) { 
-            visitBox.setVisible(true);
-            visitBox.setManaged(true);
-            statusComboBox.setValue("Occupied");
-            visitNumberField.setText(String.valueOf(table.getCurrentVisit().getVisitId()));
-            partySizeField.setText(String.valueOf(table.getCurrentVisit().getPartySize()));
-            startTimeField.setText(table.getCurrentVisit().getStartTime().toString());
-            DecimalFormat amount = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US));
-            Double finalAmount = table.getCurrentVisit().getBillOfVisit().getTotalAmount();
-            Double discountAmount = table.getCurrentVisit().getBillOfVisit().getDiscountAmount();
-            billField.setText(amount.format(finalAmount)); 
-            discountField.setText(amount.format(discountAmount));
-        } else {
-            statusComboBox.setValue("Available");
-            
+        try {
+            if (table.isOccupied()) {
+                visitBox.setVisible(true);
+                visitBox.setManaged(true);
+                statusComboBox.setValue("Occupied");
+                visitNumberField.setText(String.valueOf(table.getCurrentVisit().getVisitId()));
+                partySizeField.setText(String.valueOf(table.getCurrentVisit().getPartySize()));
+                startTimeField.setText(table.getCurrentVisit().getStartTime().toString());
+                DecimalFormat amount = new DecimalFormat("0.00", DecimalFormatSymbols.getInstance(Locale.US));
+                Double finalAmount = table.getCurrentVisit().getBillOfVisit().getTotalAmount();
+                Double discountAmount = table.getCurrentVisit().getBillOfVisit().getDiscountAmount();
+                billField.setText(amount.format(finalAmount)); 
+                discountField.setText(amount.format(discountAmount));
+            } else {
+                statusComboBox.setValue("Available");  
+            }
+        } catch(NullPointerException ex){
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "This table is held for walk-in or not started yet. Wait and try again!");
         }
+
     }
 
     @FXML

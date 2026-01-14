@@ -1,7 +1,11 @@
 package handlers;
 
 import client.BistroClient;
+import client.ClientUI;
+import common.Action;
+import common.BistroMessage;
 import dataLayer.Visit;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -29,10 +33,14 @@ public class PaymentScreenController {
     private Label priceLabel;
     
     private Visit visitToPay = null;
+    public static boolean billWasPaid = false;
+    public static boolean updateVisit = false;
     @FXML
     public void initialize() {
         statusLabel.setVisible(false);
-        visitToPay = VisitDetailsController.visitInstance;
+        updateVisit = true;
+        ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, VisitDetailsController.visitInstance.getVerificationCode()));
+        visitToPay = BistroClient.visitInstance;
         if (visitToPay != null) {
             String price = String.valueOf(visitToPay.getBillOfVisit().getFinalAmount());
             priceLabel.setText("Total Price: ₪"+price);
@@ -72,16 +80,22 @@ public class PaymentScreenController {
             showError("CVV must be 3 digits");
             return;
         }
-        VisitSessionManager.clear();
-        showSuccess("Payment completed successfully");
-        SceneLoader.loadScene(event, "/gui/ReceiptScreen.fxml", "Receipt");
         // TODO: Send to server that bill was paid
+        Visit toSend = visitToPay;
+        toSend.getBillOfVisit().setPaid(true);
+        ClientUI.chat.accept(new BistroMessage(Action.BILL_PAID,toSend));
+        if(billWasPaid) {
+        	billWasPaid = false;
+        	VisitSessionManager.clear();
+            showSuccess("Payment completed successfully");
+            SceneLoader.loadScene(event, "/gui/ReceiptScreen.fxml", "Receipt");
+        }
     }
-
 
     // Handles "Back" button click
     @FXML
-    private void handleBack(ActionEvent event) { 
+    private void handleBack(ActionEvent event) {
+    	updateVisit = false;
     	if(BistroClient.staffInstance != null) {
     		SceneLoader.switchScreen(event
 					,"/gui/TableManagement.fxml"

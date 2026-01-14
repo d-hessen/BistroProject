@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS `reservation` (
   `guest_full_name` VARCHAR(100) NULL, -- Fill if there's no member_id
   `guest_phone` VARCHAR(20) NULL, -- Fill if there's no member_id
   `email` VARCHAR(100) NULL,
+  `reminder_sent` TINYINT DEFAULT 0,
   `status` ENUM('pending', 'approved', 'seated', 'cancelled', 'no_show') DEFAULT 'pending',
   PRIMARY KEY (`reservation_number`),
   CONSTRAINT `fk_res_subscribers`
@@ -70,6 +71,7 @@ CREATE TABLE IF NOT EXISTS `waiting_list` (
   `waiting_id` INT NOT NULL AUTO_INCREMENT, -- Applies to guest when enters
   `member_id` INT NULL,
   `verification_code` VARCHAR(20) NOT NULL unique, -- Code to start visit
+  `table_id` INT NULL,
   `guest_full_name` VARCHAR(100) NULL,
   `guest_phone` VARCHAR(20) NULL,
   `email` VARCHAR(100) NULL,
@@ -101,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `visits` (
   `end_time` TIMESTAMP NULL, -- actual end time
   -- Active (1) / Finished (0)
   `is_active` TINYINT DEFAULT 1,
-  
+  `bill_sent` TINYINT DEFAULT 0,
   PRIMARY KEY (`visit_id`),
   CONSTRAINT `fk_session_table`
     FOREIGN KEY (`table_id`) REFERENCES `tables` (`table_id`),

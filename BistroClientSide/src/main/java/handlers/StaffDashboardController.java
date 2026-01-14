@@ -92,7 +92,7 @@ public class StaffDashboardController implements Initializable {
                 getAllTables();
             }
         };
-        executor.scheduleAtFixedRate(refreshTables, 0, 10, TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(refreshTables, 0, 3, TimeUnit.SECONDS);
     }
 
     // Helper method to initialize combo boxes

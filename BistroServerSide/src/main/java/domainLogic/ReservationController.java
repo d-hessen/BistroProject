@@ -32,6 +32,7 @@ import databaseController.CreateCommands;
 import databaseController.DeleteCommands;
 import databaseController.GetCommands;
 import databaseController.UpdateCommands;
+import utils.EmailSend;
 
 // RESERVATION LOGIC 
 public class ReservationController {
@@ -178,7 +179,6 @@ public class ReservationController {
 		}
 		return new BistroMessage(Action.GET_VERIFICATION_CODE, "Error: Verification Code wasn't found");
 	}
-	
 
 	public static String generateVerificationCode() {
 		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -199,9 +199,7 @@ public class ReservationController {
 	        return new BistroMessage(Action.MEMBER_NOT_FOUND, phoneNumber);
 	    }
 	}
-	
 
-	
 	// changes class DateTime to LocalDateTime
 	private static LocalDateTime changeToLocalDateTime(DateTime dt) {
 		if (dt == null || dt.getDate() == null || dt.getTime() == null) return null;
@@ -248,8 +246,7 @@ public class ReservationController {
 		}
 		return bigFirst;
 	}
-	
-	
+
 	private static Integer runGreedyReturnTableAndWaste(List<Table> tables, List<Reservation> overlap, Reservation newRes, int timeSlot, boolean isBigFirst) {
 
 		// sort all tables by table capacity
@@ -309,7 +306,73 @@ public class ReservationController {
 		return  totalWaste;
 	}
 	
+	public static void processNoShows(ServerFrameController guiController) {
+	    //Get reservations where status is 'approved' and late for 15 mins
+	    List<Reservation> expired = GetCommands.getExpiredReservations(guiController);
+	    
+	    for (Reservation res : expired) {
+	        // Change status to CANCELLED
+	        res.setStatus(Status.cancelled);
+	        UpdateCommands.updateReservation(res, guiController);
+	        
+	        //Notify user of cancellation
+	        EmailSend.sendCancellationNotice(res);
+	        
+	        guiController.addToConsole("Auto-cancelled Reservation ID: " + res.getReservationId() + " due to no-show.");
+	    }
+	}
 	
+	public static void processReminders(ServerFrameController guiController) {
+	    //Get reservations 2 hours from now
+	    List<Reservation> upcoming = GetCommands.getReservationsForReminder(guiController); 
+	    
+	    for (Reservation res : upcoming) {
+	        // Send Email
+	        EmailSend.sendReminder(res); 
+	        
+	        // Update DB so we don't send again
+	        UpdateCommands.markReminderSent(res.getReservationId(), guiController);
+	        guiController.addToConsole("Reminder sent for Reservation ID: " + res.getReservationId());
+	    }
+	}
 	
+	public static BistroMessage recoverLostCode(String contactInput, ServerFrameController guiController) {
+        List<Reservation> found = GetCommands.getReservationsByContactInfo(contactInput, guiController);
+        
+        if (found == null || found.isEmpty()) {
+            return new BistroMessage(Action.FORGOT_CODE, "Error: No reservations found for these details.");
+        }
+
+        Reservation representative = found.get(0);
+        String userEmail = null;
+        String userPhone = null;
+
+        if (representative.getGuest() != null) {
+            userEmail = representative.getGuest().getEmail();
+            userPhone = representative.getGuest().getPhoneNumber();
+        }
+
+        if (userEmail != null && !userEmail.isEmpty()) {
+            
+            EmailSend.sendReservationsTableByEmail(found);
+            guiController.addToConsole("Recovery sent via Email to: " + userEmail);
+
+        } 
+
+        if (userPhone != null && !userPhone.isEmpty()) {
+            
+            StringBuilder smsContent = new StringBuilder();
+            smsContent.append("SMS:\n");
+            for (Reservation res : found) {
+                smsContent.append("Code: ").append(res.getVerificationCode())
+                          .append(" (Date: ").append(res.getReservationDate().getDate()).append(")\n");
+            }
+            
+            guiController.addToConsole("Recovery sent via SMS Popup to: " + userPhone);
+
+            return new BistroMessage(Action.FORGOT_CODE, smsContent.toString());
+        }
+        return new BistroMessage(Action.FORGOT_CODE, "Verification codes have been sent to your Email and SMS.");
+    }
 
 }
