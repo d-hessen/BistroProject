@@ -1,8 +1,10 @@
 package databaseController;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 import common.BistroMessage;
 import dataLayer.*;
@@ -157,5 +159,56 @@ public class UpdateCommands {
         	guiController.addToConsole("Error updating bill: " + e.getMessage());
         }
         return toReturn;
+    }
+    
+    public static boolean updateRestaurantConfig(RestaurantConfig config, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        try {
+            conn.setAutoCommit(false); // Start transaction
+
+            // Update Regular Hours
+            String updateReg = "UPDATE regular_hours SET open_time=?, close_time=? WHERE day_name=?";
+            try (PreparedStatement ps = conn.prepareStatement(updateReg)) {
+                for (String day : config.getRegularHours().keySet()) {
+                    String[] times = config.getRegularHours().get(day);
+                    ps.setString(1, times[0]);
+                    ps.setString(2, times[1]);
+                    ps.setString(3, day);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+            
+            // Clear old Special Hours
+            String deleteSpec = "DELETE FROM special_hours";
+            try (PreparedStatement ps = conn.prepareStatement(deleteSpec)) {
+                ps.executeUpdate();
+            }
+
+            // Insert the new list of Special Hours
+            String insertSpec = "INSERT INTO special_hours (special_date, open_time, close_time) VALUES (?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(insertSpec)) {
+                for (LocalDate date : config.getSpecialHours().keySet()) {
+                    String[] times = config.getSpecialHours().get(date);
+                    ps.setDate(1, Date.valueOf(date));
+                    ps.setString(2, times[0]);
+                    ps.setString(3, times[1]);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }            
+            conn.commit();
+            conn.setAutoCommit(true);
+            return true;
+
+        } catch (SQLException e) {
+            try { 
+                conn.rollback(); 
+            } catch (SQLException ex) { 
+                ex.printStackTrace(); 
+            }
+            guiController.addToConsole("Error updating config: " + e.getMessage());
+            return false;
+        }
     }
 }

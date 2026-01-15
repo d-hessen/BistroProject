@@ -1,6 +1,7 @@
 package databaseController;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -771,7 +772,7 @@ public class GetCommands {
 
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        
-	        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	        ps.setString(1, windowEnd.format(formatter)); 
 	        ps.setString(2, windowStart.format(formatter));
 	        
@@ -841,5 +842,37 @@ public class GetCommands {
             e.printStackTrace();
         }
         return members;
+    }
+    
+    public static RestaurantConfig getRestaurantConfig(ServerFrameController guiController) {
+        RestaurantConfig config = new RestaurantConfig();
+        Connection conn = dbController.getInstance().getConnection();
+        
+        try {
+            // Fetch Regular Hours
+            String sqlReg = "SELECT * FROM regular_hours";
+            try (PreparedStatement ps = conn.prepareStatement(sqlReg); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    config.getRegularHours().put(rs.getString("day_name"), 
+                            new String[]{rs.getString("open_time"), rs.getString("close_time")});
+                }
+            }
+
+            // Fetch Special Hours 
+            String sqlSpec = "SELECT * FROM special_hours";
+            try (PreparedStatement ps = conn.prepareStatement(sqlSpec); ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Date sqlDate = rs.getDate("special_date");
+                    if (sqlDate != null) {
+                        config.getSpecialHours().put(sqlDate.toLocalDate(), 
+                                new String[]{rs.getString("open_time"), rs.getString("close_time")});
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            guiController.addToConsole("Error getting config: " + e.getMessage());
+        }
+        return config;
     }
 }

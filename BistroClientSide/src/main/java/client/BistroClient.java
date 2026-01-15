@@ -9,12 +9,14 @@ import handlers.SceneLoader;
 import handlers.StaffDashboardController;
 import handlers.StaffLoginController;
 import handlers.StaffWaitingListController;
+import handlers.SystemSettingsController;
 import handlers.TableManagementController;
 import handlers.VisitDetailsController;
 import handlers.VisitIdentificationController;
 import handlers.VisitNowController;
 import handlers.TimeSlotController;
 import javafx.scene.control.Alert;
+import handlers.SystemSettingsController;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -122,6 +124,19 @@ public class BistroClient extends AbstractClient
                 ArrayList<Member> receivedMembers = (ArrayList<Member>) answer.getData();                
                 if (staffDashControllerInstance != null) {
                     staffDashControllerInstance.updateMembersList(receivedMembers);
+                }
+                break;
+            case UPDATE_RESTAURANT_CONFIG:
+                boolean success = (boolean)answer.getData();
+                if(!success) {
+                     SceneLoader.showAlert(Alert.AlertType.ERROR, "System Settings", "Failed to save settings.");
+                } else {
+                     System.out.println("Settings updated successfully.");
+                }
+                break;
+            case GET_RESTAURANT_CONFIG:
+                if (SystemSettingsController.getInstance() != null) {
+                    SystemSettingsController.getInstance().setConfigData((RestaurantConfig)answer.getData());
                 }
                 break;
 		  	// --- MEMBER ROUTES ---
@@ -247,7 +262,7 @@ public class BistroClient extends AbstractClient
 		  		tableManagementControllerInstance.updated(answer.getData());
 		  		break;
 		  	default:
-	            System.out.println("Unknown Action: " + answer.getAction());
+	            System.out.println("Unknown Actionblbl: " + answer.getAction());
 		  }
 	  } catch(Exception e) {
 		  e.printStackTrace();

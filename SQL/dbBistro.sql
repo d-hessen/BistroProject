@@ -131,3 +131,27 @@ CREATE TABLE IF NOT EXISTS `bills` (
   CONSTRAINT `fk_bills_sub`
     FOREIGN KEY (`member_id`) REFERENCES `members` (`member_id`)
 );
+
+-- Table for regular weekly hours
+CREATE TABLE regular_hours (
+    day_name VARCHAR(20) NOT NULL PRIMARY KEY, -- 'Sunday', 'Monday', etc.
+    open_time VARCHAR(5),  -- Format 'HH:mm'
+    close_time VARCHAR(5)
+);
+
+-- Initialize default hours (Example)
+INSERT INTO regular_hours (day_name, open_time, close_time) VALUES 
+('Sunday', '09:00', '23:00'),
+('Monday', '09:00', '23:00'),
+('Tuesday', '09:00', '23:00'),
+('Wednesday', '09:00', '23:00'),
+('Thursday', '09:00', '23:00'),
+('Friday', '09:00', '15:00'),
+('Saturday', '19:00', '23:00');
+
+-- Table for special dates (Holidays, etc.)
+CREATE TABLE special_hours (
+    special_date DATE NOT NULL PRIMARY KEY,
+    open_time VARCHAR(5),
+    close_time VARCHAR(5)
+);

@@ -3,12 +3,22 @@
   <groupId>BistroServerSide</groupId>
   <artifactId>BistroServerSide</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  
   <dependencies>
-  	<dependency>
-  		<groupId>BistroClientSide</groupId>
-  		<artifactId>BistroClientSide</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
-  	</dependency>
-  </dependencies>
-</project>
+    <dependency>
+        <groupId>BistroCommonProject</groupId>
+        <artifactId>BistroCommonProject</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
 
+    <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>9.1.0</version> </dependency>
+  </dependencies>	
+  
+    <properties>
+    <maven.compiler.source>24</maven.compiler.source>
+    <maven.compiler.target>24</maven.compiler.target>
+</properties>
+</project>
