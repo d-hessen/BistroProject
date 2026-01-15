@@ -51,7 +51,8 @@ public class BistroClient extends AbstractClient
   public static Visit waitingVisit = null;
   public static List<Visit> waitingList = null;
   public static Visit visitInstance = null;
-  
+  public static ArrayList<Reservation> allReservationsList;
+
   public BistroClient(String host, int port, ChatIF clientUI) 
     throws IOException 
   {
@@ -150,6 +151,9 @@ public class BistroClient extends AbstractClient
                 if (SystemSettingsController.getInstance() != null) {
                     SystemSettingsController.getInstance().setConfigData((RestaurantConfig)answer.getData());
                 }
+                break;
+            case GET_ALL_RESERVATIONS:
+                allReservationsList = (ArrayList<Reservation>)answer.getData();
                 break;
 		  	// --- MEMBER ROUTES ---
 		  	case MEMBER_IDENTIFICATION:

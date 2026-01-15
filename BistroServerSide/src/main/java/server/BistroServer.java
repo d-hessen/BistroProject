@@ -92,6 +92,9 @@ public class BistroServer extends AbstractServer
 				boolean updated = UpdateCommands.updateRestaurantConfig((RestaurantConfig) request.getData(), guiController);
 				client.sendToClient(new BistroMessage(Action.UPDATE_RESTAURANT_CONFIG, updated));
 				break;
+			case GET_ALL_RESERVATIONS:
+		        client.sendToClient(ReservationController.getAllReservations(guiController));
+		        break;
                 
 			// --- MEMBER ROUTES ---
 			case MEMBER_IDENTIFICATION:

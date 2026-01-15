@@ -203,7 +203,7 @@
 .table-view .table-cell {
     -fx-border-color: transparent; 
     -fx-padding: 12 10;
-    -fx-alignment: CENTER_LEFT;
+    -fx-alignment: CENTER;
     -fx-font-size: 13px;
 }
 
@@ -303,6 +303,6 @@
 }
 
 .members-table .column-header .label {
-    -fx-alignment: CENTER_LEFT;
+    -fx-alignment: CENTER;
     -fx-padding: 0 10 0 10; 
 }

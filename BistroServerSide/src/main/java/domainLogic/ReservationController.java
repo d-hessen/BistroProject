@@ -374,5 +374,10 @@ public class ReservationController {
         }
         return new BistroMessage(Action.FORGOT_CODE, "Verification codes have been sent to your Email and SMS.");
     }
+	
+	public static BistroMessage getAllReservations(ServerFrameController guiController) {
+	    List<Reservation> allReservations = GetCommands.getAllReservations(guiController);
+	    return new BistroMessage(Action.GET_ALL_RESERVATIONS, allReservations);
+	}
 
 }

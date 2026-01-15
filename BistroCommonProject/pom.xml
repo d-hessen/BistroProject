@@ -3,4 +3,8 @@
   <groupId>BistroCommonProject</groupId>
   <artifactId>BistroCommonProject</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <properties>
+    <maven.compiler.source>24</maven.compiler.source>
+    <maven.compiler.target>24</maven.compiler.target>
+</properties>
 </project>

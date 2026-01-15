@@ -374,6 +374,11 @@ public class StaffDashboardController implements Initializable {
             PasswordFieldVisible.setVisible(false); PasswordFieldVisible.setManaged(false);
         }
     }
+    
+    @FXML
+    void handleViewAllReservations(ActionEvent event) {
+        SceneLoader.openNewWindow("/gui/ViewReservations.fxml", "Management - All Reservations");
+    }
 
     @FXML void openTableInfo(ActionEvent event) {} // Legacy support if needed
     @FXML void handleGenerateReport(ActionEvent event) {} // Stub

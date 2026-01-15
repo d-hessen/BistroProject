@@ -62,6 +62,7 @@
                   <RowConstraints />
                   <RowConstraints />
                   <RowConstraints />
+                  <RowConstraints />
                </rowConstraints>
                 </GridPane>
             </VBox>
@@ -166,6 +167,7 @@
 		<Tab fx:id="managerAdminTab" text="Administration"> 
 		    <VBox spacing="15" style="-fx-padding: 20;">
 		        <HBox spacing="15">
+               <Button onAction="#handleViewAllReservations" styleClass="primary-button" text="View All Reservations" />
 		            <Button fx:id="btnShowMembers" onAction="#showMembers" styleClass="primary-button" text="View All Members" />
 		            
 		            <Button onAction="#openSystemSettings" text="System Settings" /> 
@@ -173,7 +175,7 @@
 		        
 		        <Label text="Members List:" /> 
 		        
-		        <TableView fx:id="membersTable" VBox.vgrow="ALWAYS" styleClass="members-table"> 
+		        <TableView fx:id="membersTable" styleClass="members-table" VBox.vgrow="ALWAYS"> 
 		            <columns>
 		                <TableColumn fx:id="colMemberName" prefWidth="200.0" text="Full Name" />
 		                <TableColumn fx:id="colMemberPhone" prefWidth="200.0" text="Phone" />

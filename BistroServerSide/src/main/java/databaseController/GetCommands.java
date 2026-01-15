@@ -953,4 +953,45 @@ public class GetCommands {
         }
         return config;
     }
+    
+    // ======================================
+    //RETRIEVE ALL RESERVATIONS
+    // ======================================
+    public static List<Reservation> getAllReservations(ServerFrameController guiController) {
+        List<Reservation> reservations = new ArrayList<>();
+        Connection conn = dbController.getInstance().getConnection();
+        // Retrieving all orders, sorted by date and time
+        String sql = "SELECT * FROM reservation ORDER BY reservation_date DESC, reservation_time DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Reservation res = new Reservation(
+                    rs.getInt("reservation_number"),
+                    new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+                    rs.getString("verification_code"),
+                    rs.getInt("number_of_guests"),
+                    rs.getInt("member_id"),
+                    new Guest(
+                        rs.getString("guest_full_name"),
+                        rs.getString("guest_phone"),
+                        rs.getString("email")
+                    )
+                );
+                
+                // Convert status from string to Enum
+                String statusStr = rs.getString("status");
+                if (statusStr != null) {
+                    res.setStatus(Status.valueOf(statusStr));
+                }
+                res.setDateOfPlacingReservation(rs.getString("created_at"));
+                
+                reservations.add(res);
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching all reservations: " + e.getMessage());
+        }
+        return reservations;
+    }
 }
