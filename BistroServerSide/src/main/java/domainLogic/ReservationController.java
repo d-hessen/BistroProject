@@ -52,7 +52,7 @@ public class ReservationController {
 	
 	public static BistroMessage checkAvailability(Reservation Reservation, ServerFrameController guiController) {
 		List<String> validTimes = new ArrayList<>();
-		List<Table> tables = GetCommands.getAllActiveTables(guiController);
+		List<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
 		
 	    final int TIME_SLOT = 2; // Duration
 		List<String> allTimeSlots = Arrays.asList(
@@ -107,7 +107,7 @@ public class ReservationController {
 	        //  availability check with findBestArrangementAndWaste algorithm
 	       
 	        LocalDateTime start = changeToLocalDateTime(reservationToCreate.getReservationDate());
-	        List<Table> tables = GetCommands.getAllActiveTables(guiController);
+	        List<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
 	        List<Reservation> overlap = GetCommands.getReservationOverlap(start.minusHours(TIME_SLOT), start.plusHours(TIME_SLOT), guiController);
 
 	        Integer arrangement = findBestArrangementAndWaste(tables, overlap, reservationToCreate, TIME_SLOT);

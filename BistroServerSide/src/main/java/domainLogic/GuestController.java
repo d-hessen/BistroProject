@@ -3,6 +3,7 @@ package domainLogic;
 import common.*;
 import dataLayer.*;
 import databaseController.*;
+import utils.EmailSend;
 public class GuestController {
 	
 	//Method will send message to phone number of client
@@ -60,6 +61,7 @@ public class GuestController {
 			return new BistroMessage(Action.MEMBER_NOT_CREATED, errorMessage);
 		}else {
 			Member createdMember = (Member)recieved;
+			EmailSend.sendMembershipCreation(createdMember);
 			return new BistroMessage(Action.CREATE_MEMBER, createdMember);
 		}	
 	}

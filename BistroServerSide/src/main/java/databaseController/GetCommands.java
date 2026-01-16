@@ -5,7 +5,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,12 +15,20 @@ import java.util.List;
 import dataLayer.*;
 import domainLogic.ServerFrameController;
 import common.Status;
-
+/**
+ * Handles all sql select commands
+ */
 public class GetCommands {
 	//======================================
 	//GET OPERATIONS WITH RESERVATION
 	//======================================
-	//Retrieve a reservation by ID
+
+	/**
+	 * Get reservation by it's reservation id
+	 * @param id reservation id
+	 * @param guiController logging controller
+	 * @return Reservation object on success, null on fialure
+	 */
     public static Reservation getReservation(Integer id, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		String sql = "SELECT * FROM reservation WHERE reservation_number = ?";
@@ -30,28 +37,33 @@ public class GetCommands {
 			ps.setInt(1, id);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (rs.next()) {
-					Reservation res = mapRowToReservation(rs);
+					Reservation res = mapRowToReservation(rs, guiController);
+					//If member reserved
 					if (res.getMemberId() != null && res.getMemberId() > 0) {
-						Guest fullMember = getMemberById(res.getMemberId(), guiController);
+						Member fullMember = getMemberById(res.getMemberId(), guiController);
 						if (fullMember != null) {
 							res.setGuest(fullMember);
 						}
 					}
 					return res;
-				} else {
-					guiController.addToConsole("Reservation not found for ID: " + id);
-				}
+				} 
 			}
 		} catch (SQLException e) {
 			guiController.addToConsole("Error fetching reservation: " + e.getMessage());
 		}
 		return null;
 	}
-  	//Method that gets reservation by member card code
+
+    /**
+     * Find today's reservation in +/- 15 mins from now by member card code
+     * @param cardCode member card code
+     * @param guiController logging controller
+     * @return reservation object on success, null otherwise
+     */
     public static Reservation findUpcomingReservationByCode(String cardCode, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		int memberId = -1;
-		
+		//Get memberId from members
 		String memberSql = "SELECT member_id FROM members WHERE card_code = ?";
 		try (PreparedStatement ps = conn.prepareStatement(memberSql)) {
 			ps.setString(1, cardCode);
@@ -66,7 +78,7 @@ public class GetCommands {
 			guiController.addToConsole("Error checking member code: " + e); 
 			return null; 
 		}
-
+		//Find reservation
 		String resSql = "SELECT r.* FROM reservation r " +
 						"LEFT JOIN visits v ON r.reservation_number = v.reservation_number " +
 						"WHERE r.member_id = ? AND r.reservation_date = ? AND v.visit_id IS NULL AND status = 'approved'";
@@ -90,16 +102,23 @@ public class GetCommands {
 					
 					// Check time window (NOW +/- 15 mins)
 					if ((resTime.isAfter(windowStart) || resTime.equals(now)) && resTime.isBefore(windowEnd)) {
-						return mapRowToReservation(rs); // Found valid reservation
+						return mapRowToReservation(rs, guiController); // Found valid reservation
 					}
 				}
 			}
 		} catch (Exception e) {
-			guiController.addToConsole("Error finding reservation: " + e.getMessage());
+			guiController.addToConsole("Error finding reservation by member card: " + e.getMessage());
 		}
 		return null;
 	}
-    //Get reservations between start time and end time for today
+    
+    /**
+     * Get all reservations between @param start and @param end for today
+     * @param start start time of wanted window
+     * @param end end time of wanted window
+     * @param guiController logging controller
+     * @return List of Reservation objects on success, otherwise null
+     */
     public static List<Reservation> getUpcomingReservationsInTimeRange(LocalTime start, LocalTime end, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		List<Reservation> upcoming = new ArrayList<>();
@@ -115,7 +134,7 @@ public class GetCommands {
 
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					upcoming.add(mapRowToReservation(rs));
+					upcoming.add(mapRowToReservation(rs, guiController));
 				}
 			}
 		} catch (SQLException e) {
@@ -123,7 +142,13 @@ public class GetCommands {
 		}
 		return upcoming;
 	}
-	// Retrieve reservations by phone number
+	
+    /**
+     * Get reservations by phone number
+     * @param phoneNumber guest phone number
+     * @param guiController logging controller
+     * @return List of reservation objects on success, null otherwise
+     */
 	public static List<Reservation> getReservationsByPhoneNumber(String phoneNumber, ServerFrameController guiController) {
 		List<Reservation> reservations = new ArrayList<>();
 		Connection conn = dbController.getInstance().getConnection();
@@ -133,20 +158,20 @@ public class GetCommands {
 			ps.setString(1, phoneNumber);
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
-					reservations.add(mapRowToReservation(rs));
+					reservations.add(mapRowToReservation(rs, guiController));
 				}
 			}
 		} catch (SQLException e) {
 			guiController.addToConsole("Error fetching reservations by phone: " + e.getMessage());
 		}
-
-		if (reservations.isEmpty()) {
-			guiController.addToConsole("No reservations found for phone number: " + phoneNumber);
-		}
-
 		return reservations;
 	}
-	//Reservations that are late for more than 15 mins
+	
+	/**
+	 * Reservations that approved but passed 15 mins time to check-in
+	 * @param guiController logging controller
+	 * @return List of Reservation objects on success, null otherwise
+	 */
 	public static List<Reservation> getExpiredReservations(ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		List<Reservation> expiredList = new ArrayList<>();
@@ -157,16 +182,20 @@ public class GetCommands {
 
 		try (PreparedStatement ps = conn.prepareStatement(sql);
 			 ResultSet rs = ps.executeQuery()) {
-			
 			while (rs.next()) {
-				expiredList.add(mapRowToReservation(rs));
+				expiredList.add(mapRowToReservation(rs, guiController));
 			}
 		} catch (SQLException e) {
 			guiController.addToConsole("Error fetching expired reservations: " + e.getMessage());
 		}
 		return expiredList;
 	}
-	//Upcoming reservations to remind
+
+	/**
+	 * Get reservations that have start_time in less than 2 hours from NOW
+	 * @param guiController logging controller
+	 * @return List of Reservation objects on success, null otherwise
+	 */
 	public static List<Reservation> getReservationsForReminder(ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		List<Reservation> reminders = new ArrayList<>();
@@ -181,14 +210,20 @@ public class GetCommands {
 			 ResultSet rs = ps.executeQuery()) {
 			
 			while (rs.next()) {
-				reminders.add(mapRowToReservation(rs));
+				reminders.add(mapRowToReservation(rs, guiController));
 			}
 		} catch (SQLException e) {
 			guiController.addToConsole("Error fetching reservations for reminder: " + e.getMessage());
 		}
 		return reminders;
 	}
-	//Get reservations by phone or email
+	
+	/**
+	 * Serach reservation by phone or email
+	 * @param contactInput email or phone number
+	 * @param guiController logging controller
+	 * @return List of reservations on success, null on failure
+	 */
     public static List<Reservation> getReservationsByContactInfo(String contactInput, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         List<Reservation> list = new ArrayList<>();
@@ -201,7 +236,7 @@ public class GetCommands {
             
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapRowToReservation(rs));
+                    list.add(mapRowToReservation(rs, guiController));
                 }
             }
         } catch (SQLException e) {
@@ -209,8 +244,75 @@ public class GetCommands {
         }
         return list;
     }
-	//Helper method to construct reservation
-	private static Reservation mapRowToReservation(ResultSet rs) throws SQLException {
+    
+    /**
+     * Finds overlapping reservations for given time window. To check table availability
+     * @param windowStart start of window time 
+     * @param windowEnd end of winfow time
+     * @param guiController logging controller
+     * @return List of reservation objects or null on failure
+     */
+	public static List<Reservation> getReservationOverlap(LocalDateTime windowStart, LocalDateTime windowEnd, ServerFrameController guiController) {
+	    Connection conn = dbController.getInstance().getConnection();
+	    List<Reservation> list = new ArrayList<>();
+	    //Reservation overlaps if it starts before window time ends AND ends after window starts
+	    String sql = "SELECT * FROM reservation "
+                + "WHERE status NOT IN ('cancelled', 'no_show') "
+                + "AND CONCAT(reservation_date, ' ', reservation_time) < ? "
+                + "AND DATE_ADD(CONCAT(reservation_date, ' ', reservation_time), INTERVAL 2 HOUR) > ?";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	        ps.setString(1, windowEnd.format(formatter)); 
+	        ps.setString(2, windowStart.format(formatter));
+	        
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	            	list.add(mapRowToReservation(rs, guiController));
+	            }
+	        }
+	    } catch (SQLException e) {
+	        guiController.addToConsole("Error fetching overlapping reservations: " + e.getMessage());
+	    }
+	    return list;
+	}
+	
+	/**
+	 * Get reservation using verification code
+	 * @param codeStr verification code for specific reservation
+	 * @param guiController logging controller
+	 * @return Reservation object on success, on failure null
+	 */
+	public static Reservation getReservationVerificationCode(String codeStr, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+
+		String sql = "SELECT * FROM reservation WHERE verification_code = ?";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, codeStr); 
+			
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return mapRowToReservation(rs, guiController);
+				} else {
+					guiController.addToConsole("Reservation not found for verification code: " + codeStr);
+				}
+			}
+		} catch (SQLException e) {
+			guiController.addToConsole("Error fetching reservation by code: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+    /**
+     * Helper to map ResultSet row to reservation object
+     * @param rs Result Set recieved from executing query
+     * @return Reservation object on success, on failure null
+     * @throws SQLException
+     */
+	private static Reservation mapRowToReservation(ResultSet rs, ServerFrameController guiController) throws SQLException {
 		Integer memberId = (Integer) rs.getObject("member_id");
 		if (rs.wasNull()) memberId = null;
 
@@ -228,15 +330,21 @@ public class GetCommands {
 			memberId,
 			guest
 		);
+		
+		if (res.getMemberId() != null && res.getMemberId() > 0) {
+			Member fullMember = getMemberById(res.getMemberId(), guiController);
+			if (fullMember != null) {
+				res.setGuest(fullMember);
+			}
+		}
 
 		try {
 			res.setStatus(Status.valueOf(rs.getString("status")));
-		} catch (IllegalArgumentException | NullPointerException e) {
+		} catch (Exception e) {
 			res.setStatus(Status.pending);
 		}
 		
 		res.setDateOfPlacingReservation(rs.getString("created_at"));
-		res.setVerificationCode(rs.getString("verification_code")); 
 		return res;
 	}
 	//======================================
@@ -268,77 +376,77 @@ public class GetCommands {
 	//======================================
 	//GET MEMBER
 	//======================================
-	//Get member by phone number
+	
+	/**
+	 * Get member by phone number
+	 * @param phone member phone number
+	 * @param guiController logging controller
+	 * @return member object on success, null on failure
+	 */
 	public static Member getMember(Integer phone, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-	        
-	    String sql = "SELECT * FROM members WHERE phone = ?";
-	    Member toReturn = null;    
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	    	ps.setInt(1, phone);
-	        try (ResultSet rs = ps.executeQuery()) {
-	        	if (rs.next()) {
-	        		toReturn = constructMemberFromResultSet(rs, conn, guiController);
-	                }
-	            }
-	       	} catch (SQLException e) {
-	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
-	        }
-	        return toReturn;
-	}
-	//Get member by email
+        return getMemberByField("phone", phone, guiController);
+    }
+	
+	/**
+	 * Get member by email
+	 * @param email member email
+	 * @param guiController logging controller
+	 * @return member object on success, null on failure
+	 */
 	public static Member getMember(String email, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-	        
-	    String sql = "SELECT * FROM members WHERE email = ?";
-	    Member toReturn = null;
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	    	ps.setString(1, email);
-	        try (ResultSet rs = ps.executeQuery()) {
-	        	if (rs.next()) {
-	        		toReturn = constructMemberFromResultSet(rs, conn, guiController);
-	                }
-	            }
-	       	} catch (SQLException e) {
-	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
-	        }
-	        return toReturn;
-	}
-	//Get member by card code
+        return getMemberByField("email", email, guiController);
+    }
+	
+	/**
+	 * Get member by member card_code
+	 * @param code member card_code
+	 * @param guiController logging controller
+	 * @return Member object on success, null on failure
+	 */
 	public static Member getMemberByCode(String code, ServerFrameController guiController) {
+        return getMemberByField("card_code", code, guiController);
+    }
+	
+	/**
+	 * Get member by memberId
+	 * @param memberId member id
+	 * @param guiController logging controller
+	 * @return member object on success
+	 */
+	public static Member getMemberById(Integer memberId, ServerFrameController guiController) {
+        return getMemberByField("member_id", memberId, guiController);
+    }
+	
+	/**
+	 * Get member by specific field in db
+	 * @param fieldName field name in dm
+	 * @param value object to be searched (key)
+	 * @param guiController logging controller
+	 * @return member object on success, null on failure
+	 */
+	private static Member getMemberByField(String fieldName, Object value, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
-        String sql = "SELECT * FROM members WHERE card_code = ?";
-        Member toReturn = null;
+        String sql = "SELECT * FROM members WHERE " + fieldName + " = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, code);
-            try(ResultSet rs = ps.executeQuery()) {
-                if(rs.next()) {
-                	toReturn = constructMemberFromResultSet(rs, conn, guiController);
+            ps.setObject(1, value);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return constructMemberFromResultSet(rs);
                 }
             }
-        } catch (Exception e) {}
-        return toReturn;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching member by " + fieldName + ": " + e.getMessage());
+        }
+        return null;
     }
-	//Get member by memberId
-	public static Member getMemberById(Integer memberId, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-        
-	    String sql = "SELECT * FROM members WHERE member_id = ?";
-	    Member toReturn = null;
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	    	ps.setInt(1, memberId);
-	        try (ResultSet rs = ps.executeQuery()) {
-	        	if (rs.next()) {
-	        		toReturn = constructMemberFromResultSet(rs, conn, guiController);
-	                }
-	            }
-	       	} catch (SQLException e) {
-	       		guiController.addToConsole("Error fetching member: " + e.getMessage());
-	        }
-	        return toReturn;
-	}
-	//Helper method to construct visit
-	private static Member constructMemberFromResultSet(ResultSet rs, Connection conn, ServerFrameController guiController) throws SQLException {
+	
+	/**
+	 * Helper method to construct member from resultset recieved
+	 * @param rs ResultSet from executing query
+	 * @return on success Member object, on failure null
+	 * @throws SQLException
+	 */
+	private static Member constructMemberFromResultSet(ResultSet rs) throws SQLException {
 		Member toReturn = new Member(
 				rs.getString("full_name"),
                 rs.getString("phone"),
@@ -352,7 +460,13 @@ public class GetCommands {
 	//======================================
 	//GET TABLE
 	//======================================
-	//Get table
+
+	/**
+	 * Get table by id
+	 * @param tableId table id in sql db
+	 * @param guiController logging controller
+	 * @return Table object on success, null on failure
+	 */
 	public static Table getTable(Integer tableId, ServerFrameController guiController) {
 			Connection conn = dbController.getInstance().getConnection();
 		        
@@ -374,11 +488,15 @@ public class GetCommands {
 		        }
 		        return null;
 	}
-	//Fetch all tables and check if they are currently occupied
+	
+	/**
+	 * Get all tables with active visits connected to them
+	 * @param guiController logging controller
+	 * @return ArrayList of Table objects on success, on failure null
+	 */
 	public static ArrayList<Table> getAllTablesWithStatus(ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         ArrayList<Table> tables = new ArrayList<>();
-        
         // This query checks if there is an ACTIVE visit (is_active=1) on the table
         String sql = "SELECT t.table_number, t.capacity, t.is_active, v.visit_id, w.waiting_id " +
                      "FROM tables t " +
@@ -399,8 +517,7 @@ public class GetCommands {
                 // If visit_id is not null or waiting_id not null, the table is occupied
                 t.setOccupied(isSeated || isReservedForWaitlist);
                 if(isSeated) {
-                	Visit currentVisit = getVisit((Integer)rs.getObject("visit_id"), guiController);
-                	t.setCurrentVisit(currentVisit);
+                	t.setCurrentVisit(getVisit((Integer)rs.getObject("visit_id"), guiController));
                 }
                 tables.add(t);
             }
@@ -410,52 +527,16 @@ public class GetCommands {
         }
         return null;
     }
-	//Get reservation with verificationCode
-	public static Reservation getReservationVerificationCode(String codeStr, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-
-		String sql = "SELECT * FROM reservation WHERE verification_code = ?";
-
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setString(1, codeStr); 
-			
-			try (ResultSet rs = ps.executeQuery()) {
-				if (rs.next()) {
-					Reservation toReturn = new Reservation(
-						rs.getInt("reservation_number"),
-						new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
-                		rs.getString("verification_code"),
-						rs.getInt("number_of_guests"),
-						rs.getInt("member_id"), 
-						new Guest(
-								rs.getString("guest_full_name"), 
-								rs.getString("guest_phone"), 
-								rs.getString("email")
-						)
-					);					
-					toReturn.setVerificationCode(rs.getString("verification_code"));
-					
-					if (rs.getString("status") != null) {
-						toReturn.setStatus(Status.valueOf(rs.getString("status")));
-					}
-					
-					toReturn.setDateOfPlacingReservation(rs.getString("created_at"));
-					
-					return toReturn;
-				} else {
-					guiController.addToConsole("Reservation not found for verification code: " + codeStr);
-				}
-			}
-		} catch (SQLException e) {
-			guiController.addToConsole("Error fetching reservation by code: " + e.getMessage());
-			e.printStackTrace();
-		}
-		return null;
-	}
 	//======================================
 	//GET STAFF
 	//======================================
-	//Get staff by username
+	
+	/**
+	 * Get staff using his username from db
+	 * @param username String, username of staff
+	 * @param guiController logging controller
+	 * @return on success Staff object, on failure null
+	 */
 	public static Staff getStaff(String username, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
         
@@ -465,10 +546,7 @@ public class GetCommands {
 	    	ps.setString(1, username);
 	        try (ResultSet rs = ps.executeQuery()) {
 	        	if (rs.next()) {
-	        		boolean isManager = false;
-	        		if(rs.getString("role").equals("manager")) {
-	        			isManager = true;
-	        		}
+	        		boolean isManager = "manager".equalsIgnoreCase(rs.getString("role"));
 	        		Staff toReturn = new Staff(
 	        				rs.getString("username"),
 	                        rs.getString("password"),
@@ -487,43 +565,99 @@ public class GetCommands {
 	//======================================
 	//GET VISIT
 	//======================================
-	//Get visit by visitId 
+	
+	/**
+	 * Get visit with visit id from db
+	 * @param visitId Integer wanted visit id in db
+	 * @param guiController logging controller
+	 * @return on success Visit object, on failure null
+	 */
 	public static Visit getVisit(Integer visitId, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-        
-	    String sql = "SELECT * FROM visits WHERE visit_id = ?";
-	    Visit toReturn = null;
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	    	ps.setInt(1, visitId);
-	        try (ResultSet rs = ps.executeQuery()) {
-	        	if (rs.next()) {
-	        		toReturn = constructVisitFromResultSet(rs, conn, guiController);
-	            }
-	        }
-	      } catch (SQLException e) {
-	       		guiController.addToConsole("Error fetching visit: " + e.getMessage());
-	      }
-	      return toReturn;
+		return getVisitByField("visit_id", visitId, guiController);
 	}
-	//Get visit by verification code from visits table 
+	
+	/**
+	 * Get visit from db by verification code of this visit
+	 * @param verificationCode String wanted verification code from db
+	 * @param guiController logging controller
+	 * @return on success Visit object, on failure null
+	 */
 	public static Visit getVisitByVerificationCode(String verificationCode, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-        
-	    String sql = "SELECT * FROM visits WHERE verification_code = ?";
-	    Visit toReturn = null;
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	    	ps.setString(1, verificationCode);
-	        try (ResultSet rs = ps.executeQuery()) {
-	        	if (rs.next()) {
-	        		toReturn = constructVisitFromResultSet(rs, conn, guiController);
-	            }
-	        }
-	      } catch (SQLException e) {
-	       		guiController.addToConsole("Error fetching visit: " + e.getMessage());
-	      }
-	      return toReturn;
+		return getVisitByField("verification_code", verificationCode, guiController);
 	}
-	//Get visit by verification code from waiting list
+	/**
+	 * Helper method to run get visit queries
+	 * @param field field to look by in db
+	 * @param value the object itself to look for 
+	 * @param guiController logging controller
+	 * @return on success Visit object, on failure null
+	 */
+	private static Visit getVisitByField(String field, Object value, ServerFrameController guiController) {
+        Connection conn = dbController.getInstance().getConnection();
+        String sql = "SELECT * FROM visits WHERE " + field + " = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setObject(1, value);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return constructVisitFromResultSet(rs, guiController);
+                }
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching visit by " + field + ": " + e.getMessage());
+        }
+        return null;
+    }
+	
+	/**
+	 * Helper method to construct Visit object 
+	 * @param rs ResultSet recieved by executing query to db
+	 * @param guiController logging controller
+	 * @return on success Visit object, on failure null
+	 * @throws SQLException
+	 */
+	private static Visit constructVisitFromResultSet(ResultSet rs, ServerFrameController guiController) throws SQLException {
+        Visit visit = null;
+        Table assignedTable = getTable(rs.getInt("table_id"), guiController);
+        Integer visitId = rs.getInt("visit_id");
+        Integer memberId = (Integer)rs.getObject("member_id");
+        
+        // Determine type of visit source (Reservation vs Walk-in)
+        if (rs.getObject("reservation_number") != null) { 
+            Reservation assignedReservation = getReservation(rs.getInt("reservation_number"), guiController);
+            visit = new Visit(assignedReservation, assignedTable);    
+        } else if (memberId != null) {
+            Member assignedMember = getMemberById(memberId, guiController);
+            visit = new Visit(assignedMember, assignedTable);
+            visit.setPartySize(rs.getInt("party_size"));
+        } else {
+            Guest assignedGuest = new Guest(rs.getString("guest_full_name"), rs.getString("guest_phone"), rs.getString("email"));
+            visit = new Visit(assignedGuest, assignedTable);
+            visit.setPartySize(rs.getInt("party_size"));
+        }
+
+        if (visit != null) {
+            if (rs.getObject("start_time") != null) {
+                LocalDateTime start = rs.getTimestamp("start_time").toLocalDateTime();
+                visit.setStartTime(new DateTime(start.toLocalDate().toString(), start.toLocalTime().toString()));
+            }
+            if (rs.getObject("end_time") != null) {
+                LocalDateTime end = rs.getTimestamp("end_time").toLocalDateTime();
+                visit.setEndTime(new DateTime(end.toLocalDate().toString(), end.toLocalTime().toString()));
+            }
+            visit.setActive(rs.getBoolean("is_active"));
+            visit.setVisitId(visitId);
+            visit.setBillOfVisit(getBill(visitId, guiController));
+            visit.setVerificationCode(rs.getString("verification_code"));
+        }
+        return visit;
+    }
+	
+	/**
+	 * Get waiting visit from waiting_list table in db
+	 * @param verificationCode Sting verification code of visit wanted from db
+	 * @param guiController logging controller
+	 * @return on success Visit object, on failure null
+	 */
 	public static Visit getWaitingVisit(String verificationCode, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
         
@@ -553,6 +687,12 @@ public class GetCommands {
 	      }
 	      return toReturn;
 	}
+	
+	/**
+	 * Get active visits that haven't recieved bill and seating at least 2 hours
+	 * @param guiController logging controller
+	 * @return on succes List of Visit object, on failure null
+	 */
 	public static List<Visit> getVisitsDueForBilling(ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         List<Visit> list = new ArrayList<>();
@@ -573,7 +713,13 @@ public class GetCommands {
         }
         return list;
     }
-	//Get all visits for specific member
+	
+	/**
+	 * Get all visit for specific member using his member id
+	 * @param memberId Integer member id wanted from db
+	 * @param guiController logging controller
+	 * @return List of Visit objects on success, on failre return null
+	 */
 	public static ArrayList<Visit> getMemberVisits(Integer memberId, ServerFrameController guiController) {
 	    Connection conn = dbController.getInstance().getConnection();
 	    ArrayList<Visit> visits = new ArrayList<>();
@@ -585,7 +731,7 @@ public class GetCommands {
 	        ps.setInt(1, memberId);
 	        try (ResultSet rs = ps.executeQuery()) {
 	            while (rs.next()) {
-	                visits.add(constructVisitFromResultSet(rs, conn, guiController));
+	                visits.add(constructVisitFromResultSet(rs, guiController));
 	            }
 	        }
 	    } catch (SQLException e) {
@@ -594,7 +740,12 @@ public class GetCommands {
 	    }
 	    return visits;
 	}
-	//Get current dinning sessions in restaurant
+	
+	/**
+	 * Get active visits objects as List
+	 * @param guiController logging controller
+	 * @return on success List of Visits, on failure null
+	 */
 	public static ArrayList<Visit> getActiveVisits(ServerFrameController guiController) {
 	    Connection conn = dbController.getInstance().getConnection();
 	    ArrayList<Visit> visits = new ArrayList<>();
@@ -604,7 +755,7 @@ public class GetCommands {
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        try (ResultSet rs = ps.executeQuery()) {
 	            while (rs.next()) {
-	                visits.add(constructVisitFromResultSet(rs, conn, guiController));
+	                visits.add(constructVisitFromResultSet(rs, guiController));
 	            }
 	        }
 	    } catch (SQLException e) {
@@ -613,56 +764,16 @@ public class GetCommands {
 	    }
 	    return visits;
 	}
-	//Helper method to construct visit
-	private static Visit constructVisitFromResultSet(ResultSet rs, Connection conn, ServerFrameController guiController) throws SQLException {
-		Visit visit = null;
-	    Table assignedTable = getTable(rs.getInt("table_id"), guiController);
-	    Integer visitId = rs.getInt("visit_id");
-	    Integer memberId = (Integer)rs.getObject("member_id");
-		if(rs.getObject("reservation_number") != null) { //If visit were reserved
-			Reservation assignedReservation = getReservation((Integer)rs.getObject("reservation_number"),guiController);
-			visit = new Visit(assignedReservation, assignedTable);	
-		}
-		else if(memberId != null) {
-			Member assignedMember = (Member)getMemberById(rs.getInt("member_id"), guiController);
-			visit = new Visit(assignedMember, assignedTable);
-			visit.setPartySize(rs.getInt("party_size"));
-		}
-		else {
-			Guest assignedGuest = getGuest(rs.getInt("waiting_id"), guiController);
-			visit = new Visit(assignedGuest, assignedTable);
-			visit.setPartySize(rs.getInt("party_size"));
-		}
-		if(visit != null) {
-			//Timestamps of start and end visit
-			if(rs.getObject("start_time") != null) {
-				LocalDateTime startDateTime = rs.getTimestamp("start_time").toLocalDateTime();
-				DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-				DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-				String startTime = startDateTime.format(timeFormatter);
-				String startDate = startDateTime.format(dateFormatter);	
-				visit.setStartTime(new DateTime(startDate, startTime));
-			}
-			if(rs.getObject("end_time") != null) {
-				LocalDateTime endDateTime = rs.getTimestamp("end_time").toLocalDateTime();
-				DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-				DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-				String endTime = endDateTime.format(timeFormatter);
-				String endDate = endDateTime.format(dateFormatter);	
-				visit.setEndTime(new DateTime(endDate, endTime));
-			}
-			visit.setActive(rs.getBoolean("is_active"));
-			visit.setVisitId(visitId);
-			visit.setBillOfVisit(getBill(visitId, guiController));
-        	visit.setVerificationCode(rs.getString("verification_code"));
-		}
-
-	    return visit;
-	}
 	//======================================
 	//GET BILL
 	//======================================
-	//Get bill by visitId 
+	
+	/**
+	 * Get bill for specific visit by visit id
+	 * @param visitId visit id of wanted bill
+	 * @param guiController logging controller
+	 * @return on success Bill object, on failure null
+	 */
 	public static Bill getBill(Integer visitId, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
         
@@ -693,6 +804,11 @@ public class GetCommands {
 	// ======================================
     // GET WAITING LIST
     // ======================================
+	/**
+	 * Get all waiting visits from db as List
+	 * @param guiController logging controller
+	 * @return List of visits on success, null on failure
+	 */
     public static List<Visit> getWaitingList(ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         List<Visit> waitingList = new ArrayList<>();
@@ -733,6 +849,11 @@ public class GetCommands {
         return waitingList;
     }
 	
+    /**
+     * Get all waiting visits that haven't arrive for 15 mins after being notified bout their table being ready
+     * @param guiController logging controller
+     * @return on success List of visit objects, on failure null.
+     */
     public static List<Visit> getExpiredWaitingListEntries(ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         List<Visit> expired = new ArrayList<>();
@@ -770,80 +891,6 @@ public class GetCommands {
         }
         return expired;
     }
-    
-	public static List<Table> getAllActiveTables(ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-		List<Table> tables = new ArrayList<>();
-		String sql = "SELECT table_number, capacity, is_active " + "FROM tables " + "WHERE is_active = 1";
-		
-		try (PreparedStatement ps = conn.prepareStatement(sql);
-			ResultSet rs = ps.executeQuery()) {
-			while (rs.next()) {
-	            tables.add(new Table(
-	                    rs.getInt("table_number"),
-	                    rs.getInt("capacity"),
-	                    rs.getBoolean("is_active")));
-			}
-		} catch (SQLException e) {
-	        guiController.addToConsole("Error fetching active tables: " + e.getMessage());
-	        e.printStackTrace();
-	    }
-		return tables;
-	}
-	
-	public static List<Reservation> getReservationOverlap(LocalDateTime windowStart, LocalDateTime windowEnd, ServerFrameController guiController) {
-	    Connection conn = dbController.getInstance().getConnection();
-	    List<Reservation> list = new ArrayList<>();
-
-	    String sql = "SELECT * "
-	            + "FROM reservation "
-	            + "WHERE status NOT IN ('cancelled', 'no_show') "
-	            + "AND CONCAT(reservation_date, ' ', reservation_time) < ? "
-	            + "AND DATE_ADD(CONCAT(reservation_date, ' ', reservation_time), INTERVAL 2 HOUR) > ?";
-
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	        
-	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-	        ps.setString(1, windowEnd.format(formatter)); 
-	        ps.setString(2, windowStart.format(formatter));
-	        
-	        try (ResultSet rs = ps.executeQuery()) {
-	            while (rs.next()) {
-	              
-	                Integer memberId = (Integer) rs.getObject("member_id");
-	                String fullName = rs.getString("guest_full_name");
-	                String phone = rs.getString("guest_phone");
-	                String email = rs.getString("email");
-	                Guest guest = null;
-	                if (fullName != null || phone != null || email != null) {
-	                    guest = new Guest(fullName, phone, email);
-	                }
-	                Reservation r = new Reservation(
-	                        rs.getInt("reservation_number"),
-	                        new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
-	                        rs.getString("verification_code"),
-	                        rs.getInt("number_of_guests"),
-	                        memberId,
-	                        guest);
-
-	                String status = rs.getString("status");
-	                if (status != null) {
-	                    r.setStatus(Status.valueOf(status));
-	                }
-	                String code = (String)rs.getObject("verification_code");
-	                if (code != null) {
-	                    r.setVerificationCode(code);
-	                }
-	                list.add(r);
-	            }
-	        }
-	    } catch (SQLException e) {
-	        guiController.addToConsole("Error fetching overlapping reservations: " + e.getMessage());
-	        e.printStackTrace();
-	    }
-	    return list;
-	}
-    
     // ======================================
     //RETRIEVE ALL MEMBERS
     // ======================================

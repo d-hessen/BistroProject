@@ -9,16 +9,22 @@ import java.time.LocalDate;
 import common.BistroMessage;
 import dataLayer.*;
 import domainLogic.ServerFrameController;
-
+/**
+ * Handle all sql updates
+ */
 public class UpdateCommands {
 	//======================================
 	//RESERVATION UPDATES
 	//======================================
-    //Update an existing reservation
-    //IN RESERVATION FIELDS THAT CAN BE UPDATED ARE: numberOfGuests, reservationDate, status
+    
+	/**
+	 * Update existing reservation details: (Date,Guest,Status)
+	 * @param resToUpdate reservation object with updated data
+	 * @param guiController logging controller
+	 * @return true if successful, false otherwise
+	 */
     public static boolean updateReservation(Reservation resToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO UPDATE RESERVATION CHECK FIELDS IN DATABASE BEFORE CHANGE
         String sql = "UPDATE reservation SET reservation_date = ?, number_of_guests = ?, status = ? WHERE reservation_number = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -27,83 +33,100 @@ public class UpdateCommands {
             ps.setString(3, resToUpdate.getStatus().name());
             ps.setInt(4, resToUpdate.getReservationId());
             
-            int result = ps.executeUpdate();
-            return result > 0;
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Error updating reservation: " + e.getMessage());
             return false;
         }
     }
     
+    /**
+     * Flag reservation that reminder was sent to avoid duplicate sending
+     * @param reservationId
+     * @param guiController
+     * @return
+     */
     public static boolean markReminderSent(Integer reservationId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         String sql = "UPDATE reservation SET reminder_sent = TRUE WHERE reservation_number = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, reservationId);
-            int result = ps.executeUpdate();
-            return result > 0;
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             guiController.addToConsole("Error marking reminder sent: " + e.getMessage());
             return false;
         }
     }
-	//======================================
+	
+    //======================================
 	//MEMBER UPDATES
 	//======================================
-    //Update an existing reservation
-    //IN RESERVATION FIELDS THAT CAN BE UPDATED ARE: numberOfGuests, reservationDate, status
+
+    /**
+     * Update member details: (Phone,Email)
+     * @param memberToUpdate member object with updated details
+     * @param guiController logging controller
+     * @return updated member object from DB, if failed null
+     */
     public static Member updateMember(Member memberToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO UPDATE TABLE CHECK FIELDS IN DATABASE BEFORE CHANGE
         String sql = "UPDATE members SET phone = ?, email = ? WHERE member_id = ?";
-        Member toReturn = null;
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, memberToUpdate.getPhoneNumber());
             ps.setString(2, memberToUpdate.getEmail());
             ps.setInt(3, memberToUpdate.getMemberId());
-            int result = ps.executeUpdate();
-            if(result>0) {
-            	toReturn = GetCommands.getMemberById(memberToUpdate.getMemberId(), guiController);
-            }
+            
+            if(ps.executeUpdate() > 0) {
+            	return GetCommands.getMemberById(memberToUpdate.getMemberId(), guiController);            }
         } catch (SQLException e) {
         	guiController.addToConsole("Error updating member: " + e.getMessage());
         }
-        return toReturn;
+        return null;
     }   
-	//======================================
+	
+    //======================================
 	//TABLE UPDATES
 	//======================================
-    //Update an existing reservation
-    //IN RESERVATION FIELDS THAT CAN BE UPDATED ARE: numberOfGuests, reservationDate, status
+
+    /**
+     * Update table details: (capacity,isActive,status)
+     * @param tableToUpdate table object with updated details
+     * @param guiController logging controller
+     * @return updated table project on success, on fail null
+     */
     public static Table updateTable(Table tableToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO UPDATE TABLE CHECK FIELDS IN DATABASE BEFORE CHANGE
         String sql = "UPDATE tables SET is_active = ?, capacity = ? WHERE table_number = ?";
-        Table toReturn = null;
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, tableToUpdate.isActive());
             ps.setInt(2, tableToUpdate.getTableCapacity());
             ps.setInt(3, tableToUpdate.getTableNumber());
             
-            int result = ps.executeUpdate();
-            if(result > 0) {
-            	toReturn = GetCommands.getTable(tableToUpdate.getTableNumber(), guiController);
-            }
+            if(ps.executeUpdate() > 0) {
+            	return GetCommands.getTable(tableToUpdate.getTableNumber(), guiController);            }
         } catch (SQLException e) {
             guiController.addToConsole("Error updating table: " + e.getMessage());
         }
-        return toReturn;
+        return null;
     }
-	//======================================
-	//BILL UPDATES
-	//======================================
-    //Update Bill for specific Visit in DB
+
+    //======================================
+    //BILL & VISIT UPDATES
+    //======================================
+
+    /**
+     * Update bill for specific visit
+     * @param toUpdate visit object with updated details
+     * @param guiController logging controller
+     * @return updated visit object on success, null on fail
+     */
     public static Visit updateBillForVisit(Visit toUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO UPDATE TABLE CHECK FIELDS IN DATABASE BEFORE CHANGE
         String sql = "UPDATE bills SET total_amount = ?, discount_amount = ?, final_amount = ?, is_paid = ? WHERE visit_id = ?";
-        Visit toReturn = null;
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
         	Bill billToUpdate = toUpdate.getBillOfVisit();
             ps.setDouble(1, billToUpdate.getTotalAmount());
@@ -112,116 +135,133 @@ public class UpdateCommands {
             ps.setBoolean(4, billToUpdate.isPaid());
             ps.setInt(5, toUpdate.getVisitId());
             
-            int result = ps.executeUpdate();
-            if(result > 0) {
-            	toReturn = GetCommands.getVisit(toUpdate.getVisitId(), guiController);
-            }
+            if(ps.executeUpdate() > 0) {
+            	return GetCommands.getVisit(toUpdate.getVisitId(), guiController);            }
         } catch (SQLException e) {
         	guiController.addToConsole("Error updating bill: " + e.getMessage());
         }
-        return toReturn;
+        return null;
     }
     
-    public static void markBillSent(int visitId, ServerFrameController guiController) {
+    /**
+     * Flags bill that was sent to client
+     * @param visitId visit id in db
+     * @param guiController logging controller
+     */
+    public static void markBillSent(Integer visitId, ServerFrameController guiController) {
         String sql = "UPDATE visits SET bill_sent = TRUE WHERE visit_id = ?";
         try (PreparedStatement ps = dbController.getInstance().getConnection().prepareStatement(sql)) {
             ps.setInt(1, visitId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+        	guiController.addToConsole("Error marking bill sent: " + e.getMessage());
         }
     }
-	//======================================
-	//VISIT UPDATES
-	//======================================
-    //Update Visit according to requeted action
+    
+    /**
+     * Update visit status based on Action in BistroMessage.
+     * Handle START_VISIT and BILL_PAID actions.
+     * @param toUpdate BistroMessage object containing action: (START_VISIT/BILL_PAID) and data as Visit
+     * @param guiController logging controller
+     * @return true on success, false on fail
+     */
     public static boolean updateVisit(BistroMessage toUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
     	
-    	if(toUpdate.getData() instanceof Visit) {
-    		Visit recieved = (Visit)toUpdate.getData();
-    		Integer affectedRows = null;
-        	switch (toUpdate.getAction()) {
-    		case START_VISIT:
-    			String sql = "UPDATE visits SET start_time = NOW() WHERE visit_id = ?";
-    	        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-    	        	ps.setInt(1, recieved.getVisitId());
-    	            affectedRows = ps.executeUpdate();
-    	        } catch (SQLException e) {
-    	            guiController.addToConsole("Error updating visit: " + e.getMessage());
-    	        }
-    			break;
-    		case BILL_PAID:
-    			String query = "UPDATE visits SET end_time = NOW(), is_active = 0 WHERE visit_id = ?";
-    			try (PreparedStatement ps = conn.prepareStatement(query)) {
-    	        	ps.setInt(1, recieved.getVisitId());
-    	            affectedRows = ps.executeUpdate();
-    	        } catch (SQLException e) {
-    	            guiController.addToConsole("Error updating visit: " + e.getMessage());
-    	        }
-    			break;
-    		default:
-    			guiController.addToConsole(toUpdate.getAction() + " - UNKNOW ACTION IN UPDATE VISIT");
-    			break;
-    		}
-	        return affectedRows != null;
-    	} else {
-    		guiController.addToConsole("UpdateCommands.updateVisit() CAN RECIEVE ONLY VISIT TYPE");
-    		return false;
-    	}
-    }
-    
-    public static Visit updateVisitInWaitingList(Visit toUpdate, ServerFrameController guiController) {
-    	Connection conn = dbController.getInstance().getConnection();
-        //SQL QUERY TO UPDATE TABLE CHECK FIELDS IN DATABASE BEFORE CHANGE
-        String sql = "UPDATE waiting_list SET status = ?, notified_at = NOW() WHERE visit_id = ?";
-        Visit toReturn = null;
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        	if(toUpdate.isActive()) {
-            	ps.setString(1, "seated");
-        	} else {
-        		ps.setObject(1, null);
-        	}
-            int result = ps.executeUpdate();
-            if(result > 0) {
-            	toReturn = GetCommands.getVisit(toUpdate.getVisitId(), guiController);
-            }
-        } catch (SQLException e) {
-        	guiController.addToConsole("Error updating bill: " + e.getMessage());
+    	if (!(toUpdate.getData() instanceof Visit)) {
+            guiController.addToConsole("UpdateCommands.updateVisit() expects a Visit object.");
+            return false;
         }
-        return toReturn;
+    	
+    	Visit received = (Visit)toUpdate.getData();
+    	String sql = "";
+    	
+    	switch (toUpdate.getAction()) {
+        case START_VISIT:
+            sql = "UPDATE visits SET start_time = NOW() WHERE visit_id = ?";
+            break;
+        case BILL_PAID:
+            sql = "UPDATE visits SET end_time = NOW(), is_active = 0 WHERE visit_id = ?";
+            break;
+        default:
+            guiController.addToConsole("Unknown Action for updateVisit: " + toUpdate.getAction());
+            return false;
+    	}
+    	
+    	try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, received.getVisitId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            guiController.addToConsole("Error updating visit status: " + e.getMessage());
+            return false;
+        }
     }
     
     //======================================
     //WAITING LIST UPDATES
     //======================================
+    
+    /**
+     * Update waiting visit with assigned table and mark it as notified or seated
+     * @param waitingId visit object waiting id in waiting_list table
+     * @param status notified/seated
+     * @param tableId table id to be assigned for visit
+     * @param guiController logging controller
+     * @return on success true, otherwise false
+     */
     public static boolean updateWaitingListStatus(int waitingId, String status, int tableId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
-        
-        // We set the status to 'notified' and lock the table_id to this user
         String sql = "UPDATE waiting_list SET status = ?, table_id = ?, notified_at = NOW() WHERE waiting_id = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, tableId);
             ps.setInt(3, waitingId);
-            int result = ps.executeUpdate();
-            return result > 0;
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             guiController.addToConsole("Error updating waiting list: " + e.getMessage());
             return false;
         }
     }
-    //Cancel waiting visit that haven't arrived after being notified (15 min)
+    
+    /**
+     * Update waiting visit based on visit object. Use to move waiting visit from waiting to regular visit or clearing the table
+     * @param toUpdate visit object with updated details
+     * @param guiController logging controller
+     * @return Visit object on success, null on failure
+     */
+    public static Visit updateVisitInWaitingList(Visit toUpdate, ServerFrameController guiController) {
+    	Connection conn = dbController.getInstance().getConnection();
+        String sql = "UPDATE waiting_list SET status = ?, notified_at = NOW() WHERE visit_id = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        	if(toUpdate.isActive()) {
+            	ps.setString(1, "seated");
+        	} else {
+        		ps.setObject(1, null);
+        	}
+        	ps.setObject(2, toUpdate.getWaitingId());
+            if(ps.executeUpdate() > 0) {
+            	return GetCommands.getVisit(toUpdate.getVisitId(), guiController);            }
+        } catch (SQLException e) {
+        	guiController.addToConsole("Error updating waiting list visit: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Cancel waiting list visit (if guest doesn't show up 15 mins after being notified)
+     * @param waitingId visit waiting id in waiting_list
+     * @param guiController logging controller
+     * @return true on success, false on failure
+     */
     public static boolean cancelWaitingListEntry(int waitingId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
-
         String sql = "UPDATE waiting_list SET status = 'cancelled', table_id = NULL WHERE waiting_id = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, waitingId);
-            int result = ps.executeUpdate();
-            return result > 0;
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             guiController.addToConsole("Error cancelling waiting list entry " + waitingId + ": " + e.getMessage());
             return false;

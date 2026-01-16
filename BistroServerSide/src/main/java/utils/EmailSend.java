@@ -8,6 +8,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import dataLayer.Guest;
+import dataLayer.Member;
 import dataLayer.Reservation;
 import dataLayer.Visit;
 
@@ -107,6 +108,26 @@ public class EmailSend {
         sendSMS(recipient, "Bill Notification", content);
     }
     
+    public static void sendMembershipCreation(Member member) {
+        Recipient recipient = resolveRecipient(member);
+        if (!recipient.isValid()) return;
+
+        String content = "Welcome to Bistro, " + recipient.name + "!\n\n" +
+                         "Your membership has been successfully created.\n\n" +
+                         "Here are your details:\n" +
+                         "Member ID: " + member.getMemberId() + "\n" +
+                         "Card Code: " + member.getCardCode() + "\n" +
+                         "Password: " + member.getPassword() + "\n\n" +
+                         "Please keep your Card Code safe. You can use it to identify yourself at the restaurant.\n" +
+                         "Thank you for joining us!";
+
+        // Send Text Email
+        asyncSendText(recipient.email, "Welcome to Bistro! Membership Details", content);
+        
+        // Send SMS
+        sendSMS(recipient, "Membership Created", content);
+    }
+    
     private static void asyncSendText(String to, String subject, String text) {
         new Thread(() -> sendEmail(to, subject, text, false)).start();
     }
@@ -162,6 +183,13 @@ public class EmailSend {
                 return new PasswordAuthentication(USERNAME, PASSWORD);
             }
         });
+    }
+    
+    private static Recipient resolveRecipient(Member member) {
+        String email = member.getEmail();
+        String name = member.getFullName();
+        String phone = member.getPhoneNumber();
+        return new Recipient(email, name, phone);
     }
 
     private static Recipient resolveRecipient(Reservation res) {
