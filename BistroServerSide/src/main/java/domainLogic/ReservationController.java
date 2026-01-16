@@ -51,12 +51,22 @@ public class ReservationController {
 		List<String> validTimes = new ArrayList<>();
 		List<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
 		
-	    final int TIME_SLOT = 2; // Duration
-		List<String> allTimeSlots = Arrays.asList(
-			    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
-			    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", 
-			    "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", 
-			    "21:00", "21:30", "22:00", "22:30", "23:00");
+		
+		DateTime reservationDate = Reservation.getReservationDate();
+		RestaurantConfig bistroRestaurant = GetCommands.getRestaurantConfig(guiController);
+		
+		LocalDate dateForSpecialHours = LocalDate.parse(reservationDate.getDate());
+		String dateForRegularHours = LocalDate.parse(reservationDate.getDate()).getDayOfWeek().toString();
+		
+		String openingHour = bistroRestaurant.getRegularHours().get(dateForRegularHours)[0];
+		String closingHour = bistroRestaurant.getRegularHours().get(dateForRegularHours)[1];
+		
+		if(bistroRestaurant.getSpecialHours().containsKey(dateForSpecialHours)) {
+			openingHour = bistroRestaurant.getSpecialHours().get(dateForSpecialHours)[0];
+			closingHour = bistroRestaurant.getSpecialHours().get(dateForSpecialHours)[1];
+		}
+	
+			List<String> allTimeSlots = generateTimeSlots(openingHour, closingHour);
 		
 		Reservation.setStatus(Status.pending);
 		for(String time :allTimeSlots) {
@@ -377,18 +387,41 @@ public class ReservationController {
 	    List<Reservation> allReservations = GetCommands.getAllReservations(guiController);
 	    return new BistroMessage(Action.GET_ALL_RESERVATIONS, allReservations);
 	}
-	/*
-	public static void ExistingReservationsNeedToBeCancled(ServerFrameController guiController) {
-		List<Reservation> allReservations;
-		RestaurantConfig rc = GetCommands.
-		HashMap<LocalDate, String[]> date = data.getSpecialHours();
-		for(Map.Entry<LocalDate,String[]> entry:date.entrySet()) {
-			allReservations = GetCommands.getReservationsNotInTimeRange(entry.getKey(), LocalTime.parse(entry.getValue()[0]), LocalTime.parse(entry.getValue()[1]), guiController);
-			for(Reservation r : allReservations) {
-				cancelReservation(r,guiController);
-			}
-		}
+	
+//	public static void ExistingReservationsNeedToBeCancled(ServerFrameController guiController) {
+//		List<Reservation> allReservations;
+//		RestaurantConfig config = GetCommands.getRestaurantConfig(guiController);
+//		HashMap<LocalDate, String[]> date = config.getSpecialHours();
+//		for(Map.Entry<LocalDate,String[]> entry:date.entrySet()) {
+//			allReservations = GetCommands.getReservationsNotInTimeRange(entry.getKey(), LocalTime.parse(entry.getValue()[0]), LocalTime.parse(entry.getValue()[1]), guiController);
+//			for(Reservation reservation : allReservations) {
+//				cancelReservation(reservation,guiController);
+//			}
+//		}
+//	}
+	
+	
+	
+	public static List<String> generateTimeSlots(String openTime, String closeTime) {
+	    List<String> timeSlots = new ArrayList<>();
+	    if (openTime == null || closeTime == null ) {
+	        return timeSlots;
+	    }
+	    try {
+	        LocalTime start = LocalTime.parse(openTime); 
+	        LocalTime end = LocalTime.parse(closeTime);
+	        LocalTime current = start;
+	        while (!current.isAfter(end)) {
+	            timeSlots.add(current.toString()); // toString() automatically outputs "HH:mm" if seconds are 00
+	            current = current.plusMinutes(30);
+	        }
+	    } catch (Exception e) {
+	        System.out.println("Error generating time slots: " + e.getMessage());
+	    }
+	    return timeSlots;
 	}
-	*/
+	
+	
+	
 
 }
