@@ -17,3 +17,12 @@ INSERT INTO tables (table_number, capacity, is_active) VALUES
 (3, 4, 1),
 (4, 6, 1),
 (5, 8, 1);
+
+INSERT INTO regular_hours (day_name, open_time, close_time) VALUES 
+('Sunday', '09:00', '23:00'),
+('Monday', '09:00', '23:00'),
+('Tuesday', '09:00', '23:00'),
+('Wednesday', '09:00', '23:00'),
+('Thursday', '09:00', '23:00'),
+('Friday', '09:00', '15:00'),
+('Saturday', '19:00', '23:00');

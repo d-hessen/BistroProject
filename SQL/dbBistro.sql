@@ -141,16 +141,6 @@ CREATE TABLE regular_hours (
     close_time VARCHAR(5)
 );
 
--- Initialize default hours (Example)
-INSERT INTO regular_hours (day_name, open_time, close_time) VALUES 
-('Sunday', '09:00', '23:00'),
-('Monday', '09:00', '23:00'),
-('Tuesday', '09:00', '23:00'),
-('Wednesday', '09:00', '23:00'),
-('Thursday', '09:00', '23:00'),
-('Friday', '09:00', '15:00'),
-('Saturday', '19:00', '23:00');
-
 -- Table for special dates (Holidays, etc.)
 CREATE TABLE special_hours (
     special_date DATE NOT NULL PRIMARY KEY,
