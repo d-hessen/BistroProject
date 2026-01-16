@@ -142,6 +142,30 @@ public class GetCommands {
 		}
 		return upcoming;
 	}
+    
+    public static List<Reservation> getReservationsNotInTimeRange(LocalDate date, LocalTime start, LocalTime end, ServerFrameController guiController) {
+		Connection conn = dbController.getInstance().getConnection();
+		List<Reservation> upcoming = new ArrayList<>();
+
+		String sql = "SELECT * FROM reservation WHERE reservation_date = ? " +
+					 "AND reservation_time <= ? AND reservation_time <= ? AND status != 'CANCELLED'";
+
+		try (PreparedStatement ps = conn.prepareStatement(sql)) {
+			//ps.setString(1, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+			ps.setString(1, date.toString());
+			ps.setString(2, start.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+			ps.setString(3, end.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+					upcoming.add(mapRowToReservation(rs, guiController));
+				}
+			}
+		} catch (SQLException e) {
+			guiController.addToConsole("Error fetching reservations that should be cancled" + e.getMessage());
+		}
+		return upcoming;
+	}
 	
     /**
      * Get reservations by phone number

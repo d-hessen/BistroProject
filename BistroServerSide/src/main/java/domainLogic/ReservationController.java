@@ -5,16 +5,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.*;
-import java.util.Random;
 import java.security.SecureRandom;
 import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +22,7 @@ import common.Status;
 import dataLayer.DateTime;
 import dataLayer.Guest;
 import dataLayer.Reservation;
+import dataLayer.RestaurantConfig;
 import dataLayer.Visit;
 import dataLayer.Table;
 import databaseController.CreateCommands;
@@ -138,6 +135,7 @@ public class ReservationController {
 	public static BistroMessage cancelReservation(Reservation res, ServerFrameController guiController) {	    
 	    boolean success = DeleteCommands.deleteReservation(res.getReservationId(), guiController);    
 	    if (success) {
+	        EmailSend.sendCancellationInform(res);
 	        return new BistroMessage(Action.CANCEL_RESERVATION, true);
 	    } else {
 	        return new BistroMessage(Action.CANCEL_RESERVATION, false);
@@ -379,5 +377,18 @@ public class ReservationController {
 	    List<Reservation> allReservations = GetCommands.getAllReservations(guiController);
 	    return new BistroMessage(Action.GET_ALL_RESERVATIONS, allReservations);
 	}
+	/*
+	public static void ExistingReservationsNeedToBeCancled(ServerFrameController guiController) {
+		List<Reservation> allReservations;
+		RestaurantConfig rc = GetCommands.
+		HashMap<LocalDate, String[]> date = data.getSpecialHours();
+		for(Map.Entry<LocalDate,String[]> entry:date.entrySet()) {
+			allReservations = GetCommands.getReservationsNotInTimeRange(entry.getKey(), LocalTime.parse(entry.getValue()[0]), LocalTime.parse(entry.getValue()[1]), guiController);
+			for(Reservation r : allReservations) {
+				cancelReservation(r,guiController);
+			}
+		}
+	}
+	*/
 
 }

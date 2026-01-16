@@ -61,6 +61,21 @@ public class EmailSend {
         System.out.println("Cancellation notice sent to: " + recipient.email);
         sendSMS(recipient, "Reservation Cancelled", content);
     }
+    //Send cancellation message (Special day has been informed)
+    public static void sendCancellationInform(Reservation res) {
+        Recipient recipient = resolveRecipient(res);
+        if (!recipient.isValid()) return;
+
+        String content = "Hello " + recipient.name + ",\n\n" +
+                         "Your reservation has been automatically cancelled because " +
+                         "we will not be open on the scheduled time.\n\n" +
+                         "Reservation ID: " + res.getReservationId() + "\n\n" +
+                         "If this is a mistake, please contact the staff.";
+
+        asyncSendText(recipient.email, "Reservation Cancelled - Bistro", content);
+        System.out.println("Cancellation notice sent to: " + recipient.email);
+        sendSMS(recipient, "Reservation Cancelled", content);
+    }
     //Send message that table is ready to waiting visit
     public static void sendTableReadyNotification(Visit visit) {
         Recipient recipient = resolveRecipient(visit); 
