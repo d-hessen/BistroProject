@@ -7,6 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -29,6 +30,9 @@ import common.BistroMessage;
 import dataLayer.Member;
 import dataLayer.Table;
 import dataLayer.Visit;
+import javafx.util.Callback;
+import javafx.scene.control.TableCell;
+import javafx.scene.layout.HBox;
 
 public class StaffDashboardController implements Initializable {
 
@@ -62,6 +66,7 @@ public class StaffDashboardController implements Initializable {
     @FXML private TableColumn<Member, String> colMemberName;
     @FXML private TableColumn<Member, String> colMemberPhone;
     @FXML private TableColumn<Member, String> colMemberEmail;
+    @FXML private TableColumn<Member, Void> historyCol;
 
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     private ArrayList<Table> tables;
@@ -113,8 +118,86 @@ public class StaffDashboardController implements Initializable {
         // Map phone and email properties
         colMemberPhone.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
         colMemberEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        
+        addButtonToTable();
+    }
+    
+    private void addButtonToTable() {
+        Callback<TableColumn<Member, Void>, TableCell<Member, Void>> cellFactory = new Callback<>() {
+            @Override
+            public TableCell<Member, Void> call(final TableColumn<Member, Void> param) {
+                return new TableCell<>() {
+
+                    private final Button btn = new Button("History");
+
+                    {
+                        btn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white; -fx-font-size: 11px;");
+                        btn.setPrefWidth(80);
+
+                        // Action when pressed
+                        btn.setOnAction(event -> {
+                        	// Retrieve the object from the current row
+                            Member data = getTableView().getItems().get(getIndex());
+                            openMemberHistory(data.getMemberId());
+                        });
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                        	// Centers the button in the cell
+                            HBox pane = new HBox(btn);
+                            pane.setAlignment(Pos.CENTER);
+                            setGraphic(pane);
+                        }
+                    }
+                };
+            }
+        };
+
+        historyCol.setCellFactory(cellFactory);
     }
 
+    private void openMemberHistory(int memberId) {
+        try {
+        	// Reset data
+            BistroClient.memberFoundStatus = null;
+            BistroClient.historyReservations = null;
+            BistroClient.historyVisits = null;
+
+            // Sending a request
+            ClientUI.chat.accept(new BistroMessage(Action.GET_MEMBER_HISTORY, memberId));
+
+            // Wait for response
+            int retries = 0;
+            while (BistroClient.memberFoundStatus == null && retries < 50) {
+                try { 
+                	Thread.sleep(100); 
+                } catch (InterruptedException e) { }
+                retries++;
+            }
+
+            if (BistroClient.memberFoundStatus == null) {
+                SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Server timeout.");
+                return;
+            }
+            
+            if (BistroClient.memberFoundStatus == false) {
+                 SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Data not found.");
+                 return;
+            }
+
+            // Opening the window
+            SceneLoader.openNewWindow("/gui/ViewHistory.fxml", "History - Member ID: " + memberId);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     // TABLE MANAGEMENT 
     // Helper method to get all tables from DB
     private void getAllTables() {
@@ -378,6 +461,11 @@ public class StaffDashboardController implements Initializable {
     @FXML
     void handleViewAllReservations(ActionEvent event) {
         SceneLoader.openNewWindow("/gui/ViewReservations.fxml", "Management - All Reservations");
+    }
+    
+    @FXML
+    void handleViewHistory(ActionEvent event) {
+        SceneLoader.openNewWindow("/gui/FindMemberPopup.fxml", "Find Member History");
     }
 
     @FXML void openTableInfo(ActionEvent event) {} // Legacy support if needed

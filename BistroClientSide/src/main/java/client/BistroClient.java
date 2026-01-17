@@ -114,6 +114,9 @@ public class BistroClient extends AbstractClient
 
   /** List of all reservations in the system */
   public static ArrayList<Reservation> allReservationsList;
+  public static List<Reservation> historyReservations;
+  public static List<Visit> historyVisits;
+  public static Boolean memberFoundStatus = null;
 
   /**
    * Constructs a new BistroClient.
@@ -279,6 +282,22 @@ public class BistroClient extends AbstractClient
                 if(staffDashControllerInstance != null)
                     staffDashControllerInstance.memberCreated(false, (String)answer.getData());
                 break;
+	        /**
+	         * Handles member history fetching
+	         */            
+		  	case GET_MEMBER_HISTORY:
+		  	    Object responseData = answer.getData();		  	    
+		  	    if (responseData instanceof String && "NOT_FOUND".equals(responseData)) {
+		  	        BistroClient.memberFoundStatus = false; 
+		  	        BistroClient.historyReservations = null;
+		  	        BistroClient.historyVisits = null;
+		  	    } else {
+		  	        List<Object> historyData = (List<Object>) responseData;
+		  	        BistroClient.historyReservations = (List<Reservation>) historyData.get(0);
+		  	        BistroClient.historyVisits = (List<Visit>) historyData.get(1);
+		  	        BistroClient.memberFoundStatus = true; 
+		  	    }
+		  	    break;
 
                 /* =======================
                  * Reservation Routes
