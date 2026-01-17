@@ -1,6 +1,7 @@
 package server;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -96,6 +97,20 @@ public class BistroServer extends AbstractServer
 			case GET_ALL_RESERVATIONS:
 		        client.sendToClient(ReservationController.getAllReservations(guiController));
 		        break;
+			case GET_MEMBER_HISTORY:
+			    Integer targetMemberId = (Integer) request.getData();			    
+			    Member memberCheck = GetCommands.getMemberById(targetMemberId, guiController);			    
+			    if (memberCheck == null) {
+			        client.sendToClient(new BistroMessage(Action.GET_MEMBER_HISTORY, "NOT_FOUND"));
+			    } else {
+			        List<Reservation> historyReservations = GetCommands.getReservationsByMemberId(targetMemberId, guiController);
+			        List<Visit> historyVisits = GetCommands.getMemberVisits(targetMemberId, guiController);			        
+			        List<Object> fullHistory = new ArrayList<>();
+			        fullHistory.add(historyReservations);
+			        fullHistory.add(historyVisits);		        
+			        client.sendToClient(new BistroMessage(Action.GET_MEMBER_HISTORY, fullHistory));
+			    }
+			    break;
                 
 			// --- MEMBER ROUTES ---
 			case MEMBER_IDENTIFICATION:

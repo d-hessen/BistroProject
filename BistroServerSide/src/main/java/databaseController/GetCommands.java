@@ -1018,4 +1018,24 @@ public class GetCommands {
         }
         return reservations;
     }
+    
+    // Get all reservations for a specific member by member ID
+    public static List<Reservation> getReservationsByMemberId(Integer memberId, ServerFrameController guiController) {
+        List<Reservation> reservations = new ArrayList<>();
+        Connection conn = dbController.getInstance().getConnection();
+        String sql = "SELECT * FROM reservation WHERE member_id = ? ORDER BY reservation_date DESC, reservation_time DESC";
+        // Retrieve all orders associated with this member id
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                	// Using the existing helper function to map the row to an object
+                    reservations.add(mapRowToReservation(rs, guiController));
+                }
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching reservations by member ID: " + e.getMessage());
+        }
+        return reservations;
+    }
 }

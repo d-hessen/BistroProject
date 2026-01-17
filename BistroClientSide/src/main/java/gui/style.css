@@ -306,3 +306,7 @@
     -fx-alignment: CENTER;
     -fx-padding: 0 10 0 10; 
 }
+
+.table-cell {
+    -fx-alignment: CENTER;
+}

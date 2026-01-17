@@ -173,18 +173,18 @@
 		            <Button onAction="#openSystemSettings" text="System Settings" /> 
 		        </HBox>
 		        
-		        <Label text="Members List:" /> 
-		        
-		        <TableView fx:id="membersTable" styleClass="members-table" VBox.vgrow="ALWAYS"> 
-		            <columns>
-		                <TableColumn fx:id="colMemberName" prefWidth="200.0" text="Full Name" />
-		                <TableColumn fx:id="colMemberPhone" prefWidth="200.0" text="Phone" />
-		                <TableColumn fx:id="colMemberEmail" prefWidth="200.0" text="Email" />
-		            </columns>
-		            <columnResizePolicy>
-		                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-		            </columnResizePolicy>
-		        </TableView>
+		        <Label text="Members List:" /> 		        
+				<TableView fx:id="membersTable" styleClass="members-table" VBox.vgrow="ALWAYS"> 
+				    <columns>
+				        <TableColumn fx:id="colMemberName" prefWidth="150.0" text="Full Name" />
+				        <TableColumn fx:id="colMemberPhone" prefWidth="150.0" text="Phone" />
+				        <TableColumn fx:id="colMemberEmail" prefWidth="200.0" text="Email" />				        
+				        <TableColumn fx:id="historyCol" prefWidth="120.0" text="Actions" />
+				    </columns>
+				    <columnResizePolicy>
+				        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+				    </columnResizePolicy>
+				</TableView>
 		    </VBox>
 		</Tab>
     </TabPane>
