@@ -9,8 +9,11 @@ import java.time.LocalDate;
 import common.BistroMessage;
 import dataLayer.*;
 import domainLogic.ServerFrameController;
+
 /**
- * Handle all sql updates
+ * Handles all SQL UPDATE operations in the database.
+ * This class is responsible for updating reservations, members, tables, visits, bills,
+ * waiting list entries, and restaurant configuration.
  */
 public class UpdateCommands {
 	//======================================
@@ -18,10 +21,12 @@ public class UpdateCommands {
 	//======================================
     
 	/**
-	 * Update existing reservation details: (Date,Guest,Status)
-	 * @param resToUpdate reservation object with updated data
-	 * @param guiController logging controller
-	 * @return true if successful, false otherwise
+	 * Updates existing reservation details in the database.
+	 * Updates the date, number of guests, and status.
+	 *
+	 * @param resToUpdate the reservation object containing the updated data
+	 * @param guiController reference to the server GUI controller for logging errors
+	 * @return true if the update was successful, false otherwise
 	 */
     public static boolean updateReservation(Reservation resToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
@@ -41,10 +46,12 @@ public class UpdateCommands {
     }
     
     /**
-     * Flag reservation that reminder was sent to avoid duplicate sending
-     * @param reservationId
-     * @param guiController
-     * @return
+     * Marks a reservation as having received a reminder to avoid duplicate notifications.
+     * Sets the 'reminder_sent' flag to TRUE in the database.
+     *
+     * @param reservationId the ID of the reservation
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return true if the update was successful, false otherwise
      */
     public static boolean markReminderSent(Integer reservationId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
@@ -64,10 +71,11 @@ public class UpdateCommands {
 	//======================================
 
     /**
-     * Update member details: (Phone,Email)
-     * @param memberToUpdate member object with updated details
-     * @param guiController logging controller
-     * @return updated member object from DB, if failed null
+     * Updates a member's contact details (Phone and Email).
+     *
+     * @param memberToUpdate the member object containing updated details
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return the updated Member object retrieved from the DB, or null if the update failed
      */
     public static Member updateMember(Member memberToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
@@ -84,17 +92,18 @@ public class UpdateCommands {
         	guiController.addToConsole("Error updating member: " + e.getMessage());
         }
         return null;
-    }   
+    }    
 	
     //======================================
 	//TABLE UPDATES
 	//======================================
 
     /**
-     * Update table details: (capacity,isActive,status)
-     * @param tableToUpdate table object with updated details
-     * @param guiController logging controller
-     * @return updated table project on success, on fail null
+     * Updates table details including active status and capacity.
+     *
+     * @param tableToUpdate the table object containing updated details
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return the updated Table object on success, or null on failure
      */
     public static Table updateTable(Table tableToUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
@@ -118,10 +127,12 @@ public class UpdateCommands {
     //======================================
 
     /**
-     * Update bill for specific visit
-     * @param toUpdate visit object with updated details
-     * @param guiController logging controller
-     * @return updated visit object on success, null on fail
+     * Updates the bill information for a specific visit.
+     * Updates total amount, discount, final amount, and payment status.
+     *
+     * @param toUpdate the visit object containing the updated bill
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return the updated Visit object on success, or null on failure
      */
     public static Visit updateBillForVisit(Visit toUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
@@ -144,9 +155,11 @@ public class UpdateCommands {
     }
     
     /**
-     * Flags bill that was sent to client
-     * @param visitId visit id in db
-     * @param guiController logging controller
+     * Marks a bill as sent to the client.
+     * Updates the 'bill_sent' flag in the visits table.
+     *
+     * @param visitId the ID of the visit
+     * @param guiController reference to the server GUI controller for logging errors
      */
     public static void markBillSent(Integer visitId, ServerFrameController guiController) {
         String sql = "UPDATE visits SET bill_sent = TRUE WHERE visit_id = ?";
@@ -159,11 +172,12 @@ public class UpdateCommands {
     }
     
     /**
-     * Update visit status based on Action in BistroMessage.
-     * Handle START_VISIT and BILL_PAID actions.
-     * @param toUpdate BistroMessage object containing action: (START_VISIT/BILL_PAID) and data as Visit
-     * @param guiController logging controller
-     * @return true on success, false on fail
+     * Updates visit status/timestamps based on the Action provided in the message.
+     * Handles START_VISIT (sets start_time) and BILL_PAID (sets end_time and inactive).
+     *
+     * @param toUpdate BistroMessage object containing the Action (START_VISIT/BILL_PAID) and the Visit object
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return true on success, false on failure or invalid data
      */
     public static boolean updateVisit(BistroMessage toUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
@@ -202,12 +216,14 @@ public class UpdateCommands {
     //======================================
     
     /**
-     * Update waiting visit with assigned table and mark it as notified or seated
-     * @param waitingId visit object waiting id in waiting_list table
-     * @param status notified/seated
-     * @param tableId table id to be assigned for visit
-     * @param guiController logging controller
-     * @return on success true, otherwise false
+     * Updates a waiting list entry with an assigned table and status.
+     * Used when notifying a waiting customer that their table is ready.
+     *
+     * @param waitingId the ID of the waiting list entry
+     * @param status the new status (e.g., "notified", "seated")
+     * @param tableId the ID of the table assigned to the visit
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return true on success, false otherwise
      */
     public static boolean updateWaitingListStatus(int waitingId, String status, int tableId, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
@@ -225,10 +241,12 @@ public class UpdateCommands {
     }
     
     /**
-     * Update waiting visit based on visit object. Use to move waiting visit from waiting to regular visit or clearing the table
-     * @param toUpdate visit object with updated details
-     * @param guiController logging controller
-     * @return Visit object on success, null on failure
+     * Updates a waiting list entry to 'seated' status.
+     * This effectively moves the customer from the waiting state to an active visit.
+     *
+     * @param toUpdate the visit object containing the waiting ID
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return the updated Visit object on success, or null on failure
      */
     public static Visit updateVisitInWaitingList(Visit toUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
@@ -246,9 +264,11 @@ public class UpdateCommands {
     }
     
     /**
-     * Cancel waiting list visit (if guest doesn't show up 15 mins after being notified)
-     * @param waitingId visit waiting id in waiting_list
-     * @param guiController logging controller
+     * Cancels a waiting list entry.
+     * Used when a guest does not show up within the time limit after being notified.
+     *
+     * @param waitingId the ID of the waiting list entry
+     * @param guiController reference to the server GUI controller for logging errors
      * @return true on success, false on failure
      */
     public static boolean cancelWaitingListEntry(int waitingId, ServerFrameController guiController) {
@@ -264,6 +284,14 @@ public class UpdateCommands {
         }
     }
     
+    /**
+     * Updates the restaurant configuration (Regular and Special hours).
+     * Performs a transaction to update regular hours and replace special hours.
+     *
+     * @param config the RestaurantConfig object containing new hours
+     * @param guiController reference to the server GUI controller for logging errors
+     * @return true if the transaction was committed successfully, false otherwise
+     */
     public static boolean updateRestaurantConfig(RestaurantConfig config, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         try {
