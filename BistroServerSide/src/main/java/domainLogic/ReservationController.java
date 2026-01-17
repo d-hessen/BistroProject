@@ -73,6 +73,7 @@ public class ReservationController {
 	 * @param guiController reference to the server GUI controller for logging
 	 * @return a BistroMessage containing a List of valid time strings
 	 */
+
 	public static BistroMessage checkAvailability(Reservation Reservation, ServerFrameController guiController) {
 		List<String> validTimes = new ArrayList<>();
 		List<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
@@ -91,10 +92,16 @@ public class ReservationController {
 			openingHour = bistroRestaurant.getSpecialHours().get(dateForSpecialHours)[0];
 			closingHour = bistroRestaurant.getSpecialHours().get(dateForSpecialHours)[1];
 		}
-		LocalDateTime.now();
-		List<String> allTimeSlots = generateTimeSlots(openingHour, closingHour);
+		List<String> allTimeSlots;
+		boolean isToday = reservationDate.getDate().equals(LocalDate.now().toString());
+		if(isToday) {
+			allTimeSlots = generateTimeSlots(LocalDate.now().toString(), closingHour);
+		}
+		else {
+		 allTimeSlots = generateTimeSlots(openingHour, closingHour);
+		}
+		
 		Reservation.setStatus(Status.pending);
-	
 		for(String time :allTimeSlots) {
 			
 			// get the day of the reservation and create
@@ -111,9 +118,7 @@ public class ReservationController {
 	        // run algorithm
 	        Integer result = findBestArrangementAndWaste(tables, overlap, stubReservation, TIME_SLOT);
 	        if (result != null) { // result = null means there is no possible arrangement
-	        	if(reservationDate.getDate().equals(LocalDateTime.now().toLocalDate().toString()) && start.isAfter(changeToLocalDateTime(reservationDate))) 
-	        		validTimes.add(time);
-	        	else validTimes.add(time);
+	        	validTimes.add(time);
 	        }
 	    }
 		return new BistroMessage(Action.CHECK_RESERVATION_AVAILABILITY, validTimes);	

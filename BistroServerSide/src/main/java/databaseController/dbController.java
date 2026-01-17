@@ -14,7 +14,7 @@ public final class dbController {
 	//Database Configuration
 	private static final String dbUrl = "jdbc:mysql://localhost:3306/bistro?allowLoadLocalInfile=true&serverTimezone=Asia/Jerusalem&useSSL=false";
 	private static final String dbUser = "root";
-	private static final String dbPass = "ZbangZod1234@#$qwe"; 
+	private static final String dbPass = "danhessen"; 
 	
 	/*
 	 * Constructor for Singleton pattern

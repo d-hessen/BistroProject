@@ -132,7 +132,6 @@ public class VisitNowController implements Initializable {
         }
         
         
-        
         System.out.println("Validations passed for: " + contact);
         Visit toCreate;
         if(BistroClient.memberInstance != null) {

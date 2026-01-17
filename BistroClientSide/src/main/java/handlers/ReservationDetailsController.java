@@ -181,7 +181,10 @@ public class ReservationDetailsController {
             }
             else {
                 BistroMessage msg = new BistroMessage(Action.CREATE_RESERVATION, BistroClient.reservationInstance);
-                ClientUI.chat.accept(msg);   
+                ClientUI.chat.accept(msg);
+                if(BistroClient.reservationInstance != null) {
+                	SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Verification Code", "Your verification code is: " +BistroClient.reservationInstance.getVerificationCode());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
