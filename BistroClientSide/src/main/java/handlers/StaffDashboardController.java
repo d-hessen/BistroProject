@@ -204,7 +204,7 @@ public class StaffDashboardController implements Initializable {
                     private final Button btn = new Button("History");
 
                     {
-                        btn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white; -fx-font-size: 11px;");
+                        btn.setStyle("-fx-font-size: 11px;");
                         btn.setPrefWidth(80);
 
                         // Action when pressed

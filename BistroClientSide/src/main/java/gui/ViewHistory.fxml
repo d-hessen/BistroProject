@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -6,29 +7,29 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="500.0" prefWidth="700.0" spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ViewHistoryController">
-   <Label style="-fx-font-size: 20px; -fx-padding: 10;" text="Member Activity History" />
+<VBox prefHeight="500.0" prefWidth="700.0" spacing="10" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ViewHistoryController">
+   <Label style="-fx-font-size: 20px; -fx-padding: 10;" styleClass="header-label" stylesheets="@style.css" text="Member Activity History" />
    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
      <Tab text="Reservations">
        <TableView fx:id="resTable">
          <columns>
-           <TableColumn fx:id="resDateCol" text="Date" style="-fx-alignment: CENTER;" />
-           <TableColumn fx:id="resTimeCol" text="Time" style="-fx-alignment: CENTER;" />
-           <TableColumn fx:id="resGuestsCol" text="Guests" style="-fx-alignment: CENTER;" />
-           <TableColumn fx:id="resStatusCol" text="Status" style="-fx-alignment: CENTER;" />
+           <TableColumn fx:id="resDateCol" style="-fx-alignment: CENTER;" text="Date" />
+           <TableColumn fx:id="resTimeCol" style="-fx-alignment: CENTER;" text="Time" />
+           <TableColumn fx:id="resGuestsCol" style="-fx-alignment: CENTER;" text="Guests" />
+           <TableColumn fx:id="resStatusCol" style="-fx-alignment: CENTER;" text="Status" />
          </columns>
-         <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+         <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
        </TableView>
      </Tab>
      <Tab text="Visits">
        <TableView fx:id="visitsTable">
          <columns>
-           <TableColumn fx:id="visitDateCol" text="Date" style="-fx-alignment: CENTER;" />
-           <TableColumn fx:id="visitTimeCol" text="Time" style="-fx-alignment: CENTER;" />
-           <TableColumn fx:id="visitTableCol" text="Table #" style="-fx-alignment: CENTER;" />
-           <TableColumn fx:id="visitTotalCol" text="Total Bill" style="-fx-alignment: CENTER;" />
+           <TableColumn fx:id="visitDateCol" style="-fx-alignment: CENTER;" text="Date" />
+           <TableColumn fx:id="visitTimeCol" style="-fx-alignment: CENTER;" text="Time" />
+           <TableColumn fx:id="visitTableCol" style="-fx-alignment: CENTER;" text="Table #" />
+           <TableColumn fx:id="visitTotalCol" style="-fx-alignment: CENTER;" text="Total Bill" />
          </columns>
-         <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+         <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
        </TableView>
      </Tab>
    </TabPane>
