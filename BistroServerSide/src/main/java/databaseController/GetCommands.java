@@ -874,7 +874,7 @@ public class GetCommands {
         String sql = "SELECT * FROM visits " +
                      "WHERE is_active = TRUE " +
                      "AND bill_sent = FALSE " +
-                     "AND start_time < (NOW() - INTERVAL 2 HOURS)";
+                     "AND start_time < (NOW() - INTERVAL 2 HOUR)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()) {

@@ -220,14 +220,22 @@ public class TableManagementController {
     @FXML
     void handleSave(ActionEvent event) {
     	if(currentTable.isOccupied()) {
-    		Double amount = Double.valueOf(billField.getText().trim());
-    		Double discount = Double.valueOf(discountField.getText().trim());
-    		Double finalAmount = (amount - (discount/100)*amount);
-    		Visit toUpdate = currentTable.getCurrentVisit();
-    		toUpdate.getBillOfVisit().setTotalAmount(amount);
-    		toUpdate.getBillOfVisit().setDiscountAmount(discount);
-    		toUpdate.getBillOfVisit().setFinalAmount(finalAmount);
-    		ClientUI.chat.accept(new BistroMessage(Action.UPDATE_BILL, toUpdate));
+    		if(billField.getText().trim().isEmpty()) {
+    			billField.setText("0");
+    		}
+    		try {
+				Double amount = Double.valueOf(billField.getText().trim());
+				Double discount = Double.valueOf(discountField.getText().trim());
+				Double finalAmount = (amount - (discount/100)*amount);
+				Visit toUpdate = currentTable.getCurrentVisit();
+				toUpdate.getBillOfVisit().setTotalAmount(amount);
+				toUpdate.getBillOfVisit().setDiscountAmount(discount);
+				toUpdate.getBillOfVisit().setFinalAmount(finalAmount);
+				ClientUI.chat.accept(new BistroMessage(Action.UPDATE_BILL, toUpdate));
+			} catch (NumberFormatException e) {
+				SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management Error", "Bill and Discount must be numbers");
+				return;
+			}
     	} else {
     		Integer capacity = Integer.valueOf(capacityField.getText().trim());
     		Table toUpdate = currentTable;

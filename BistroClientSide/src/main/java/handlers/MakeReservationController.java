@@ -111,17 +111,14 @@ public class MakeReservationController implements Initializable {
      */
     @FXML
     private void handleSelectTime(ActionEvent event) {
-        // Clear previous error message
         errorLabel.setText("");
 
-        // 1. Collect Data
         String fullName = fullNameField.getText().trim();
         String email = emailField.getText().trim();
         String phone = phoneField.getText().trim();
         LocalDate date = datePicker.getValue();
         String dinersStr = dinersField.getText().trim();
 
-        // 2. Validation
         if (fullName.isEmpty()) {
             errorLabel.setText("Please enter full name.");
             return;
@@ -170,16 +167,13 @@ public class MakeReservationController implements Initializable {
             return;
         }
 
-        // 3. Navigate to TimeSlot Screen (Pass data forward)
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/TimeSlot.fxml"));
             Parent root = loader.load();
-            
-            // Get the next controller and pass the data
+
             TimeSlotController controller = loader.getController();
             controller.initData(date, fullName, email, phone, numDiners);
-            
-            // Replace the scene in the current window
+
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Select Time Slot");

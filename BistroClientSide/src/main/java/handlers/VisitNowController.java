@@ -115,12 +115,11 @@ public class VisitNowController implements Initializable {
             return;
         }
         
-        if (!isEmail) {
+        if (!isEmail && !isPhone) {
             SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Email", "The email format you entered is incorrect.");
             return;
         }
 
-        // Validate Diners: Must be a positive integer
         try {
             int numDiners = Integer.parseInt(diners);
             if (numDiners <= 0) {
