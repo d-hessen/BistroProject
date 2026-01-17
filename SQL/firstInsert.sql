@@ -19,10 +19,10 @@ INSERT INTO tables (table_number, capacity, is_active) VALUES
 (5, 8, 1);
 
 INSERT INTO regular_hours (day_name, open_time, close_time) VALUES 
-('Sunday', '09:00', '23:00'),
-('Monday', '09:00', '23:00'),
-('Tuesday', '09:00', '23:00'),
-('Wednesday', '09:00', '23:00'),
-('Thursday', '09:00', '23:00'),
-('Friday', '09:00', '15:00'),
-('Saturday', '19:00', '23:00');
+('Sunday', '08:00', '22:00'),
+('Monday', '08:00', '22:00'),
+('Tuesday', '08:00', '22:00'),
+('Wednesday', '08:00', '22:00'),
+('Thursday', '08:00', '22:00'),
+('Friday', '08:00', '15:00'),
+('Saturday', '18:00', '22:00');

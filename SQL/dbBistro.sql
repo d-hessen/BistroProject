@@ -3,16 +3,6 @@ CREATE SCHEMA IF NOT EXISTS `bistro` DEFAULT CHARACTER SET utf8mb4;
 USE `bistro`;
 
 -- MANAGEMENT SIDE (STAFF SIDE)
--- Restaurant configuration
-CREATE TABLE IF NOT EXISTS `restaurant_config` (
-  `restaurant_id` INT NOT NULL DEFAULT 1,
-  `open_time` TIME NOT NULL DEFAULT '12:00:00',
-  `close_time` TIME NOT NULL DEFAULT '23:00:00',
-  `reservation_duration_hours` INT NOT NULL DEFAULT 2, 
-  `max_late_minutes` INT NOT NULL DEFAULT 15, 
-  PRIMARY KEY (`restaurant_id`)
-);
-
 -- Staff(Including manager and regular workers)
 CREATE TABLE IF NOT EXISTS `staff` (
   `staff_id` INT NOT NULL AUTO_INCREMENT,
