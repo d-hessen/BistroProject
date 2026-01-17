@@ -69,7 +69,7 @@ public class ReservationController {
 	/**
 	 * Checks for available time slots for a specific date and party size.
 	 * Uses a greedy algorithm to determine if a table arrangement is possible.
-	 * * @param Reservation   a prototype reservation containing date and guest count
+	 * @param Reservation   a prototype reservation containing date and guest count
 	 * @param guiController reference to the server GUI controller for logging
 	 * @return a BistroMessage containing a List of valid time strings
 	 */
@@ -91,10 +91,10 @@ public class ReservationController {
 			openingHour = bistroRestaurant.getSpecialHours().get(dateForSpecialHours)[0];
 			closingHour = bistroRestaurant.getSpecialHours().get(dateForSpecialHours)[1];
 		}
-	
-			List<String> allTimeSlots = generateTimeSlots(openingHour, closingHour);
-		
+		LocalDateTime.now();
+		List<String> allTimeSlots = generateTimeSlots(openingHour, closingHour);
 		Reservation.setStatus(Status.pending);
+	
 		for(String time :allTimeSlots) {
 			
 			// get the day of the reservation and create
@@ -111,7 +111,9 @@ public class ReservationController {
 	        // run algorithm
 	        Integer result = findBestArrangementAndWaste(tables, overlap, stubReservation, TIME_SLOT);
 	        if (result != null) { // result = null means there is no possible arrangement
-	        	validTimes.add(time);
+	        	if(reservationDate.getDate().equals(LocalDateTime.now().toLocalDate().toString()) && start.isAfter(changeToLocalDateTime(reservationDate))) 
+	        		validTimes.add(time);
+	        	else validTimes.add(time);
 	        }
 	    }
 		return new BistroMessage(Action.CHECK_RESERVATION_AVAILABILITY, validTimes);	

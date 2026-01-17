@@ -145,7 +145,7 @@ public class MakeReservationController implements Initializable {
             errorLabel.setText("Please enter phone number.");
             return;
         }
-        if ((!phone.matches("\\d{9}")) || (!phone.matches("\\d{10}"))) {
+        if ((!phone.matches("\\d{9,10}"))) {
             errorLabel.setText("Phone number must contain exactly 9 or 10 digits.");
             return;
         }
