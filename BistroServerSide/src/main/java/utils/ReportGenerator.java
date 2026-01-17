@@ -26,6 +26,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * Utility class for generating PDF reports using PDFBox and JFreeChart.
+ * capable of creating Time/Punctuality reports and Member Activity reports.
+ */
 public class ReportGenerator {
 
     private static final int CHART_WIDTH = 500;
@@ -33,15 +37,17 @@ public class ReportGenerator {
     private static final int STANDARD_DURATION_MIN = 120; 
     
     /**
-     * Generates timereport for List of Visit objects on month/year
-     * @param visits List of Visit objects including information for report
-     * @param month int for month number
-     * @param year int for year number
+     * Generates a Time & Punctuality Report for a list of visits for a specific month/year.
+     * The report includes charts for punctuality and visit duration, and a detailed visit log.
+     *
+     * @param visits List of Visit objects to be included in the report
+     * @param month the month for the report
+     * @param year the year for the report
      */
     public static void generateTimeReport(List<Visit> visits, int month, int year) {
         String filename = "reports/Time_Report_" + month + "_" + year + ".pdf";
         
-        File directory = new File("reports");//Create direcotry if not exists
+        File directory = new File("reports");//Create directory if not exists
         if (!directory.exists()) directory.mkdirs();
         
         try (PDDocument document = new PDDocument()) {
@@ -101,11 +107,13 @@ public class ReportGenerator {
     }
     
     /**
-     * Generate report of members: Members vs. Guests, Reserved vs Walked-In
+     * Generates a Member Activity Report.
+     * Compares Members vs Guests, and Pre-booked vs Walk-in statistics.
+     *
      * @param visits List of visit objects
      * @param waitingList List of waiting visit objects
-     * @param month int for month number
-     * @param year int for year number
+     * @param month the month for the report
+     * @param year the year for the report
      */
     public static void generateMemberReport(List<Visit> visits, List<WaitingHistoryItem> waitingList, int month, int year) {
         String filename = "reports/Member_Report_" + month + "_" + year + ".pdf";
@@ -155,9 +163,10 @@ public class ReportGenerator {
     }
 
     /**
-     * Creates shart using List of Visit objects
+     * Creates a Pie Chart visualization for visit punctuality (On Time vs Late vs Walk-in).
+     *
      * @param visits List of Visit objects
-     * @return PieChart for punctuality
+     * @return JFreeChart PieChart object
      */
     private static JFreeChart createPunctualityChart(List<Visit> visits) {
         DefaultPieDataset dataset = new DefaultPieDataset();
@@ -183,9 +192,10 @@ public class ReportGenerator {
     }
     
     /**
-     * Creates duration of visit chart 
+     * Creates a Bar Chart visualization for visit duration categorization.
+     *
      * @param visits List of Visit objects
-     * @return BarChart for visit duration
+     * @return JFreeChart BarChart object
      */
     private static JFreeChart createDurationChart(List<Visit> visits) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -209,9 +219,10 @@ public class ReportGenerator {
     }
 
     /**
-     * Calculating visit v late time
-     * @param wanted visit object in db
-     * @return long thar represent minutes of difference between reservation and arrivals times.
+     * Calculates the difference in minutes between the reservation time and the arrival time.
+     *
+     * @param v the visit object
+     * @return long representing minutes late (positive) or early (negative/zero)
      */
     private static long calculateLateMinutes(Visit v) {
         try {
@@ -229,9 +240,10 @@ public class ReportGenerator {
     }
 
     /**
-     * Calculating visit duration time
+     * Calculates the total duration of a visit in minutes.
+     *
      * @param v Visit object to calculate
-     * @return return long, on failure 0
+     * @return long representing total minutes, or 0 on failure
      */
     private static long calculateDurationMinutes(Visit v) {
         try {
@@ -244,10 +256,12 @@ public class ReportGenerator {
     }
     
     /**
-     * Parsing date and time for LocalDateTime
+     * Parses date and time strings into a LocalDateTime object.
+     * Handles formatting and string cleanup.
+     *
      * @param date String represents date: yyyy-MM-dd
      * @param time String represents time: HH:mm:ss
-     * @return LocalDateTime
+     * @return parsed LocalDateTime object
      */
     private static LocalDateTime parseDateTime(String date, String time) {
         date = date.trim();
@@ -265,14 +279,15 @@ public class ReportGenerator {
     }
     
     /**
-     * Private method to type text into pdf using PDFBOX
-     * @param stream where to write (document)
-     * @param text what to write (text)
-     * @param x at what X of page
-     * @param y at what Y of pgae
-     * @param fontSize text font size
-     * @param bold is it bold
-     * @throws IOException
+     * Helper method to write text into the PDF stream at a specific location.
+     *
+     * @param stream the PDF content stream
+     * @param text the string to write
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @param fontSize font size
+     * @param bold true for bold font, false for standard
+     * @throws IOException if writing to stream fails
      */
     private static void drawText(PDPageContentStream stream, String text, float x, float y, int fontSize, boolean bold) throws IOException {
         stream.beginText();
@@ -283,13 +298,14 @@ public class ReportGenerator {
     }
     
     /**
-     * Private method to draw separating line in pdf
-     * @param stream where to write
-     * @param x1 where to start in x
-     * @param y1 where to start in y
-     * @param x2 where to end in x
-     * @param y2 where to end in y
-     * @throws IOException
+     * Helper method to draw a line in the PDF.
+     *
+     * @param stream the PDF content stream
+     * @param x1 start x-coordinate
+     * @param y1 start y-coordinate
+     * @param x2 end x-coordinate
+     * @param y2 end y-coordinate
+     * @throws IOException if drawing fails
      */
     private static void drawLine(PDPageContentStream stream, float x1, float y1, float x2, float y2) throws IOException {
         stream.moveTo(x1, y1);
@@ -298,13 +314,14 @@ public class ReportGenerator {
     }
     
     /**
-     * Private method to insert chart created as bufferedimage
-     * @param doc document to write to
-     * @param stream stream of inserted data
-     * @param image chart 
-     * @param x where to put in x
-     * @param y where to put in y
-     * @throws IOException
+     * Helper method to insert a buffered image (chart) into the PDF.
+     *
+     * @param doc the PDF document
+     * @param stream the PDF content stream
+     * @param image  the BufferedImage to draw
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @throws IOException if image creation or drawing fails
      */
     private static void drawChartOnPdf(PDDocument doc, PDPageContentStream stream, BufferedImage image, float x, float y) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -314,9 +331,10 @@ public class ReportGenerator {
     }
     
     /**
-     * Writes visit log into visit logs table
+     * Formats a Visit object into a string row for the PDF table log.
+     *
      * @param v Visit object to write
-     * @return String row to write to document
+     * @return formatted String row
      */
     private static String formatVisitRow(Visit v) {
         String name = (v.getGuest() != null) ? v.getGuest().getFullName() : "Unknown";
