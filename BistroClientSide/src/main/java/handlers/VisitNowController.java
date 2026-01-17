@@ -88,18 +88,35 @@ public class VisitNowController implements Initializable {
         	SceneLoader.showAlert(Alert.AlertType.ERROR,"Input Error", "All fields are required. Please fill in your contact info and number of diners.");
             return;
         }
-
+        
+        if (!fullName.matches("[A-Za-z ]+")) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Name",
+                "Full name must contain letters only (no numbers or symbols)."
+            );
+            return;
+        }
+        
+        // Validate Full Name: Must contain at least two words
+        String[] nameParts = fullName.split("\\s+");
+        if (nameParts.length < 2) {
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Full name must contain at least two words.");
+            return;
+        }
+        
         // Validate Contact: Check if it's a valid Email or a valid Phone Number
         boolean isEmail = Pattern.compile(EMAIL_REGEX).matcher(contact).matches();
         boolean isPhone = contact.matches("\\d{9,10}"); // Validates phone as 9 or 10 digits only
 
-        if (!isEmail && !isPhone) {
-            // Provide specific feedback based on what the user tried to enter
-            if (contact.contains("@")) {
-                SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Email", "The email format you entered is incorrect.");
-            } else {
-            	SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Phone", "Phone number must contain only digits (9-10 digits).");
-            }
+     // If contact is phone, validate digits only and Israeli length
+        if (isPhone && !contact.matches("\\d{9,10}")) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Invalid Phone",
+                "Phone number must contain 9–10 digits only."
+            );
+            return;
+        }
+        
+        if (!isEmail) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR,"Invalid Email", "The email format you entered is incorrect.");
             return;
         }
 
@@ -115,12 +132,7 @@ public class VisitNowController implements Initializable {
             return;
         }
         
-        // Validate Full Name: Must contain at least two words
-        String[] nameParts = fullName.split("\\s+");
-        if (nameParts.length < 2) {
-        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Full name must contain at least two words.");
-            return;
-        }
+        
         
         System.out.println("Validations passed for: " + contact);
         Visit toCreate;

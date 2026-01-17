@@ -138,10 +138,18 @@ public class MemberProfileController implements Initializable {
         	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
             return;
         }
-        
+    	
+        // Validate Phone Number: Must contain digits only
+    	if (!phone.matches("\\d+")) {
+    		SceneLoader.showAlert(Alert.AlertType.ERROR,"Error",
+    	        "Phone number must contain digits only (no letters or symbols)."
+    	    );
+    	    return;
+    	}
+    	    
         // Validate Phone Number: Must contain 9-10 digits only
         if (!phone.matches("\\d{9,10}")) {
-        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Phone number must contain numbers only.");
+        	SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Phone number must contain 9 - 10 digits only.");
             return;
         }
 

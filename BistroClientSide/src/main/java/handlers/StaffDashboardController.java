@@ -360,10 +360,28 @@ public class StaffDashboardController implements Initializable {
      */
     @FXML
     void handleAddTable(ActionEvent event) {
-        if(tableNumberField.getText().trim().isEmpty() || capacityField.getText().trim().isEmpty()) {
-            SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "You must enter table number and it's capacity!");
+    	if(tableNumberField.getText().trim().isEmpty()) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "You must enter table number");
             return;
         }
+    	
+    	if(capacityField.getText().trim().isEmpty()) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "You must enter table capacity");
+            return;
+        }
+        
+        if (!tableNumberField.getText().trim().matches("\\d+")) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management","Table number must contain digits only."
+            );
+            return;
+        }
+
+        if (!capacityField.getText().trim().matches("\\d+")) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "Table capacity must contain digits only."
+            );
+            return;
+        }
+        
         Integer tableNum = Integer.valueOf(tableNumberField.getText().trim());
         for (Table table : this.tables) {
             if(table.getTableNumber().equals(tableNum)) {
