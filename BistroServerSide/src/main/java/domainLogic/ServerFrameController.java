@@ -24,6 +24,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ocsf.server.ConnectionToClient;
 
+/**
+ * Controller for the Server GUI (JavaFX).
+ * Handles the display of server status, connected clients, and console logs.
+ * Manages the starting and stopping of the BistroServer.
+ */
 public class ServerFrameController implements Initializable {
 	
 	@FXML
@@ -56,6 +61,11 @@ public class ServerFrameController implements Initializable {
 	private BistroServer server;
 	private ObservableList<ClientInfo> clientList = FXCollections.observableArrayList();
 	
+	/**
+	 * Starts the JavaFX stage and loads the FXML.
+	 * * @param primaryStage the primary stage of the application
+	 * @throws Exception if FXML loading fails
+	 */
 	public void start(Stage primaryStage) throws Exception{
 		Parent root = FXMLLoader.load(getClass().getResource("/gui/ServerFrame.fxml"));
 		Scene scene = new Scene(root);
@@ -64,14 +74,22 @@ public class ServerFrameController implements Initializable {
 		primaryStage.show();
 	}
 	
-	//Function to write to consoleArea
+	/**
+	 * Appends a message to the console text area on the JavaFX application thread.
+	 * * @param message string to append
+	 */
 	public void addToConsole(String message) {
         Platform.runLater(() -> {
             consoleArea.appendText(message + "\n");
         });
     }
 	
-	//Function for Start Server button
+	/**
+	 * Event handler for the 'Start Server' button.
+	 * Initializes the BistroServer on the specified port.
+	 * * @param event the button click event
+	 * @throws Exception if server creation fails
+	 */
 	public void onClickStart(ActionEvent event) throws Exception {
 		String port = getport();
 		
@@ -101,7 +119,12 @@ public class ServerFrameController implements Initializable {
 		
 	}
 	
-	//Function for Stop Server button
+	/**
+	 * Event handler for the 'Stop Server' button.
+	 * Closes the server and updates UI controls.
+	 * * @param event the button click event
+	 * @throws Exception if server closing fails
+	 */
 	public void onClickStop(ActionEvent event) throws Exception {
 		if (server != null) {
             try {
@@ -117,7 +140,10 @@ public class ServerFrameController implements Initializable {
         }
 	}
 	
-	//Function to change server label green/red	
+	/**
+	 * Updates the server status label (Connected/Disconnected) visually.
+	 * * @param isConnected true if server is running, false otherwise
+	 */
 	public void serverStatusChanged(boolean isConnected) {
         Platform.runLater(() -> {
             if (isConnected) {
@@ -130,7 +156,9 @@ public class ServerFrameController implements Initializable {
         });
     }
 	
-	//Class for TableView
+	/**
+	 * Inner class representing a client row in the TableView.
+	 */
     public static class ClientInfo {
         private String ip;
         private String host;
@@ -151,7 +179,11 @@ public class ServerFrameController implements Initializable {
         public void setStatus(String status) { this.status = status; }
     }
 	
-	//Function that will update clients
+    /**
+     * Updates the list of connected clients in the TableView.
+     * * @param client the client connection object
+     * @param status the status string (Connected/Disconnected)
+     */
     public void updateClientList(ConnectionToClient client, String status) {
         Platform.runLater(() -> {
 
@@ -181,7 +213,10 @@ public class ServerFrameController implements Initializable {
             clientsTable.refresh();
         });
     }
-    // Initialize method is called automatically after FXML loading
+    
+    /**
+     * Called to initialize a controller after its root element has been completely processed.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set up Table Columns
@@ -192,9 +227,12 @@ public class ServerFrameController implements Initializable {
         clientsTable.setItems(clientList);
     }
     
-    //function to get port from textfield
-  	private String getport() {
-  		return portField.getText();			
-  	}
+    /**
+     * Helper to retrieve port text from the UI field.
+     * @return port string
+     */
+ 	private String getport() {
+ 		return portField.getText();			
+ 	}
 
 }

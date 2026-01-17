@@ -32,9 +32,21 @@ import databaseController.GetCommands;
 import databaseController.UpdateCommands;
 import utils.EmailSend;
 
+/**
+ * Controller responsible for managing the life-cycle of reservations.
+ * Includes logic for availability checking, table allocation algorithms,
+ * creation, cancellation, and background maintenance tasks.
+ */
 // RESERVATION LOGIC 
 public class ReservationController {
 	private static final int TIME_SLOT = 2;
+	
+	/**
+	 * Retrieves a specific reservation by its ID.
+	 * * @param reservationID the ID of the reservation to retrieve
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the Reservation object or a not found status
+	 */
 	public static BistroMessage getReservation(Integer reservationID, ServerFrameController guiController) {
 		Reservation recieved = GetCommands.getReservation(reservationID, guiController);
 		if(recieved != null) {
@@ -43,11 +55,24 @@ public class ReservationController {
 		return new BistroMessage(Action.RESERVATION_NOT_FOUND, recieved);
 	}
 	
+	/**
+	 * Updates details of an existing reservation.
+	 * * @param reservationToUpdate the reservation object with new details
+	 * @param guiController       reference to the server GUI controller for logging
+	 * @return a BistroMessage indicating success or failure
+	 */
 	public static BistroMessage updateReservation(Reservation reservationToUpdate, ServerFrameController guiController) {
 		boolean success = UpdateCommands.updateReservation(reservationToUpdate, guiController);
 		return new BistroMessage(Action.UPDATE_RESERVATION, success);
 	}
 	
+	/**
+	 * Checks for available time slots for a specific date and party size.
+	 * Uses a greedy algorithm to determine if a table arrangement is possible.
+	 * * @param Reservation   a prototype reservation containing date and guest count
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing a List of valid time strings
+	 */
 	public static BistroMessage checkAvailability(Reservation Reservation, ServerFrameController guiController) {
 		List<String> validTimes = new ArrayList<>();
 		List<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
@@ -92,6 +117,12 @@ public class ReservationController {
 		return new BistroMessage(Action.CHECK_RESERVATION_AVAILABILITY, validTimes);	
 	}
 
+	/**
+	 * Creates a new reservation after validating constraints and checking availability.
+	 * * @param reservationToCreate the reservation object to create
+	 * @param guiController       reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the created Reservation or an error message
+	 */
 	public static BistroMessage createReservation(Reservation reservationToCreate, ServerFrameController guiController) {
      
 	    try {
@@ -142,7 +173,12 @@ public class ReservationController {
 	    }
 	}
 
-	
+	/**
+	 * Cancels a reservation and notifies the user via email.
+	 * * @param res           the reservation to cancel
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage indicating success (true) or failure (false)
+	 */
 	public static BistroMessage cancelReservation(Reservation res, ServerFrameController guiController) {	    
 	    boolean success = DeleteCommands.deleteReservation(res.getReservationId(), guiController);    
 	    if (success) {
@@ -153,6 +189,12 @@ public class ReservationController {
 	    }
 	}
 	
+	/**
+	 * Verifies a reservation or visit code, often used for finding reservations or checking status.
+	 * * @param request       the request containing the verification code string
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the found Reservation, Visit, or an error string
+	 */
 	public static BistroMessage codeVerification(BistroMessage request, ServerFrameController guiController) {
 		String code = (String)request.getData();
 		Reservation reservation = GetCommands.getReservationVerificationCode(code, guiController);
@@ -189,6 +231,10 @@ public class ReservationController {
 		return new BistroMessage(Action.GET_VERIFICATION_CODE, "Error: Verification Code wasn't found");
 	}
 
+	/**
+	 * Generates a random alphanumeric verification code using SecureRandom.
+	 * * @return a 5-character string
+	 */
 	public static String generateVerificationCode() {
 		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		SecureRandom random = new SecureRandom();
@@ -199,6 +245,12 @@ public class ReservationController {
 		return result;
 	}
 
+	/**
+	 * Retrieves all reservations associated with a specific member's phone number.
+	 * * @param phoneNumber   the phone number to search for
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing a List of Reservations
+	 */
 	public static BistroMessage getMemberReservations(String phoneNumber, ServerFrameController guiController) {
 		List<Reservation> memberReservations = new ArrayList<>();
 		memberReservations = GetCommands.getReservationsByPhoneNumber(phoneNumber, guiController); 
@@ -209,7 +261,11 @@ public class ReservationController {
 	    }
 	}
 
-	// changes class DateTime to LocalDateTime
+	/**
+	 * Helper method to convert the custom DateTime object to Java's LocalDateTime.
+	 * * @param dt the DateTime object
+	 * @return the corresponding LocalDateTime, or null if conversion fails
+	 */
 	private static LocalDateTime changeToLocalDateTime(DateTime dt) {
 		if (dt == null || dt.getDate() == null || dt.getTime() == null) return null;
 	    
@@ -238,7 +294,16 @@ public class ReservationController {
 	    }
 	}
 
-	
+	/**
+	 * Determines the best table arrangement for a set of overlapping reservations plus a new one.
+	 * Runs a greedy algorithm twice (big parties first vs small parties first) and picks the one
+	 * that results in the least wasted seats.
+	 * * @param tables   all available tables
+	 * @param overlap  existing overlapping reservations
+	 * @param newRes   the new reservation attempting to be scheduled
+	 * @param timeSlot the duration of the reservation in hours
+	 * @return the total wasted seats for the best arrangement, or null if no arrangement exists
+	 */
 	private static Integer findBestArrangementAndWaste(List<Table> tables, List<Reservation> overlap ,Reservation newRes, int timeSlot) {
 		//run algorithm twice, check check largest party amounts first
 		Integer bigFirst = runGreedyReturnTableAndWaste(tables, overlap, newRes, timeSlot, true);
@@ -256,6 +321,16 @@ public class ReservationController {
 		return bigFirst;
 	}
 
+	/**
+	 * Helper method implementing the Greedy algorithm for table assignment.
+	 * Sorts reservations by time and then by size (ascending or descending) to fit them into tables.
+	 * * @param tables      available tables
+	 * @param overlap     overlapping reservations
+	 * @param newRes      new reservation
+	 * @param timeSlot    duration
+	 * @param isBigFirst  if true, sorts reservations descending by guest count; otherwise ascending
+	 * @return total wasted seats, or null if fit failed
+	 */
 	private static Integer runGreedyReturnTableAndWaste(List<Table> tables, List<Reservation> overlap, Reservation newRes, int timeSlot, boolean isBigFirst) {
 
 		// sort all tables by table capacity
@@ -315,6 +390,11 @@ public class ReservationController {
 		return  totalWaste;
 	}
 	
+	/**
+	 * Background process to identify no-shows (approved reservations late by 15 mins).
+	 * Cancels them and notifies the users.
+	 * * @param guiController reference to the server GUI controller for logging
+	 */
 	public static void processNoShows(ServerFrameController guiController) {
 	    //Get reservations where status is 'approved' and late for 15 mins
 	    List<Reservation> expired = GetCommands.getExpiredReservations(guiController);
@@ -331,6 +411,10 @@ public class ReservationController {
 	    }
 	}
 	
+	/**
+	 * Background process to send reminder emails for upcoming reservations.
+	 * * @param guiController reference to the server GUI controller for logging
+	 */
 	public static void processReminders(ServerFrameController guiController) {
 	    //Get reservations 2 hours from now
 	    List<Reservation> upcoming = GetCommands.getReservationsForReminder(guiController); 
@@ -345,6 +429,12 @@ public class ReservationController {
 	    }
 	}
 	
+	/**
+	 * Recovers lost verification codes by sending them via Email or SMS.
+	 * * @param contactInput  email or phone number of the user
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage with the result string
+	 */
 	public static BistroMessage recoverLostCode(String contactInput, ServerFrameController guiController) {
         List<Reservation> found = GetCommands.getReservationsByContactInfo(contactInput, guiController);
         
@@ -384,11 +474,21 @@ public class ReservationController {
         return new BistroMessage(Action.FORGOT_CODE, "Verification codes have been sent to your Email and SMS.");
     }
 	
+	/**
+	 * Retrieves all reservations in the system.
+	 * * @param guiController reference to the server GUI controller
+	 * @return a BistroMessage containing a list of all reservations
+	 */
 	public static BistroMessage getAllReservations(ServerFrameController guiController) {
 	    List<Reservation> allReservations = GetCommands.getAllReservations(guiController);
 	    return new BistroMessage(Action.GET_ALL_RESERVATIONS, allReservations);
 	}
 	
+	/**
+	 * Cancels existing reservations that fall outside valid time ranges 
+	 * (e.g., if restaurant hours changed).
+	 * * @param guiController reference to the server GUI controller
+	 */
 	public static void ExistingReservationsNeedToBeCancled(ServerFrameController guiController) {
 		List<Reservation> allReservations;
 		RestaurantConfig config = GetCommands.getRestaurantConfig(guiController);
@@ -403,7 +503,12 @@ public class ReservationController {
 	}
 	
 	
-	
+	/**
+	 * Helper method to generate a list of time strings in 30-minute intervals between opening and closing.
+	 * * @param openTime  opening time string (HH:mm)
+	 * @param closeTime closing time string (HH:mm)
+	 * @return list of time strings
+	 */
 	public static List<String> generateTimeSlots(String openTime, String closeTime) {
 	    List<String> timeSlots = new ArrayList<>();
 	    if (openTime == null || closeTime == null ) {
