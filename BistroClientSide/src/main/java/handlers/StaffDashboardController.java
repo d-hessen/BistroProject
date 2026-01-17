@@ -15,7 +15,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
@@ -89,11 +93,12 @@ public class StaffDashboardController implements Initializable {
     /** Checkbox to toggle password visibility */
     @FXML private CheckBox showPasswordTick;
 
-    // -------- REPORTS & ADMIN TABS --------
-    @FXML private Tab managerReportsTab;
-    @FXML private Tab managerAdminTab;
-    @FXML private ComboBox<String> reportTypeCombo, monthCombo;
-    @FXML private TableView<?> reportsTable;
+    // -------- REPORTS TAB --------
+    @FXML private Tab managerTab;
+    @FXML private ComboBox<Integer> reportYearCombo;
+    @FXML private ComboBox<String> reportMonthCombo;
+    @FXML private ComboBox<String> reportTypeCombo;
+    @FXML private Button btnViewReport;
 
     // -------- MEMBERS ADMINISTRATION TABLE --------
     @FXML private TableView<Member> membersTable;
@@ -128,7 +133,7 @@ public class StaffDashboardController implements Initializable {
             
             // Hide manager only tabs for non manager roles
             if (!"manager".equalsIgnoreCase(BistroClient.staffInstance.getRole())) { 
-                mainTabPane.getTabs().remove(managerReportsTab);
+                mainTabPane.getTabs().remove(managerTab);
             }
         }
         setupComboBoxes();
@@ -149,11 +154,27 @@ public class StaffDashboardController implements Initializable {
      * Initializes values for combo boxes used in the dashboard.
      */
     private void setupComboBoxes() {
-        statusComboBox.getItems().addAll("Available", "Occupied");
-        if(reportTypeCombo != null) 
-            reportTypeCombo.setItems(FXCollections.observableArrayList("Visit Timings", "Reservations", "Waiting Lists"));
-        if(monthCombo != null)
-            monthCombo.setItems(FXCollections.observableArrayList("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"));
+    	if (reportYearCombo != null) {
+            int currentYear = Year.now().getValue();
+            reportYearCombo.setItems(FXCollections.observableArrayList(
+                currentYear, currentYear - 1, currentYear - 2, currentYear - 3
+            ));
+            reportYearCombo.getSelectionModel().selectFirst();
+        }
+
+        if (reportMonthCombo != null) {
+            reportMonthCombo.setItems(FXCollections.observableArrayList(
+                "01 - January", "02 - February", "03 - March", "04 - April", "05 - May", "06 - June",
+                "07 - July", "08 - August", "09 - September", "10 - October", "11 - November", "12 - December"
+            ));
+        }
+
+        if (reportTypeCombo != null) {
+            reportTypeCombo.setItems(FXCollections.observableArrayList(
+                "Time & Punctuality Report", 
+                "Member Activity Report"
+            ));
+        }
     }
 
     /**
@@ -183,7 +204,7 @@ public class StaffDashboardController implements Initializable {
                     private final Button btn = new Button("History");
 
                     {
-                        btn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white; -fx-font-size: 11px;");
+                        btn.setStyle("-fx-font-size: 11px;");
                         btn.setPrefWidth(80);
 
                         // Action when pressed
@@ -620,15 +641,64 @@ public class StaffDashboardController implements Initializable {
     }
     
     /**
-     * Opens the member history search window.
-     *
-     * @param event the action event triggered by the "View History" button
+     * Send request to find needed report
+     * @param event action avenet triggered by View Report button
      */
     @FXML
-    void handleViewHistory(ActionEvent event) {
-        SceneLoader.openNewWindow("/gui/FindMemberPopup.fxml", "Find Member History");
-    }
+    void handleViewReport(ActionEvent event) {
+        Integer year = reportYearCombo.getValue();
+        String monthStr = reportMonthCombo.getValue();
+        String typeStr = reportTypeCombo.getValue();
 
-    @FXML void openTableInfo(ActionEvent event) {} // Legacy support if needed
-    @FXML void handleGenerateReport(ActionEvent event) {} // Stub
+        if (year == null || monthStr == null || typeStr == null) {
+            SceneLoader.showAlert(Alert.AlertType.WARNING, "Selection Error", "Please select Year, Month, and Report Type.");
+            return;
+        }
+
+        //month number
+        int month = Integer.parseInt(monthStr.split(" ")[0]);
+
+        //Construct filename based on type
+        //Our naming convention: "Time_Report_M_YYYY.pdf" or "Member_Report_M_YYYY.pdf"
+        String prefix = typeStr.startsWith("Time") ? "Time_Report" : "Member_Report";
+        String filename = prefix + "_" + month + "_" + year + ".pdf";
+
+        System.out.println("Requesting report: " + filename);
+        ClientUI.chat.accept(new BistroMessage(Action.GET_REPORT_FILE, filename));
+    }
+    
+    /**
+     * Function called from BistroClient to show report to user using default pdf-viewer tool
+     * @param data if request succeded - array of bytes, else reecieve null
+     */
+    public void receiveReport(Object data) {
+        Platform.runLater(() -> {
+            if (data == null) {
+                SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Report Not Found", 
+                          "The report you requested is not ready yet.\n" +
+                          "Reports are generated automatically on the 1st of each month.");
+            } else if (data instanceof byte[]) {
+                try {
+                    byte[] pdfBytes = (byte[]) data;
+                    File tempFile = File.createTempFile("BistroReportView", ".pdf");
+                    tempFile.deleteOnExit(); //Not saving on client side
+                    
+                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                        fos.write(pdfBytes);
+                    }
+                    //Open with default pdf editor
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop.getDesktop().open(tempFile);
+                    } else {
+                        SceneLoader.showAlert(Alert.AlertType.WARNING, "Error", "Cannot open PDF: Desktop not supported.");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Failed to open the report file.");
+                }
+            } else {
+                SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Received invalid data from server.");
+            }
+        });
+    }
 }

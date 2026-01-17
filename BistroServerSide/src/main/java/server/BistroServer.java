@@ -2,6 +2,8 @@ package server;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -11,6 +13,7 @@ import dataLayer.*;
 import databaseController.*;
 import domainLogic.*;
 import ocsf.server.*;
+import utils.ReportGenerator;
 
 public class BistroServer extends AbstractServer 
 {
@@ -191,7 +194,21 @@ public class BistroServer extends AbstractServer
 			case BILL_PAID:
 				client.sendToClient(VisitController.updateBillOfVisit(request, guiController));
 				break;
-                
+			// --- REPORT ROUTES ---
+			case GET_REPORT_FILE:
+			    String filename = (String) request.getData();
+			    File reportFile = new File("reports/" + filename);
+			    if (reportFile.exists()) {
+			        try {
+			            byte[] fileContent = Files.readAllBytes(reportFile.toPath());
+			            client.sendToClient(new BistroMessage(Action.GET_REPORT_FILE, fileContent));
+			        } catch (IOException e) {
+			            client.sendToClient(new BistroMessage(Action.GET_REPORT_FILE, "Error reading file"));
+			        }
+			    } else {
+			        client.sendToClient(new BistroMessage(Action.GET_REPORT_FILE, null));//not found
+			    }
+			    break;
 			// --- CLIENT DISCONNECTS ---
 			case DISCONNECT:
 				guiController.addToConsole("Client " + client.getInetAddress() + " disconnect");
@@ -221,6 +238,19 @@ public class BistroServer extends AbstractServer
       	// Run checks every 1 minute
       	scheduler.scheduleAtFixedRate(() -> {
         	try {
+        		//If month ended - generate report for previous month
+        		LocalDateTime now = LocalDateTime.now();
+        		if (now.getDayOfMonth() == 1 && now.getHour() == 0 && now.getMinute() == 0) {
+                    LocalDateTime prevMonth = now.minusMonths(1);
+                    int month = prevMonth.getMonthValue();
+                    int year = prevMonth.getYear();
+
+                    guiController.addToConsole("Generating monthly reports for " + month + "/" + year + "...");
+                    List<Visit> visits = GetCommands.getFinishedVisitsForMonth(month, year, guiController);
+                    List<WaitingHistoryItem> waitHistory = GetCommands.getMemberWaitingHistory(month, year, guiController);
+                    ReportGenerator.generateTimeReport(visits, month, year);
+                    ReportGenerator.generateMemberReport(visits, waitHistory, month, year);
+                }
             	//Check for 15-minute no-shows
             	ReservationController.processNoShows(guiController);
             	//Send reminder for upcoming reservations

@@ -329,6 +329,142 @@ public class GetCommands {
 		return null;
 	}
 	
+	/**
+     * Get list of finished visits for a specific month and year.
+     * @param month The month to filter
+     * @param year The year to filter
+     * @param guiController logging errors
+     * @return List of Visit objects
+     */
+    public static List<Visit> getFinishedVisitsForMonth(int month, int year, ServerFrameController guiController) {
+        List<Visit> visits = new ArrayList<>();
+
+        String sql = "SELECT v.*, " +
+                     "t.table_number, t.capacity, " +
+                     "m.full_name AS member_name, m.phone AS member_phone, m.email AS member_email, m.card_code, " +
+                     "r.reservation_date, r.reservation_time, r.number_of_guests AS res_party_size, r.verification_code AS res_code " +
+                     "FROM visits v " +
+                     "LEFT JOIN tables t ON v.table_id = t.table_id " +
+                     "LEFT JOIN members m ON v.member_id = m.member_id " +
+                     "LEFT JOIN reservation r ON v.reservation_number = r.reservation_number " +
+                     "WHERE MONTH(v.start_time) = ? AND YEAR(v.start_time) = ? " +
+                     "AND v.end_time IS NOT NULL " +
+                     "ORDER BY v.start_time DESC";
+
+        Connection conn = dbController.getInstance().getConnection();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, month);
+            ps.setInt(2, year);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Table table = new Table(
+                        rs.getInt("table_number"),
+                        rs.getInt("capacity"),
+                        false //ONLY FOR DATA
+                    );
+                    Guest guest;
+                    int memberId = rs.getInt("member_id");
+
+                    if (!rs.wasNull()) {
+                        Member member = new Member(
+                            rs.getString("member_name"),
+                            rs.getString("member_phone"),
+                            rs.getString("member_email"),
+                            null
+                        );//Password mot secure
+                        member.setMemberId(memberId);
+                        member.setCardCode(rs.getString("card_code"));
+                        guest = member;
+                    } else {
+                        guest = new Guest(
+                            rs.getString("guest_full_name"),
+                            rs.getString("guest_phone"),
+                            rs.getString("email")
+                        );
+                    }
+
+                    Visit visit = new Visit(guest, table);
+
+                    visit.setVisitId(rs.getInt("visit_id"));
+                    visit.setPartySize(rs.getInt("party_size"));
+                    visit.setVerificationCode(rs.getString("verification_code"));
+                    visit.setActive(rs.getBoolean("is_active"));
+                    
+                    int waitingId = rs.getInt("waiting_id");
+                    if (!rs.wasNull()) {
+                        visit.setWaitingId(waitingId);
+                    }
+
+                    if (rs.getTimestamp("start_time") != null) {
+                        LocalDateTime start = rs.getTimestamp("start_time").toLocalDateTime();
+                        visit.setStartTime(new DateTime(start.toLocalDate().toString(), start.toLocalTime().toString()));
+                    }
+                    if (rs.getTimestamp("end_time") != null) {
+                        LocalDateTime end = rs.getTimestamp("end_time").toLocalDateTime();
+                        visit.setEndTime(new DateTime(end.toLocalDate().toString(), end.toLocalTime().toString()));
+                    }
+
+                    int resNum = rs.getInt("reservation_number");
+                    if (!rs.wasNull()) {
+                        Reservation reservation = new Reservation(
+                            resNum,
+                            new DateTime(rs.getString("reservation_date"), rs.getString("reservation_time")),
+                            rs.getString("res_code"),
+                            rs.getInt("res_party_size"),
+                            memberId != 0 ? memberId : null,
+                            guest 
+                        );
+                        visit.setReservation(reservation);
+                    }
+
+                    visits.add(visit);
+                }
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching monthly report data: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return visits;
+    }
+    
+    /**
+     * Get List of WaitingHistoryItem for waiting list history
+     * @param month int representing number of month
+     * @param year int representing numebr of year
+     * @param guiController logging controller
+     * @return on success List of WaitingHistoryItem, on failure empty list
+     */
+    public static List<WaitingHistoryItem> getMemberWaitingHistory(int month, int year, ServerFrameController guiController) {
+        List<WaitingHistoryItem> list = new ArrayList<>();
+        String sql = "SELECT w.member_id, w.entered_at, w.status, m.full_name " +
+                     "FROM waiting_list w " +
+                     "JOIN members m ON w.member_id = m.member_id " +
+                     "WHERE MONTH(w.entered_at) = ? AND YEAR(w.entered_at) = ? " +
+                     "ORDER BY w.entered_at DESC";
+
+        Connection conn = dbController.getInstance().getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, month);
+            ps.setInt(2, year);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new WaitingHistoryItem(
+                        rs.getInt("member_id"),
+                        rs.getString("full_name"),
+                        rs.getTimestamp("entered_at").toString(),
+                        rs.getString("status")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching waiting history: " + e.getMessage());
+        }
+        return list;
+    }
+	
     /**
      * Helper to map ResultSet row to reservation object
      * @param rs Result Set recieved from executing query
