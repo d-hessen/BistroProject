@@ -11,6 +11,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -167,8 +169,9 @@ public class ReservationDetailsController {
                 if (res.isPresent()) {
                     if (res.get() == returnBtn) {
                         SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
+
                     } else { 
-                        alert.close();
+                    	SceneLoader.closeWindow(event);
                     }
                 }
             }
