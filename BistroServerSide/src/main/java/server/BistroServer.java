@@ -91,7 +91,7 @@ public class BistroServer extends AbstractServer
 
 			case UPDATE_RESTAURANT_CONFIG:
 				boolean updated = UpdateCommands.updateRestaurantConfig((RestaurantConfig) request.getData(), guiController);
-				//ReservationController.ExistingReservationsNeedToBeCancled(guiController);
+				ReservationController.ExistingReservationsNeedToBeCancled(guiController);
 				client.sendToClient(new BistroMessage(Action.UPDATE_RESTAURANT_CONFIG, updated));
 				break;
 			case GET_ALL_RESERVATIONS:
