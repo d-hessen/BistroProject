@@ -23,19 +23,98 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+/**
+ * Controller responsible for managing system-wide restaurant settings.
+ * <p>
+ * This controller allows authorized staff to:
+ * <ul>
+ *   <li>Configure regular weekly opening hours</li>
+ *   <li>Manage special opening dates</li>
+ *   <li>Persist configuration changes to the server</li>
+ * </ul>
+ */
 public class SystemSettingsController implements Initializable {
 
-    @FXML private GridPane gridDays;
-    @FXML private DatePicker datePicker;
-    @FXML private TextField txtSpecialOpen, txtSpecialClose;   
-    @FXML private TableView<Map.Entry<LocalDate, String[]>> tblSpecialDates;
-    @FXML private TableColumn<Map.Entry<LocalDate, String[]>, String> colDate, colOpen, colClose;   
-    @FXML private TableColumn<Map.Entry<LocalDate, String[]>, Void> colDelete;
+	/**
+     * Grid layout containing weekly opening hours fields.
+     */
+    @FXML
+    private GridPane gridDays;
 
+    /**
+     * Date picker used to select a special date.
+     */
+    @FXML
+    private DatePicker datePicker;
+
+    /**
+     * Text field for entering special opening hour.
+     */
+    @FXML
+    private TextField txtSpecialOpen;
+
+    /**
+     * Text field for entering special closing hour.
+     */
+    @FXML
+    private TextField txtSpecialClose;
+
+    /**
+     * Table displaying special opening dates and hours.
+     */
+    @FXML
+    private TableView<Map.Entry<LocalDate, String[]>> tblSpecialDates;
+
+    /**
+     * Column displaying the special date.
+     */
+    @FXML
+    private TableColumn<Map.Entry<LocalDate, String[]>, String> colDate;
+
+    /**
+     * Column displaying the opening hour for a special date.
+     */
+    @FXML
+    private TableColumn<Map.Entry<LocalDate, String[]>, String> colOpen;
+
+    /**
+     * Column displaying the closing hour for a special date.
+     */
+    @FXML
+    private TableColumn<Map.Entry<LocalDate, String[]>, String> colClose;
+
+    /**
+     * Column containing delete actions for special dates.
+     */
+    @FXML
+    private TableColumn<Map.Entry<LocalDate, String[]>, Void> colDelete;
+
+    /**
+     * Map holding weekly opening and closing fields for each day.
+     * <p>
+     * Key: Day name (e.g., "Monday")  
+     * Value: Array of TextFields [open, close]
+     */
     private Map<String, TextField[]> dayFields = new HashMap<>();
+    
+    /**
+     * Current restaurant configuration loaded from the server.
+     */
     private RestaurantConfig currentConfig;
+    
+    /**
+     * Singleton instance of the SystemSettingsController.
+     */
     private static SystemSettingsController instance;
 
+    /**
+     * Initializes the controller after its FXML has been loaded.
+     * <p>
+     * Sets up table configuration and requests current system settings.
+     *
+     * @param location  the location used to resolve relative paths
+     * @param resources the resources used for localization
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         instance = this;
@@ -43,6 +122,9 @@ public class SystemSettingsController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.GET_RESTAURANT_CONFIG, null));
     }
 
+    /**
+     * Configures the special dates table columns and actions.
+     */
     private void setupTable() {
         colDate.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getKey().toString()));
         colOpen.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getValue()[0]));
@@ -76,6 +158,11 @@ public class SystemSettingsController implements Initializable {
         colDelete.setCellFactory(cellFactory);
     }
     
+    /**
+     * Loads restaurant configuration data into the UI.
+     *
+     * @param config the configuration received from the server
+     */
     public void setConfigData(RestaurantConfig config) {
         Platform.runLater(() -> {
             this.currentConfig = config;
@@ -87,6 +174,10 @@ public class SystemSettingsController implements Initializable {
         });
     }
     
+    /**
+     * Builds the weekly opening hours grid dynamically
+     * based on the current configuration.
+     */
     private void buildWeeklyGrid() {
         gridDays.getChildren().clear();
         String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -109,6 +200,11 @@ public class SystemSettingsController implements Initializable {
         }
     }
 
+    /**
+     * Adds a special opening date to the table.
+     *
+     * @param event the action event triggered by the add button
+     */
     @FXML
     void handleAddSpecialDate(ActionEvent event) {
         LocalDate date = datePicker.getValue();
@@ -132,6 +228,11 @@ public class SystemSettingsController implements Initializable {
         txtSpecialClose.clear();
     }
 
+    /**
+     * Saves all configuration changes and sends them to the server.
+     *
+     * @param event the action event triggered by the save button
+     */
     @FXML
     void saveSettings(ActionEvent event) {
         // Save Regular Hours
@@ -154,12 +255,22 @@ public class SystemSettingsController implements Initializable {
         closeWindow(event);
     }
 
+    /**
+     * Closes the system settings window.
+     *
+     * @param event the action event triggered by the close button
+     */
     @FXML
     void closeWindow(ActionEvent event) {
         Stage stage = (Stage) gridDays.getScene().getWindow();
         stage.close();
     }
     
+    /**
+     * Returns the active instance of this controller.
+     *
+     * @return the singleton SystemSettingsController instance
+     */
     public static SystemSettingsController getInstance() {
         return instance;
     }

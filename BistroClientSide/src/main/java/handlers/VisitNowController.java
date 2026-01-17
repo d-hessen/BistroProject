@@ -21,24 +21,46 @@ import common.BistroMessage;
 import dataLayer.Guest;
 import dataLayer.Visit;
 
-
- // Controller for the VisitNow screen.
- // Handles walk-in customers and validates contact information.
-
+/**
+ * Controller for the Visit Now (walk in) screen.
+ * Handles walk in customers, input validation, and visit creation flow.
+ */
 public class VisitNowController implements Initializable {
 
+	/** Contact input (phone number or email). */
     @FXML private TextField contactField;
+
+    /** Number of diners input. */
     @FXML private TextField dinersField;
+
+    /** Full name of the guest. */
     @FXML private TextField fullNameField;
+
+    /** Area shown after successful code generation. */
     @FXML private VBox confirmationArea;
+
+    /** Displays generated verification code. */
     @FXML private Label generatedCodeLabel;
+
+    /** Button used to generate confirmation code. */
     @FXML private Button generateCodeBtn;
 
-    // Regular expression for basic email validation
+    /** Regex pattern for basic email validation. */
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+    
+    /** Indicates whether a table was assigned immediately. */
     private boolean hasAssignedTable;
+
+    /** Indicates whether the guest was added to the waiting list. */
     private boolean isWaiting;
+
+    /** Visit instance created for the walk in customer. */
     private Visit createdVisit;
+    
+    /**
+     * Initializes the controller.
+     * Auto fills member details if a member is logged in.
+     */
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		BistroClient.visitNowControllerInstance = this;
@@ -50,8 +72,11 @@ public class VisitNowController implements Initializable {
 		}
 		
 	}
-    // Handles the "Get Confirmation Code" button click.
-    // Validates that the input is either a valid phone number or a valid email.
+	
+	/**
+     * Handles confirmation code generation for walk in customers.
+     * Validates contact details, diners count, and full name.
+     */
     @FXML
     private void handleGenerateCode(ActionEvent event) {
         String contact = contactField.getText().trim();
@@ -131,7 +156,10 @@ public class VisitNowController implements Initializable {
         }
     }
 
-    // Navigates back to the previous screen.
+    /**
+     * Navigates back to the appropriate screen
+     * based on whether staff or client is logged in.
+     */
     @FXML
     private void handleBack(ActionEvent event) {
     	if(BistroClient.staffInstance != null) {
@@ -141,6 +169,11 @@ public class VisitNowController implements Initializable {
     	}
     }
     
+    /**
+     * Called when walk in visit creation fails or requires waiting.
+     *
+     * @param message server response message
+     */
     public void walkInVisitNotCreated(String message) {
     	Platform.runLater(() -> {
     		if(message.startsWith("Error")) {
@@ -160,6 +193,11 @@ public class VisitNowController implements Initializable {
     	});
     }
     
+    /**
+     * Called when walk in visit is added to the waiting list.
+     *
+     * @param visit created waiting visit
+     */
     public void walkInVisitWaiting(Visit visit) {
         BistroClient.waitingVisit = visit;
         isWaiting = true;
@@ -170,6 +208,11 @@ public class VisitNowController implements Initializable {
         });
     }
     
+    /**
+     * Called when a walk in visit is created with an assigned table.
+     *
+     * @param visit created visit instance
+     */
     public void walkInVisitCreated(Visit visit) {
     	createdVisit = visit;
 		hasAssignedTable = true;

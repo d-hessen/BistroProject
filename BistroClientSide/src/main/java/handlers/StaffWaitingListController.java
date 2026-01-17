@@ -25,22 +25,59 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
 /**
- * Controller for the Staff Waiting List management screen.
- * Allows staff to view the current queue, refresh it, and remove customers.
+ * Controller responsible for managing the Staff Waiting List screen.
+ * <p>
+ * This controller allows staff members to:
+ * <ul>
+ *   <li>View the current waiting list</li>
+ *   <li>Refresh the list from the server</li>
+ *   <li>Remove customers from the queue</li>
+ * </ul>
  */
 public class StaffWaitingListController implements Initializable {
 
-    @FXML private TableView<Visit> waitingListTable;
-    @FXML private TableColumn<Visit, String> codeCol;
-    @FXML private TableColumn<Visit, String> nameCol;
-    @FXML private TableColumn<Visit, Integer> sizeCol;
-    @FXML private TableColumn<Visit, String> contactCol;
+	/**
+     * TableView displaying the list of visits currently waiting.
+     */
+    @FXML
+    private TableView<Visit> waitingListTable;
+
+    /**
+     * Column displaying the verification or waiting code of the visit.
+     */
+    @FXML
+    private TableColumn<Visit, String> codeCol;
+
+    /**
+     * Column displaying the guest or member name.
+     */
+    @FXML
+    private TableColumn<Visit, String> nameCol;
+
+    /**
+     * Column displaying the party size for the visit.
+     */
+    @FXML
+    private TableColumn<Visit, Integer> sizeCol;
+
+    /**
+     * Column displaying the contact information (phone or email).
+     */
+    @FXML
+    private TableColumn<Visit, String> contactCol;
 
     // Observable list to hold the data for the table
     private ObservableList<Visit> waitingList = FXCollections.observableArrayList();
 
 
-    //Sets up the table columns and loads the initial data.
+    /**
+     * Initializes the controller after the FXML has been loaded.
+     * <p>
+     * Registers the controller instance and prepares the table layout.
+     *
+     * @param location the location used to resolve relative paths
+     * @param resources the resources used to localize the root object
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Register this controller instance in the client to receive updates from server
@@ -50,7 +87,9 @@ public class StaffWaitingListController implements Initializable {
         handleRefresh(null); // Load data when opening the screen
     }
 
-	//Configures the TableView columns to map data from the Visit object.
+    /**
+     * Configures the table columns and binds them to Visit properties.
+     */
     private void setupTableColumns() {
         // Map Verification Code
         codeCol.setCellValueFactory(cellData -> {
@@ -100,7 +139,10 @@ public class StaffWaitingListController implements Initializable {
     }
 
     /**
-     * Sends a request to the server to get the latest waiting list.
+     * Requests the updated waiting list from the server
+     * and refreshes the table content.
+     *
+     * @param event the action event triggered by the refresh button
      */
     @FXML
     private void handleRefresh(ActionEvent event) {
@@ -115,7 +157,12 @@ public class StaffWaitingListController implements Initializable {
     }
 
     /**
-     * Handles the removal of a customer from the list.
+     * Removes the selected customer from the waiting list.
+     * <p>
+     * Prompts the user for confirmation before sending
+     * the removal request to the server.
+     *
+     * @param event the action event triggered by the remove button
      */
     @FXML
     private void handleRemoveCustomer(ActionEvent event) {
@@ -148,7 +195,11 @@ public class StaffWaitingListController implements Initializable {
     }
 
     /**
-     * Navigation back to the Staff Dashboard.
+     * Handles navigation back to the Staff Dashboard screen.
+     * <p>
+     * Closes the current window and unregisters this controller.
+     *
+     * @param event the action event triggered by the back button
      */
     @FXML
     private void handleBack(ActionEvent event) {
@@ -157,7 +208,13 @@ public class StaffWaitingListController implements Initializable {
         SceneLoader.closeWindow(event);
     }
 
-    //Method called by BistroClient when the server sends the updated waiting list.
+    /**
+     * Updates the waiting list table with data received from the server.
+     * <p>
+     * This method is called asynchronously by the client communication layer.
+     *
+     * @param list the updated list of visits currently waiting
+     */
     public void updateWaitingList(List<Visit> list) {
         Platform.runLater(() -> {
 

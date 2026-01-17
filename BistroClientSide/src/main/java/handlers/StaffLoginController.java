@@ -14,17 +14,49 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 
+/**
+ * Controller responsible for handling staff authentication.
+ * <p>
+ * This class manages the staff login flow, including:
+ * <ul>
+ *   <li>Validating login input</li>
+ *   <li>Sending authentication requests to the server</li>
+ *   <li>Handling successful and failed login attempts</li>
+ * </ul>
+ */
 public class StaffLoginController {
+	
+	/**
+     * Temporary Staff object used to validate login credentials.
+     */
 	private static Staff staffToCheck = new Staff(null,null,null,false);
+	
+	/**
+     * Text field for entering the staff username.
+     */
     @FXML
     private TextField usernameField;
 
+    /**
+     * Password field for entering the staff password.
+     */
     @FXML
     private PasswordField passwordField;
 
+    /**
+     * Label used to display login error messages to the user.
+     */
     @FXML
     private Label errorLabel;
     
+    /**
+     * Handles the login action triggered by the staff login button.
+     * <p>
+     * Validates input fields, sends a staff identification request to the server,
+     * and navigates to the staff dashboard on successful authentication.
+     *
+     * @param event the action event triggered by the login button
+     */
     @FXML
     private void handleLogin(ActionEvent event) {
     	String username = usernameField.getText();
@@ -54,11 +86,26 @@ public class StaffLoginController {
 
     }
     
+    /**
+     * Handles navigation back to the main page.
+     * <p>
+     * Triggered when the user clicks the "Back" button.
+     *
+     * @param event the action event triggered by the back button
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         SceneLoader.loadScene(event, "/gui/MainPage.fxml", "Main Page");
     }
     
+    /**
+     * Handles a failed staff login attempt.
+     * <p>
+     * Displays an informational alert describing the login error
+     * and disconnects the client from the server.
+     *
+     * @param message the error message received from the server
+     */
     public void staffNotLogged(String message) {
     	Platform.runLater(() -> {
     		Alert alert = new Alert(AlertType.INFORMATION);

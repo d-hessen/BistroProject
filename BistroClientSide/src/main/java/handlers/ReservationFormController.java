@@ -20,29 +20,63 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
+/**
+ * ReservationFormController manages the reservation edit form.
+ * <p>
+ * This controller is responsible for:
+ * <ul>
+ *   <li>Displaying reservation details</li>
+ *   <li>Allowing updates to the reservation date and number of guests</li>
+ *   <li>Sending update requests to the server</li>
+ *   <li>Handling navigation based on user role (member or staff)</li>
+ * </ul>
+ */
 public class ReservationFormController {
 
+	/** Label displaying the reservation number. */
     @FXML
     private Label orderNumberLabel;
+
+    /** Label displaying the reservation confirmation code. */
     @FXML
     private Label confirmationCodeLabel;
+
+    /** Label displaying the member ID associated with the reservation. */
     @FXML
     private Label MemberLabel;
+
+    /** Label displaying the date the reservation was placed. */
     @FXML
     private Label placingOrderDateLabel;
+
+    /** Text field for entering the number of guests. */
     @FXML
     private TextField numberOfGuestsField;
+
+    /** Date picker for selecting the reservation date. */
     @FXML
     private DatePicker orderDatePicker;
+
+    /** Button used to save changes. */
     @FXML
     private Button btnSave_Changes;
+
+    /** Button used to navigate back. */
     @FXML
     private Button btnBack;
+
+    /** Label displaying the reservation status. */
     @FXML
     private Label statusLabel;
-    
+
+    /** The reservation currently being edited. */
     private Reservation reservation; 
 
+    /**
+     * Loads a reservation into the form and populates all UI fields.
+     *
+     * @param reservation the {@link Reservation} to load
+     */
     public void loadReservation(Reservation reservation) {
         this.reservation = reservation;
         if(reservation == null) {
@@ -66,7 +100,19 @@ public class ReservationFormController {
         }
     }
     
-    // Logic for the Back button
+    /**
+     * Handles the action when the "Back" button is clicked.
+     * <p>
+     * Navigation behavior depends on the user role:
+     * <ul>
+     *   <li>Member: returns to client dashboard</li>
+     *   <li>Staff: closes the current window</li>
+     *   <li>Other: returns to reservation search screen</li>
+     * </ul>
+     *
+     * @param event the action event triggered by the button click
+     * @throws IOException if navigation fails
+     */
     public void buttonBack(ActionEvent event) throws IOException {
         // If logged in as member, go to dashboard, otherwise: back or disconnect 
         if (BistroClient.memberInstance != null) {
@@ -79,7 +125,15 @@ public class ReservationFormController {
         }
     }
     
-    // Main Save Logic with the Alert and Navigation
+    /**
+     * Handles saving reservation changes.
+     * <p>
+     * Validates user input, updates the reservation object,
+     * sends an update request to the server, and navigates
+     * based on user role.
+     *
+     * @param event the action event triggered by the button click
+     */
     public void save(ActionEvent event) {
         try {
             String guestsInput = numberOfGuestsField.getText().trim();            
@@ -105,7 +159,7 @@ public class ReservationFormController {
                 return;
             }
 
-            // Update Reservation Object and Send to Server
+            // Update reservation data
             reservation.setNumberOfGuests(guests);
             reservation.setReservationDate(new DateTime(orderDatePicker.getValue().toString(), "12:00")); // Check if you need to preserve original time
             

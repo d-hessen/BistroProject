@@ -20,15 +20,63 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 
+/**
+* Controller responsible for displaying visit data.
+* <p>
+* This screen is used to present either:
+* <ul>
+*   <li>Active dining sessions for staff users</li>
+*   <li>Visit history for logged-in members</li>
+* </ul>
+* The data is displayed in a table format with visit details.
+*/
 public class ViewVisitsController implements Initializable {
 
-    @FXML private TableView<Visit> visitsTable;
-    @FXML private TableColumn<Visit, String> dateColumn;
-    @FXML private TableColumn<Visit, String> timeColumn;
-    @FXML private TableColumn<Visit, Integer> dinersColumn;
-    @FXML private TableColumn<Visit, String> statusColumn;
-    @FXML private Label welcomeLabel;
+	/**
+     * Table that displays visits.
+     */
+    @FXML
+    private TableView<Visit> visitsTable;
 
+    /**
+     * Column displaying the visit date.
+     */
+    @FXML
+    private TableColumn<Visit, String> dateColumn;
+
+    /**
+     * Column displaying the visit start time.
+     */
+    @FXML
+    private TableColumn<Visit, String> timeColumn;
+
+    /**
+     * Column displaying number of diners.
+     */
+    @FXML
+    private TableColumn<Visit, Integer> dinersColumn;
+
+    /**
+     * Column displaying visit status (active / not active).
+     */
+    @FXML
+    private TableColumn<Visit, String> statusColumn;
+
+    /**
+     * Label displaying screen title based on user role.
+     */
+    @FXML
+    private Label welcomeLabel;
+
+    /**
+     * Initializes the controller after the FXML file has been loaded.
+     * <p>
+     * Configures the table columns, loads visit data, and updates
+     * the screen title according to the logged in user role.
+     *
+     * @param location  the location used to resolve relative paths
+     * @param resources the resources used to localize the root object
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupTableColumns();
@@ -40,6 +88,9 @@ public class ViewVisitsController implements Initializable {
         }
     }
 
+    /**
+     * Configures table columns and binds them to Visit properties.
+     */
     private void setupTableColumns() {
         //Get date from the Visit startTime 
         dateColumn.setCellValueFactory(cellData -> {
@@ -76,6 +127,9 @@ public class ViewVisitsController implements Initializable {
         });
     }
 
+    /**
+     * Loads visit data from the server based on the current user role.
+     */
     private void loadData() {
         ArrayList<Visit> visits = new ArrayList<>();
 
@@ -102,6 +156,13 @@ public class ViewVisitsController implements Initializable {
         visitsTable.setItems(observableVisits);
     }
 
+    /**
+     * Handles navigation back to the previous screen.
+     * <p>
+     * Behavior depends on whether the user is a staff member or a client.
+     *
+     * @param event the action event triggered by the Back button
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         // Navigate back based on who is logged in

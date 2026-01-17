@@ -21,23 +21,89 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
+/**
+ * Controller responsible for managing a specific restaurant table.
+ * <p>
+ * This controller allows staff members to:
+ * <ul>
+ *   <li>View table details and status</li>
+ *   <li>Edit table capacity</li>
+ *   <li>Handle active visit billing</li>
+ *   <li>Delete tables when permitted</li>
+ * </ul>
+ */
 public class TableManagementController {
 
-    @FXML private TextField tableNumberField;
-    @FXML private TextField capacityField;
-    @FXML private ComboBox<String> statusComboBox;
-    @FXML private Button deleteTableButton;
-    
-    // Visit Details
-    @FXML private VBox visitBox;
-    @FXML private TextField visitNumberField;
-    @FXML private TextField partySizeField;
-    @FXML private TextField startTimeField;
-    @FXML private TextField billField;
-    @FXML private TextField discountField;
+	/**
+     * Text field displaying the table number.
+     */
+    @FXML
+    private TextField tableNumberField;
 
+    /**
+     * Text field displaying and editing the table capacity.
+     */
+    @FXML
+    private TextField capacityField;
+
+    /**
+     * ComboBox indicating the current table status.
+     */
+    @FXML
+    private ComboBox<String> statusComboBox;
+
+    /**
+     * Button used to delete the table.
+     */
+    @FXML
+    private Button deleteTableButton;
+
+    /**
+     * Container displaying visit-related details.
+     */
+    @FXML
+    private VBox visitBox;
+
+    /**
+     * Text field displaying the visit number.
+     */
+    @FXML
+    private TextField visitNumberField;
+
+    /**
+     * Text field displaying the party size.
+     */
+    @FXML
+    private TextField partySizeField;
+
+    /**
+     * Text field displaying the visit start time.
+     */
+    @FXML
+    private TextField startTimeField;
+
+    /**
+     * Text field displaying the bill total amount.
+     */
+    @FXML
+    private TextField billField;
+
+    /**
+     * Text field displaying the discount percentage.
+     */
+    @FXML
+    private TextField discountField;
+
+    /**
+     * The table currently being managed.
+     */
     public static Table currentTable;
 
+    /**
+     * Initializes the controller after the FXML is loaded.
+     * <p>
+     * Sets initial UI state and registers this controller instance.
+     */
     @FXML
     public void initialize() {
     	BistroClient.tableManagementControllerInstance = this;
@@ -52,7 +118,11 @@ public class TableManagementController {
         deleteTableButton.setManaged(false);
     }
 
-    // Method called by StaffDashboardController to pass data
+    /**
+     * Loads and displays details of the selected table.
+     *
+     * @param table the table selected from the staff dashboard
+     */
     public void setTableDetails(Table table) {
         TableManagementController.currentTable = table; //Table that was clicked
         tableNumberField.setText(String.valueOf(table.getTableNumber()));
@@ -79,6 +149,11 @@ public class TableManagementController {
 
     }
 
+    /**
+     * Enables editing mode for table details when permitted.
+     *
+     * @param event the action event triggered by the edit button
+     */
     @FXML
     void handleEdit(ActionEvent event) {
     	if(!currentTable.isOccupied()) {
@@ -92,6 +167,11 @@ public class TableManagementController {
     	}
     }
     
+    /**
+     * Navigates to the payment screen for the current visit.
+     *
+     * @param event the action event triggered by the pay button
+     */
     @FXML
     void handlePay(ActionEvent event) {
     	VisitDetailsController.visitInstance = currentTable.getCurrentVisit();
@@ -104,6 +184,11 @@ public class TableManagementController {
 	    });
     }
 
+    /**
+     * Handles deletion of the current table after confirmation.
+     *
+     * @param event the action event triggered by the delete button
+     */
     @FXML
     void handleDelete(ActionEvent event) {
     	boolean hasConfirmed = SceneLoader.showConfirmationAlert("Delete table", "Are you sure you want to delete this table?");
@@ -125,6 +210,11 @@ public class TableManagementController {
     	}
     }
 
+    /**
+     * Saves changes to the table or visit billing information.
+     *
+     * @param event the action event triggered by the save button
+     */
     @FXML
     void handleSave(ActionEvent event) {
     	if(currentTable.isOccupied()) {
@@ -144,6 +234,12 @@ public class TableManagementController {
     	}
     }
     
+    /**
+     * Receives update confirmation from the server
+     * and refreshes the table or visit details accordingly.
+     *
+     * @param updated the updated Table or Visit object
+     */
     public void updated(Object updated) {
     	Platform.runLater(()->{
     		if(updated == null) {
@@ -164,6 +260,11 @@ public class TableManagementController {
     	});
     }
 
+    /**
+     * Cancels the operation and closes the management window.
+     *
+     * @param event the action event triggered by the cancel button
+     */
     @FXML
     void handleCancel(ActionEvent event) {
         SceneLoader.closeWindow(event);

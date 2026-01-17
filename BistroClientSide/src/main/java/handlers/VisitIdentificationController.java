@@ -30,29 +30,62 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-
-// Controller for the Visit Identification screen.
-
+/**
+ * Controller for the Visit Identification screen.
+ * <p>
+ * Responsible for identifying customers based on verification codes,
+ * handling check in logic, recovery of lost codes, and navigation
+ * to the visit details or waiting screens.
+ */
 public class VisitIdentificationController implements Initializable {
 
+	/**
+     * Text field for entering the visit verification code.
+     */
     @FXML
     private TextField visitCodeField;
 
+    /**
+     * Button used to trigger the identification process.
+     */
     @FXML
     private Button identifyButton;
 
+    /**
+     * Label used to display status and error messages.
+     */
     @FXML
     private Label statusLabel;
-    
+
+    /**
+     * Text field for entering phone number or email for recovery.
+     */
     @FXML
     private TextField phoneEmailField;
-    
+
+    /**
+     * ComboBox holding available verification codes for logged-in members.
+     */
     @FXML
     private ComboBox<String> codesComboBox;
 
+    /**
+     * Static reference to the created visit after successful identification.
+     */
     public static Visit created = null;
+    
+    /**
+     * Stored action event used for navigation after asynchronous responses.
+     */
     private ActionEvent event;
     
+    /**
+     * Initializes the controller after FXML loading.
+     * Registers the controller instance and prepares UI state.
+     *
+     * @param location  the location used to resolve relative paths
+     * @param resources the resources used to localize the root object
+     */
     @Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		BistroClient.visitIdentificationControllerInstance = this;
@@ -74,6 +107,11 @@ public class VisitIdentificationController implements Initializable {
 		}
 	}
     
+    /**
+     * Loads verification codes for a member based on phone number.
+     *
+     * @param phoneNumber the member's phone number
+     */
     private void loadMemberVerificationCodes(String phoneNumber) {
     	List<String> codes = new ArrayList<>();
     	ClientUI.chat.accept(new BistroMessage(Action.GET_MEMBER_RESERVATIONS, phoneNumber));
@@ -121,7 +159,12 @@ public class VisitIdentificationController implements Initializable {
 		}
     }
 
-    // Handles the identification process when the user clicks the "Identify Visit" button.
+    /**
+     * Handles visit identification when the user submits a verification code.
+     *
+     * @param event the action event triggered by the button
+     * @throws IOException if scene loading fails
+     */
     @FXML
     private void handleIdentification(ActionEvent event) throws IOException {
         String code = visitCodeField.getText().trim();
@@ -135,8 +178,13 @@ public class VisitIdentificationController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.GET_VERIFICATION_CODE, code));
         
     }
-    //BistroClient calls this method - if verification code found - try to create new visit
-    //response can be Reservation/Waiting Visit/String
+    
+    /**
+     * Processes the server response for verification code lookup.
+     * Response may be a Reservation, Visit, or error message.
+     *
+     * @param response the server response object
+     */
     public void checkIn(Object response) {
     	 Platform.runLater(() -> {
     		 if(response instanceof String) {
@@ -149,19 +197,28 @@ public class VisitIdentificationController implements Initializable {
   	  				Reservation reservation = (Reservation)response;
   	  				Status reservationStatus = reservation.getStatus();
   	  				switch (reservationStatus) {
+  	  				
+  	  		    // Reservation already active or approved – allow check in
 					case seated:
 					case approved:
 						ClientUI.chat.accept(new BistroMessage(Action.CHECK_IN_CUSTOMER, reservation));
 						break;
+						
+			    // Reservation exists but not yet approved
 					case pending:
 						SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation not approved", "Your reservation not approved yet.");
 						return;
+						
+			    // Reservation was cancelled by user or system
 					case cancelled:
 						SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation cancelled", "Your reservation was cancelled.");
 						return;
+						
+			    // Reservation expired due to no-show
 					case no_show:
 						SceneLoader.showAlert(Alert.AlertType.ERROR, "Reservation finished", "Your reservation finished.");
 						return;
+			    // Fallback for unexpected status values
 					default:
 						break;
 					}
@@ -173,9 +230,13 @@ public class VisitIdentificationController implements Initializable {
   	  		}
          });
     }
-    //BistroClient calls this method - if customer checked in return his visit from visits
-    //If recieved wait message - customer waits
-    //If recieved error show error
+    
+    /**
+     * Handles the result of a customer check in attempt.
+     * Navigates to waiting screen or visit details accordingly.
+     *
+     * @param answer the server response after check-in
+     */
     public void customerCheckedIn(Object answer) {
     	Platform.runLater(() -> {
     		if(answer instanceof String) {
@@ -201,7 +262,12 @@ public class VisitIdentificationController implements Initializable {
     	});
     }
 
-    // Handles the "Forgot my code" action.
+    /**
+     * Handles the "Forgot my code" flow.
+     * Allows recovery of verification code via phone or email.
+     *
+     * @param event the action event triggered by the hyperlink
+     */
     @FXML
     private void handleForgotPassword(ActionEvent event) {
         Hyperlink sourceLink = (Hyperlink) event.getSource();
@@ -233,6 +299,11 @@ public class VisitIdentificationController implements Initializable {
         statusLabel.setTextFill(Color.web("#1976d2"));
     }
     
+    /**
+     * Handles server response after a recovery request was sent.
+     *
+     * @param answer the server response message
+     */
     public void forgotenCode(String answer) {
     	Platform.runLater(()->{
     		if(answer.startsWith("Error")) {
@@ -243,8 +314,11 @@ public class VisitIdentificationController implements Initializable {
     	});
     }
 
-
-    // Navigates back to the previous dashboard.
+    /**
+     * Navigates back to the appropriate dashboard based on user role.
+     *
+     * @param event the action event triggered by the Back button
+     */ 
     @FXML
     private void handleBack(ActionEvent event) {
     	if(BistroClient.staffInstance != null) {

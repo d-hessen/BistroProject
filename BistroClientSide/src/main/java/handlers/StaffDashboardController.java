@@ -34,45 +34,90 @@ import javafx.util.Callback;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.HBox;
 
+/**
+ * Controller for the Staff Dashboard screen.
+ * <p>
+ * This controller manages all staff side operations, including:
+ * <ul>
+ *   <li>Table management and live table status</li>
+ *   <li>Member check in and waiting list handling</li>
+ *   <li>Member registration</li>
+ *   <li>Administration features for managers</li>
+ *   <li>Navigation to operational and management screens</li>
+ * </ul>
+ *
+ * <p>
+ * The controller periodically refreshes table data and updates the UI
+ * accordingly.
+ */
 public class StaffDashboardController implements Initializable {
 
+	/** Welcome label displaying staff member name */
     @FXML private Label welcomeLabel;
+
+    /** Main tab pane of the dashboard */
     @FXML private TabPane mainTabPane;
-    
-    // Check-In TAB
-    @FXML private TextField memberCodeField; 
+
+    // -------- CHECK-IN TAB --------
+    /** Field for entering member or reservation code */
+    @FXML private TextField memberCodeField;
+
+    /** Label displaying check-in status messages */
     @FXML private Label checkInStatusLabel;
 
-    // Tables TAB
+    // -------- TABLES TAB --------
+    /** Grid displaying restaurant tables */
     @FXML private GridPane tablesGrid;
+
+    /** Field for entering table capacity */
     @FXML private TextField capacityField;
+
+    /** Field for entering table number */
     @FXML private TextField tableNumberField;
+
+    /** ComboBox for selecting table status */
     @FXML private ComboBox<String> statusComboBox;
 
-    // Register member TAB
+    // -------- MEMBER REGISTRATION TAB --------
+    /** Registration fields */
     @FXML private TextField regFullName, regPhone, regEmail;
+
+    /** Password fields */
     @FXML private PasswordField PasswordField;
     @FXML private TextField PasswordFieldVisible;
+
+    /** Checkbox to toggle password visibility */
     @FXML private CheckBox showPasswordTick;
 
-    // Reports & Admin Tabs TAB
+    // -------- REPORTS & ADMIN TABS --------
     @FXML private Tab managerReportsTab;
     @FXML private Tab managerAdminTab;
     @FXML private ComboBox<String> reportTypeCombo, monthCombo;
-    @FXML private TableView<?> reportsTable; // Kept generic for reports
+    @FXML private TableView<?> reportsTable;
 
-    // --- NEW: Administration Members Table ---
+    // -------- MEMBERS ADMINISTRATION TABLE --------
     @FXML private TableView<Member> membersTable;
     @FXML private TableColumn<Member, String> colMemberName;
     @FXML private TableColumn<Member, String> colMemberPhone;
     @FXML private TableColumn<Member, String> colMemberEmail;
     @FXML private TableColumn<Member, Void> historyCol;
 
+    /** Email validation regex */
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
+
+    /** Cached list of restaurant tables */
     private ArrayList<Table> tables;
 
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    /** Scheduled executor for periodic table refresh */
+    private ScheduledExecutorService executor =
+            Executors.newScheduledThreadPool(1);
     
+    /**
+     * Initializes the staff dashboard controller.
+     * <p>
+     * Sets role based UI visibility, initializes combo boxes,
+     * configures the members table, and starts periodic table refresh.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         BistroClient.staffDashControllerInstance = this;
@@ -81,7 +126,7 @@ public class StaffDashboardController implements Initializable {
         if (BistroClient.staffInstance != null) {
             welcomeLabel.setText("Welcome, " + BistroClient.staffInstance.getFullName());
             
-            // Role Check: Hide Manager Tabs if worker
+            // Hide manager only tabs for non manager roles
             if (!"manager".equalsIgnoreCase(BistroClient.staffInstance.getRole())) { 
                 mainTabPane.getTabs().remove(managerReportsTab);
             }
@@ -100,7 +145,9 @@ public class StaffDashboardController implements Initializable {
         executor.scheduleAtFixedRate(refreshTables, 0, 3, TimeUnit.SECONDS);
     }
 
-    // Helper method to initialize combo boxes
+    /**
+     * Initializes values for combo boxes used in the dashboard.
+     */
     private void setupComboBoxes() {
         statusComboBox.getItems().addAll("Available", "Occupied");
         if(reportTypeCombo != null) 
@@ -109,7 +156,9 @@ public class StaffDashboardController implements Initializable {
             monthCombo.setItems(FXCollections.observableArrayList("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"));
     }
 
-    // Helper method to set up member table columns
+    /**
+     * Configures the members administration table columns.
+     */
     private void setupMembersTable() {
         // Combine First and Last name into one column
         colMemberName.setCellValueFactory(cellData -> 
@@ -122,6 +171,9 @@ public class StaffDashboardController implements Initializable {
         addButtonToTable();
     }
     
+    /**
+     * Adds a "History" button to each row in the members table.
+     */
     private void addButtonToTable() {
         Callback<TableColumn<Member, Void>, TableCell<Member, Void>> cellFactory = new Callback<>() {
             @Override
@@ -161,6 +213,11 @@ public class StaffDashboardController implements Initializable {
         historyCol.setCellFactory(cellFactory);
     }
 
+    /**
+     * Opens the member history window for the given member ID.
+     *
+     * @param memberId the member identifier
+     */
     private void openMemberHistory(int memberId) {
         try {
         	// Reset data
@@ -198,13 +255,22 @@ public class StaffDashboardController implements Initializable {
         }
     }
     
-    // TABLE MANAGEMENT 
-    // Helper method to get all tables from DB
+    // ----------------------------------------------------------------
+    // 					TABLE MANAGEMENT
+    // ----------------------------------------------------------------
+
+    /**
+     * Sends a request to retrieve all tables from the server.
+     */
     private void getAllTables() {
         ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_TABLES, null));
     }
 
-    // Called by BistroClient to update Table Layout
+    /**
+     * Updates the table grid layout based on server data.
+     *
+     * @param tables the list of tables to display
+     */
     public void updateTableGrid(ArrayList<Table> tables) {
         Platform.runLater(() -> {
             this.tables = tables;
@@ -249,7 +315,12 @@ public class StaffDashboardController implements Initializable {
         });
     }
     
-    // Helper method to update button selection
+    /**
+     * Updates the visual state of a table button.
+     *
+     * @param table  the table entity
+     * @param button the corresponding toggle button
+     */
     private void setButtonStatus(Table table, ToggleButton button) {
         if (table.isOccupied()) {
             button.setSelected(true);
@@ -258,6 +329,14 @@ public class StaffDashboardController implements Initializable {
         }
     }
     
+    /**
+     * Handles adding a new table to the system.
+     * <p>
+     * Validates table number, capacity, and status,
+     * then sends a request to the server to create the table.
+     *
+     * @param event the action event triggered by the "Add Table" button
+     */
     @FXML
     void handleAddTable(ActionEvent event) {
         if(tableNumberField.getText().trim().isEmpty() || capacityField.getText().trim().isEmpty()) {
@@ -295,14 +374,25 @@ public class StaffDashboardController implements Initializable {
                 capacityField.clear();
         }
     }
-    // Refresh table layout
+    
+    /**
+     * Refreshes the tables layout by requesting updated table data from the server.
+     *
+     * @param event the action event triggered by the refresh button
+     */
     @FXML
     void handleRefreshTables(ActionEvent event) {
         BistroClient.tables = new ArrayList<>();
         getAllTables();
     }
     
-    // CHECK IN 
+    // ----------------------------------------------------------------
+    // 					CHECK-IN
+    // ----------------------------------------------------------------
+
+    /**
+     * Handles member or reservation check-in action.
+     */ 
     @FXML
     void handleMemberCheckIn(ActionEvent event) {
         String code = memberCodeField.getText(); 
@@ -319,7 +409,11 @@ public class StaffDashboardController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.VERIFY_MEMBER_ARRIVAL, code.trim()));
     }
     
-    // Response from server on checking in reservation
+    /**
+     * Updates check-in status based on server response.
+     *
+     * @param response the server response object
+     */
     public void updateCheckInStatus(Object response) {
         Platform.runLater(() -> {
             if(response instanceof String) {
@@ -340,8 +434,13 @@ public class StaffDashboardController implements Initializable {
             }
         });
     }
-    // MEMBER REGISTRATION
+    // ----------------------------------------------------------------
+    // 				MEMBER'S
+    // ----------------------------------------------------------------
 
+    /**
+     * Handles new member registration.
+     */
     @FXML
     void handleRegisterMember(ActionEvent event) {
         String name = regFullName.getText().trim();
@@ -379,7 +478,12 @@ public class StaffDashboardController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.CREATE_MEMBER, memberToCreate));
     }
     
-    // Method when member created or there's an error
+    /**
+     * Called when member creation completes.
+     *
+     * @param isCreated creation success flag
+     * @param message   server response message
+     */
     public void memberCreated(boolean isCreated, String message) {
         Platform.runLater(() -> {
             if(isCreated) {
@@ -390,15 +494,25 @@ public class StaffDashboardController implements Initializable {
             }
         });
     }
-
-    // ADMINISTRATION: VIEW MEMBERS
     
+    /**
+     * Requests the list of all registered members from the server.
+     *
+     * @param event the action event triggered by the "Show Members" button
+     */
     @FXML
     void showMembers(ActionEvent event) {
         // Send request to server to fetch all members
     	ClientUI.chat.accept(new BistroMessage(Action.GET_ALL_MEMBERS, null));
     }
 
+    /**
+     * Updates the members table with data received from the server.
+     * <p>
+     * Runs on the JavaFX Application Thread.
+     *
+     * @param members list of members to display
+     */
     public void updateMembersList(ArrayList<Member> members) {
         Platform.runLater(() -> {
             if (members != null && !members.isEmpty()) {
@@ -410,8 +524,47 @@ public class StaffDashboardController implements Initializable {
         });
     }
 
-    // ADMINISTRATION: SYSTEM SETTINGS 
+    
 
+    // ----------------------------------------------------------------
+    // 					NAVIGATION & LOGOUT
+    // ----------------------------------------------------------------    
+    
+    /**
+     * Opens the "New Reservation" window.
+     */
+    @FXML void handleNewReservation(ActionEvent event) { SceneLoader.openNewWindow("/gui/MakeReservation.fxml", "New Reservation"); }
+    
+    /**
+     * Opens the "Find Reservation" window.
+     */
+    @FXML void handleFindReservation(ActionEvent event) { SceneLoader.openNewWindow("/gui/ReservationFrame.fxml", "Find Reservation"); }
+    
+    /**
+     * Opens the waiting list window for walk-in customers.
+     */
+    @FXML void handleInsertParty(ActionEvent event) { SceneLoader.openNewWindow("/gui/VisitNow.fxml", "Waiting List"); }
+   
+    /**
+     * Opens the waiting list management window.
+     */
+    @FXML void handleWaitingList(ActionEvent event) { SceneLoader.openNewWindow("/gui/StaffWaitingList.fxml", "Waiting List Management"); } 
+    
+    /**
+     * Opens the visit identification (customer arrival) window.
+     */
+    @FXML void handleCustomerArrival(ActionEvent event) { SceneLoader.openNewWindow("/gui/VisitIdentification.fxml", "Visit Identification"); }
+    
+    /**
+     * Opens the current dining sessions window.
+     */
+    @FXML void handleCurrentVisits(ActionEvent event) { SceneLoader.openNewWindow("/gui/ViewVisits.fxml", "Current Dinning Sessions");}
+    
+    /**
+     * Opens the system settings window for managing restaurant configuration.
+     *
+     * @param event the action event triggered by the settings button
+     */
     @FXML
     void openSystemSettings(ActionEvent event) {
         try {
@@ -427,15 +580,10 @@ public class StaffDashboardController implements Initializable {
             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Could not open System Settings window.");
         }
     }
-
-    // NAVIGATION 
-    @FXML void handleNewReservation(ActionEvent event) { SceneLoader.openNewWindow("/gui/MakeReservation.fxml", "New Reservation"); }
-    @FXML void handleFindReservation(ActionEvent event) { SceneLoader.openNewWindow("/gui/ReservationFrame.fxml", "Find Reservation"); }
-    @FXML void handleInsertParty(ActionEvent event) { SceneLoader.openNewWindow("/gui/VisitNow.fxml", "Waiting List"); }
-    @FXML void handleWaitingList(ActionEvent event) { SceneLoader.openNewWindow("/gui/StaffWaitingList.fxml", "Waiting List Management"); } 
-    @FXML void handleCustomerArrival(ActionEvent event) { SceneLoader.openNewWindow("/gui/VisitIdentification.fxml", "Visit Identification"); }
-    @FXML void handleCurrentVisits(ActionEvent event) { SceneLoader.openNewWindow("/gui/ViewVisits.fxml", "Current Dinning Sessions");}
     
+    /**
+     * Logs out the staff user and returns to login screen.
+     */
     @FXML
     void handleLogout(ActionEvent event) {
         BistroClient.staffInstance = null;
@@ -445,6 +593,9 @@ public class StaffDashboardController implements Initializable {
         SceneLoader.loadScene(event, "/gui/StaffLoginGUI.fxml", "Staff Login");
     }
 
+    /**
+     * Toggles password visibility in registration form.
+     */
     @FXML
     private void togglePasswordVisible(ActionEvent event) {
         if (showPasswordTick.isSelected()) {
@@ -458,11 +609,21 @@ public class StaffDashboardController implements Initializable {
         }
     }
     
+    /**
+     * Opens the window displaying all reservations in the system.
+     *
+     * @param event the action event triggered by the "View All Reservations" button
+     */
     @FXML
     void handleViewAllReservations(ActionEvent event) {
         SceneLoader.openNewWindow("/gui/ViewReservations.fxml", "Management - All Reservations");
     }
     
+    /**
+     * Opens the member history search window.
+     *
+     * @param event the action event triggered by the "View History" button
+     */
     @FXML
     void handleViewHistory(ActionEvent event) {
         SceneLoader.openNewWindow("/gui/FindMemberPopup.fxml", "Find Member History");

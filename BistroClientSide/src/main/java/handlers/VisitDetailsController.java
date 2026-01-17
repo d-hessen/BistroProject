@@ -21,20 +21,80 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 
+/**
+ * Controller responsible for managing and displaying visit details.
+ * <p>
+ * Handles visit lifecycle including:
+ * <ul>
+ *   <li>Starting a visit</li>
+ *   <li>Tracking visit duration (up to 120 minutes)</li>
+ *   <li>Ending a visit manually or automatically</li>
+ * </ul>
+ * This controller supports both staff and client navigation flows.
+ */
 public class VisitDetailsController {
 
-    @FXML private Label tableIdLabel;
-    @FXML private Label orderIdLabel;
-    @FXML private Label startTimeLabel;
-    @FXML private Label dinersLabel;
-    @FXML private Button startVisitBtn;
-    @FXML private Button endVisitBtn;
-    @FXML private Label labelForVisitNumber;
+	/**
+     * Label displaying the table number.
+     */
+    @FXML
+    private Label tableIdLabel;
 
+    /**
+     * Label displaying the visit ID.
+     */
+    @FXML
+    private Label orderIdLabel;
+
+    /**
+     * Label displaying the visit start time or countdown timer.
+     */
+    @FXML
+    private Label startTimeLabel;
+
+    /**
+     * Label displaying number of diners.
+     */
+    @FXML
+    private Label dinersLabel;
+
+    /**
+     * Button used to start the visit.
+     */
+    @FXML
+    private Button startVisitBtn;
+
+    /**
+     * Button used to end the visit.
+     */
+    @FXML
+    private Button endVisitBtn;
+
+    /**
+     * Label displaying visit number or title.
+     */
+    @FXML
+    private Label labelForVisitNumber;
+
+    /**
+     * Timeline used for countdown timer updates.
+     */
     private Timeline countdown;
+
+    /**
+     * Static reference to the current visit instance.
+     */
     public static Visit visitInstance;
+    
+    /**
+     * Maximum allowed visit duration in seconds (120 minutes).
+     */
     private static final int MAX_VISIT_TIME_SECONDS = 120 * 60;
     
+    /**
+     * Initializes the controller after FXML loading.
+     * Registers the controller instance and restores visit state if needed.
+     */
     @FXML
     public void initialize() {
         BistroClient.visitDetailsControllerInstance = this;
@@ -43,6 +103,11 @@ public class VisitDetailsController {
         }
     }
     
+    /**
+     * Configures the UI according to the visit state.
+     *
+     * @param visit the visit to display
+     */
     private void setupVisitState(Visit visit) {
         if (orderIdLabel != null) {
             orderIdLabel.setText(String.valueOf(visit.getVisitId()));
@@ -70,6 +135,11 @@ public class VisitDetailsController {
         }
    }
     
+    /**
+     * Resumes the visit timer based on a stored database start time.
+     *
+     * @param dbStartTimeStr start time retrieved from the database
+     */
     private void resumeTimerFromDB(String dbStartTimeStr) {
         try {
             LocalTime dbTime = LocalTime.parse(dbStartTimeStr, DateTimeFormatter.ofPattern("HH:mm:ss"));
@@ -103,12 +173,18 @@ public class VisitDetailsController {
         }
     }
     
+    /**
+     * Updates the UI to reflect an active visit state.
+     */
     private void setupActiveVisitUI() {
         startVisitBtn.setDisable(true);
         endVisitBtn.setDisable(false);
         startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
     }
     
+    /**
+     * Handles logic when the visit time has expired.
+     */
     private void handleTimeExpired() {
         startTimeLabel.setText("00:00:00");
         startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: red;");
@@ -117,7 +193,9 @@ public class VisitDetailsController {
         endVisit();
     }
 
-    //Starts the 120-minute countdown
+    /**
+     * Starts the countdown timer for the visit duration.
+     */
     private void startCountdown() {
     	if (countdown != null) {
             countdown.stop();
@@ -132,7 +210,9 @@ public class VisitDetailsController {
     }
 
 
-    //Updates countdown timer every second
+    /**
+     * Updates the countdown timer every second.
+     */
     private void updateTimer() {
     	int currentSecondsLeft = VisitSessionManager.getSecondsLeft();
     	
@@ -157,12 +237,19 @@ public class VisitDetailsController {
        startTimeLabel.setStyle("-fx-font-size: 16px;" + "-fx-font-weight: bold;" + "-fx-text-fill: #2e7d32;");
    }
 
-    // User clicked "Start Visit"
+    /**
+     * Handles user action to start a visit.
+     */
     @FXML
     private void handleStartVisit() {
         ClientUI.chat.accept(new BistroMessage(Action.START_VISIT, visitInstance));
     }
     
+    /**
+     * Callback method invoked after server response to start visit request.
+     *
+     * @param isStarted true if visit started successfully, false otherwise
+     */
     public void visitStarted(boolean isStarted) {
     	Platform.runLater(()->{
     		if(isStarted) {
@@ -178,7 +265,11 @@ public class VisitDetailsController {
     	});
     }
 
-    // User clicked "End Meal"
+    /**
+     * Handles user action to end the visit and proceed to payment.
+     *
+     * @param event the action event triggered by the button
+     */
     @FXML
     private void handleEndMeal(ActionEvent event) {
     	if (countdown != null) {
@@ -189,12 +280,19 @@ public class VisitDetailsController {
     }
 
     
-    //Auto-end if customer didn't end visit after 2 hours
+    /**
+     * Automatically ends the visit when maximum time is reached.
+     */
     private void endVisit() {
         System.out.println("Reservation canceled: no show");
 
     }
 	
+    /**
+     * Loads visit data into the controller and updates the UI.
+     *
+     * @param visit the visit to load
+     */
     public void loadVisit(Visit visit) {
         if(visit == null) return;
         visitInstance = visit;
@@ -205,6 +303,11 @@ public class VisitDetailsController {
         }
     }
     
+    /**
+     * Handles navigation back based on user role.
+     *
+     * @param event the action event triggered by the Back button
+     */
     @FXML void handleBack(ActionEvent event) {
     	if(BistroClient.staffInstance != null) {
     		SceneLoader.closeWindow(event);

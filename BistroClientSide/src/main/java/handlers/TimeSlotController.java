@@ -26,18 +26,70 @@ import dataLayer.Guest;
 import dataLayer.Member;
 import dataLayer.Reservation;
 
+/**
+ * Controller responsible for displaying and managing available time slots
+ * for creating a new reservation.
+ * <p>
+ * This controller:
+ * <ul>
+ *   <li>Receives reservation details from the previous screen</li>
+ *   <li>Requests available time slots from the server</li>
+ *   <li>Displays selectable time slots to the user</li>
+ *   <li>Handles reservation creation upon time selection</li>
+ * </ul>
+ */
 public class TimeSlotController {
 
-    @FXML private Label selectedDateLabel;
-    @FXML private TilePane timeSlotsPane;
+	/**
+     * Label displaying the selected reservation date.
+     */
+    @FXML
+    private Label selectedDateLabel;
 
+    /**
+     * Container holding the dynamically generated time slot buttons.
+     */
+    @FXML
+    private TilePane timeSlotsPane;
+
+    /**
+     * Selected reservation date.
+     */
     private LocalDate reservationDate = LocalDate.now();
+    /**
+     * Guest email address.
+     */
     private String email;
+
+    /**
+     * Guest phone number.
+     */
     private String phone;
+
+    /**
+     * Guest full name.
+     */
     private String fullName;
+
+    /**
+     * Number of diners for the reservation.
+     */
     private int numberOfDiners;
+
+    /**
+     * List of available time slots returned from the server.
+     */
     private List<String> availableTimes = new ArrayList<String>();
 
+    /**
+     * Initializes reservation data passed from the previous screen.
+     *
+     * @param date        reservation date
+     * @param fullName    guest full name
+     * @param email       guest email address
+     * @param phone       guest phone number
+     * @param diners      number of diners
+     */
     public void initData(LocalDate date, String fullName, String email, String phone, int diners) {
         this.reservationDate = date;
         this.email = email;
@@ -48,10 +100,21 @@ public class TimeSlotController {
         calculateTimeSlots();
     }
 
+    /**
+     * Initializes the controller after the FXML is loaded.
+     * <p>
+     * Registers this controller instance for server callbacks.
+     */
     @FXML
     public void initialize() { 
     	BistroClient.timeSlotControllerInstance = this;
     }
+    
+    /**
+     * Updates the list of available time slots received from the server.
+     *
+     * @param serverValidTimes list of available reservation times
+     */
     public void updateAvailableTimes(List<String> serverValidTimes) {
         	Platform.runLater(() -> {
             this.availableTimes = serverValidTimes;
@@ -59,6 +122,9 @@ public class TimeSlotController {
         });
     }
 
+    /**
+     * Displays the available time slots as selectable buttons.
+     */
     private void displayTimeSlots() {
         timeSlotsPane.getChildren().clear();
         if (availableTimes == null || availableTimes.isEmpty()) {
@@ -102,6 +168,9 @@ public class TimeSlotController {
         }
     }
     
+    /**
+     * Requests available reservation time slots from the server.
+     */
     private void calculateTimeSlots() {
     	Guest guest = new Guest(fullName, phone, email);
     	DateTime resDateTime = new DateTime(reservationDate.toString(), "12:00");
@@ -111,7 +180,12 @@ public class TimeSlotController {
         ClientUI.chat.accept(msg);
     }
     
-    
+    /**
+     * Handles selection of a specific time slot and creates a reservation.
+     *
+     * @param selectedTime the selected reservation time
+     * @param event        the action event triggered by the time button
+     */
     private void handleTimeSelection(String selectedTime, ActionEvent event) {
         System.out.println("Time selected: " + selectedTime);
         DateTime resDateTime = new DateTime(reservationDate.toString(), selectedTime);
@@ -131,6 +205,10 @@ public class TimeSlotController {
         // disable UI in order to prevent double click
         timeSlotsPane.setDisable(true);
     }
+    
+    /**
+     * Navigates to the reservation details screen after successful creation.
+     */
     public void goToReservationDetails() {
         	Platform.runLater(() -> {
             timeSlotsPane.setDisable(false);
@@ -139,11 +217,21 @@ public class TimeSlotController {
         });
     }
 
+    /**
+     * Handles navigation back to the reservation form screen.
+     *
+     * @param event the action event triggered by the back button
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         SceneLoader.loadScene(event, "/gui/MakeReservation.fxml", "New Reservation");
     }
 
+    /**
+     * Updates the date label text shown to the user.
+     *
+     * @param date formatted date string
+     */
     public void setSelectedDateText(String date) {
         selectedDateLabel.setText("Available slots for: " + date);
     }
