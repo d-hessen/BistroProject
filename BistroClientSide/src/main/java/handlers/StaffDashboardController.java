@@ -691,10 +691,11 @@ public class StaffDashboardController implements Initializable {
      */
     public void receiveReport(Object data) {
         Platform.runLater(() -> {
+        	
             if (data == null) {
                 SceneLoader.showAlert(Alert.AlertType.INFORMATION, "Report Not Found", 
                           "The report you requested is not ready yet.\n" +
-                          "Reports are generated automatically on the 1st of each month.");
+                          "Or data from that date is not available.");
             } else if (data instanceof byte[]) {
                 try {
                     byte[] pdfBytes = (byte[]) data;
