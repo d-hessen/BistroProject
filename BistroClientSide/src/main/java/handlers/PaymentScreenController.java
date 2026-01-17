@@ -169,6 +169,7 @@ public class PaymentScreenController {
         ClientUI.chat.accept(new BistroMessage(Action.BILL_PAID,toSend));
         if(billWasPaid) {
         	billWasPaid = false;
+        	updateVisit = false;
         	VisitSessionManager.clear();
             showSuccess("Payment completed successfully");
             SceneLoader.loadScene(event, "/gui/ReceiptScreen.fxml", "Receipt");
