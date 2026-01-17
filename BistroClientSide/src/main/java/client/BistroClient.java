@@ -510,6 +510,12 @@ public class BistroClient extends AbstractClient
 		  	case FORGOT_CODE:
 		  		visitIdentificationControllerInstance.forgotenCode((String)answer.getData());
 		  		break;
+		  	// --- REPORT ROUTES ---
+		  	case GET_REPORT_FILE:
+		  	    if (staffDashControllerInstance != null) {
+		  	        staffDashControllerInstance.receiveReport(answer.getData());
+		  	    }
+		  	    break;
 		  	default:
 	            System.out.println("Unknown Actionblbl: " + answer.getAction());
 		  }
