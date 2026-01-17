@@ -22,17 +22,67 @@ import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
+/**
+ * MakeReservationController manages the reservation creation screen.
+ * <p>
+ * This controller is responsible for:
+ * <ul>
+ *   <li>Collecting reservation details from the user</li>
+ *   <li>Validating user input</li>
+ *   <li>Pre filling member information when a member is logged in</li>
+ *   <li>Navigating to the time slot selection screen</li>
+ * </ul>
+ *
+ * <p>
+ * The controller implements {@link Initializable} to configure
+ * the UI state after the FXML has been loaded.
+ */
 public class MakeReservationController implements Initializable {
 
+	/**
+     * Text field for entering or displaying the full name.
+     */
     @FXML private TextField fullNameField;
+
+    /**
+     * Text field for entering or displaying the email address.
+     */
     @FXML private TextField emailField;
+
+    /**
+     * Text field for entering or displaying the phone number.
+     */
     @FXML private TextField phoneField;
+
+    /**
+     * Date picker for selecting the reservation date.
+     */
     @FXML private DatePicker datePicker;
+
+    /**
+     * Text field for entering the number of diners.
+     */
     @FXML private TextField dinersField;
-    @FXML private Label errorLabel; // Ensure this matches fx:id in FXML
-    
+
+    /**
+     * Label used to display validation or error messages.
+     */
+    @FXML private Label errorLabel;
+
+    /**
+     * Regular expression used for email validation.
+     */
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
 
+    /**
+     * Initializes the reservation screen after the FXML has been loaded.
+     * <p>
+     * If a member is logged in, their personal details are automatically
+     * filled in and the corresponding fields are disabled to prevent edits.
+     *
+     * @param location the location used to resolve relative paths
+     * @param resources the resources used to localize the root object
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Auto-fill member details if logged in
@@ -50,9 +100,17 @@ public class MakeReservationController implements Initializable {
         }
     }
 
-    // Matches onAction="#handleSelectTime" in your FXML
+    /**
+     * Handles the action when the "Select Time" button is clicked.
+     * <p>
+     * Collects user input, validates all reservation fields, and
+     * navigates to the time slot selection screen if validation succeeds.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     private void handleSelectTime(ActionEvent event) {
+        // Clear previous error message
         errorLabel.setText("");
 
         // 1. Collect Data
@@ -117,10 +175,17 @@ public class MakeReservationController implements Initializable {
         }
     }
 
-    // Matches onAction="#handleBack" in your FXML
+    /**
+     * Handles the action when the "Back" button is clicked.
+     * <p>
+     * If the screen was opened by a staff member, the current window
+     * is closed. Otherwise, the client is navigated back to the
+     * client dashboard.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     private void handleBack(ActionEvent event) {
-        // FIX for Double Windows:
         
         // If it is a Staff member, they opened this as a Popup. We should CLOSE it.
         if (BistroClient.staffInstance != null) {

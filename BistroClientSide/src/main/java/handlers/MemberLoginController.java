@@ -15,23 +15,60 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
+/**
+ * MemberLoginController manages the member login screen.
+ * <p>
+ * This controller is responsible for:
+ * <ul>
+ *   <li>Handling member authentication requests</li>
+ *   <li>Validating login input (email or phone number)</li>
+ *   <li>Sending identification requests to the server</li>
+ *   <li>Navigating to the client dashboard upon successful login</li>
+ * </ul>
+ */
 public class MemberLoginController {
+    /**
+     * Temporary {@link Member} object used to validate login credentials.
+     */
 	private Member memberToCheck = new Member(null,null,null,null);
-    // Simple email regex.
+	
+    /**
+     * Regular expression for validating email addresses.
+     */
     private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
 
-    //Phone number regex for a simple 10-digit number. 
+    /**
+     * Regular expression for validating phone numbers (10 digits).
+     */
     private static final String PHONE_REGEX = "^\\d{10}$"; 
 
+    /**
+     * Text field for entering username (email or phone number).
+     */
     @FXML
     private TextField usernameField;
 
+    /**
+     * Password field for entering the member password.
+     */
     @FXML
     private PasswordField passwordField;
 
+    /**
+     * Label used to display validation or error messages.
+     */
     @FXML
     private Label errorLabel;
 
+    /**
+     * Handles the action when the "Login" button is clicked.
+     * <p>
+     * Validates user input, determines whether the username is an
+     * email or phone number, sends a login request to the server,
+     * and navigates to the client dashboard if authentication succeeds.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     void handleLogin(ActionEvent event) {
     	String rawInput = usernameField.getText();
@@ -59,13 +96,21 @@ public class MemberLoginController {
 
     }
     
+    /**
+     * Displays an error message using an alert dialog.
+     *
+     * @param message the error message to display
+     */
     private void errorMessage(String message) {
     	SceneLoader.showAlert(Alert.AlertType.ERROR, "Login error", message);
     }
+    
     /**
-     * Checks if the input string is a valid email address.
-     * @param email The input string.
-     * @return true if valid, false otherwise.
+     * Checks whether the given string is a valid email address.
+     *
+     * @param email the input string
+     * @return {@code true} if the string matches the email pattern,
+     *         {@code false} otherwise
      */
     public static boolean isValidEmail(String email) {
         Pattern pattern = Pattern.compile(EMAIL_REGEX);
@@ -74,9 +119,13 @@ public class MemberLoginController {
     }
 
     /**
-     * Checks if the input string is a valid phone number (10 digits).
-     * @param phoneNumber The input string.
-     * @return true if valid, false otherwise.
+     * Checks whether the given string is a valid phone number (10 digits).
+     * <p>
+     * Non digit characters are removed before validation.
+     *
+     * @param phoneNumber the input string
+     * @return {@code true} if the string matches the phone number pattern,
+     *         {@code false} otherwise
      */
     public static boolean isValidPhoneNumber(String phoneNumber) {
         // Remove any common formatting like dashes or spaces before validation
@@ -87,8 +136,12 @@ public class MemberLoginController {
     }
     
     /**
-     * Determines the type of user input.
-     * @param input The user input string.
+     * Determines the type of user input and assigns it to the
+     * corresponding field in the {@link Member} object.
+     * <p>
+     * The input may represent either an email address or a phone number.
+     *
+     * @param input the user input string
      */
     public void checkInputType(String input) {
         if (isValidEmail(input)) {
@@ -102,6 +155,13 @@ public class MemberLoginController {
         }
     }
     
+    /**
+     * Handles the action when the "Back" button is clicked.
+     * <p>
+     * Navigates the user back to the membership options screen.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         SceneLoader.loadScene(event, "/gui/IsMemberGUI.fxml", "Membership Options");

@@ -28,20 +28,65 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+/**
+ * MemberProfileController manages the member profile screen.
+ * <p>
+ * This controller is responsible for:
+ * <ul>
+ *   <li>Displaying member personal details</li>
+ *   <li>Allowing a member to update contact information</li>
+ *   <li>Generating and displaying a digital membership card (QR code)</li>
+ *   <li>Handling navigation back to the client dashboard</li>
+ * </ul>
+ *
+ * <p>
+ * The controller implements {@link Initializable} to initialize
+ * the UI state after the FXML has been loaded.
+ */
 public class MemberProfileController implements Initializable {
 
-	@FXML private TextField nameField;
-	@FXML private TextField phoneField;
-	@FXML private TextField emailField;
+    /**
+     * Text field displaying the member's full name (read-only).
+     */
+    @FXML private TextField nameField;
+
+    /**
+     * Text field for editing the member's phone number.
+     */
+    @FXML private TextField phoneField;
+
+    /**
+     * Text field for editing the member's email address.
+     */
+    @FXML private TextField emailField;
+
+    /**
+     * Image view used to display the member's digital card (QR code).
+     */
     @FXML
     private ImageView digitalCardImageView;
+
+    /**
+     * Regular expression used for validating email addresses.
+     */
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
 
-
+    /**
+     * Initializes the member profile screen after the FXML has been loaded.
+     * <p>
+     * Loads member details, disables name editing, and generates
+     * a QR code image for the member's digital card if available.
+     *
+     * @param location the location used to resolve relative paths
+     * @param resources the resources used to localize the root object
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+    	
+        // Register this controller instance for client-side callbacks
     	BistroClient.memberProfileControllerInstance = this;
         Member member = BistroClient.memberInstance;
+        // Full name is not editable
         nameField.setDisable(true);
         if (member != null) {
             nameField.setText(member.getFullName());
@@ -64,11 +109,26 @@ public class MemberProfileController implements Initializable {
         }
     }
 
+    /**
+     * Handles the action when the "Back" button is clicked.
+     * <p>
+     * Navigates the user back to the client dashboard.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         SceneLoader.loadScene(event, "/gui/ClientDashboard.fxml", "Client Dashboard");
     }
     
+    /**
+     * Handles the action when the "Save" button is clicked.
+     * <p>
+     * Validates the updated phone number and email address,
+     * then sends an update request to the server.
+     *
+     * @param event the action event triggered by the button click
+     */
     @FXML
     private void handleSave(ActionEvent event) {
     	String phone = phoneField.getText().trim();
@@ -96,6 +156,15 @@ public class MemberProfileController implements Initializable {
         ClientUI.chat.accept(new BistroMessage(Action.UPDATE_MEMBER, toUpdate));
     }
     
+    /**
+     * Callback method invoked after a member update response is received.
+     * <p>
+     * Updates the UI with the new member details if the update
+     * was successful, otherwise displays an error message.
+     *
+     * @param updated the updated {@link Member} object,
+     *                or {@code null} if the update failed
+     */
     public void isUpdated(Member updated) {
     	Platform.runLater(()->{
     		if(updated != null) {
@@ -111,13 +180,14 @@ public class MemberProfileController implements Initializable {
     }
 
     /**
-     * Generates a QR code Image from a given text string using the ZXing library.
-     * @param text The text to encode in the QR code.
-     * @param width The width of the generated image.
-     * @param height The height of the generated image.
-     * @return The generated JavaFX Image.
-     * @throws WriterException If an error occurs during encoding.
-     * @throws IOException If an error occurs during image writing.
+     * Generates a QR code {@link Image} from the given text using the ZXing library.
+     *
+     * @param text   the text to encode in the QR code
+     * @param width  the width of the generated image
+     * @param height the height of the generated image
+     * @return the generated JavaFX {@link Image}
+     * @throws WriterException if an error occurs during QR encoding
+     * @throws IOException if an error occurs while writing the image data
      */
     private Image generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
