@@ -172,7 +172,14 @@ public class ReservationDetailsController {
                     }
                 }
             }
-
+            if(BistroClient.updateReservation == true) {
+                BistroMessage msg = new BistroMessage(Action.UPDATE_RESERVATION, BistroClient.reservationInstance);
+                ClientUI.chat.accept(msg);   
+            }
+            else {
+                BistroMessage msg = new BistroMessage(Action.CREATE_RESERVATION, BistroClient.reservationInstance);
+                ClientUI.chat.accept(msg);   
+            }
         } catch (Exception e) {
             e.printStackTrace();
             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "An error occurred while saving.");

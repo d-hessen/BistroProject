@@ -81,6 +81,7 @@ public class TimeSlotController {
      */
     private List<String> availableTimes = new ArrayList<String>();
 
+    public static Reservation newReservation = new Reservation(null,null,null,null);
     /**
      * Initializes reservation data passed from the previous screen.
      *
@@ -191,7 +192,7 @@ public class TimeSlotController {
         DateTime resDateTime = new DateTime(reservationDate.toString(), selectedTime);
         Guest guest = new Guest(fullName, phone, email);
         Member member = BistroClient.memberInstance; 
-        Reservation newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
+        newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
         
         if(BistroClient.memberInstance != null) {
             newReservation = new Reservation(resDateTime, numberOfDiners, member.getMemberId(), member);
@@ -200,10 +201,11 @@ public class TimeSlotController {
             newReservation = new Reservation(resDateTime, numberOfDiners, null, guest);
         }
         
-        BistroMessage msg = new BistroMessage(Action.CREATE_RESERVATION, newReservation);
-        ClientUI.chat.accept(msg);
         // disable UI in order to prevent double click
         timeSlotsPane.setDisable(true);
+        BistroClient.reservationInstance = TimeSlotController.newReservation;
+        goToReservationDetails();
+
     }
     
     /**

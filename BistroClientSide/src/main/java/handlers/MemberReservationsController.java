@@ -107,7 +107,8 @@ public class MemberReservationsController {
      */
     private void onReservationSelected(Reservation newSelection) {
         BistroClient.reservationInstance = newSelection;
-        SceneLoader.openNewWindow("/gui/ReservationDetails.fxml","Client Dashboard");
+        BistroClient.updateReservation = true;
+        SceneLoader.openNewWindow("/gui/ReservationDetails.fxml","Reservation Details");
 	}
 
     /**

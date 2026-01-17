@@ -117,6 +117,8 @@ public class BistroClient extends AbstractClient
   public static List<Reservation> historyReservations;
   public static List<Visit> historyVisits;
   public static Boolean memberFoundStatus = null;
+  
+  public static boolean updateReservation = false;
 
   /**
    * Constructs a new BistroClient.
@@ -319,9 +321,6 @@ public class BistroClient extends AbstractClient
 		  	    wantedReservationId = newRes.getReservationId(); 	  	    
 		  	    System.out.println("Reservation created successfully. ID: " + wantedReservationId);
 		  	    operationSuccess = true;
-		  	  if (timeSlotControllerInstance != null) {
-		          timeSlotControllerInstance.goToReservationDetails();
-		      }
 		  	    break;
 	        /**
 	         * Handles failed reservation creation.
