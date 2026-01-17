@@ -76,15 +76,12 @@
                         <Label text="Number:" GridPane.rowIndex="0" />
                         <TextField fx:id="tableNumberField" GridPane.columnIndex="1" GridPane.rowIndex="0" /> 
                         <Label text="Capacity:" GridPane.rowIndex="1" />
-                        <TextField fx:id="capacityField" GridPane.columnIndex="1" GridPane.rowIndex="1" /> 
-                        <Label text="Status:" GridPane.rowIndex="2" />
-                        <ComboBox fx:id="statusComboBox" prefWidth="150" promptText="Select..." GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <TextField fx:id="capacityField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <columnConstraints>
                      <ColumnConstraints />
                      <ColumnConstraints />
                   </columnConstraints>
                   <rowConstraints>
-                     <RowConstraints />
                      <RowConstraints />
                      <RowConstraints />
                   </rowConstraints> 

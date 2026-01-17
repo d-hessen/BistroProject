@@ -31,8 +31,11 @@ public class VisitController {
     	if(foundCreated != null) {
     		return new BistroMessage(action, foundCreated);
     	}
+    	
         Integer foundTableId = findTableForVisit(toCreate, guiController);
-
+        if(toCreate.getTable() != null && toCreate.getTable().getTableNumber() != null) {
+        	foundTableId = toCreate.getTable().getTableNumber();
+        }
         if (foundTableId != null) {
             //table is available immediately and doesn't conflict with future reservations
             Visit created = CreateCommands.createSeatedWalkInVisit(toCreate, foundTableId, guiController);

@@ -21,6 +21,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
@@ -120,7 +121,8 @@ public class VisitIdentificationController implements Initializable {
     	if(BistroClient.visitsList != null && !BistroClient.visitsList.isEmpty()) {
     		for (Visit visit : BistroClient.visitsList) {
 				if(visit.getVerificationCode() != null && !visit.getVerificationCode().isEmpty()) {
-					if(visit.getGuest().getPhoneNumber().equals(phoneNumber)) {
+					if(visit.getGuest().getPhoneNumber() != null) {
+						if(visit.getGuest().getPhoneNumber().equals(phoneNumber))
 						codes.add(visit.getVerificationCode());
 					}
 				}
@@ -129,7 +131,8 @@ public class VisitIdentificationController implements Initializable {
     	if(BistroClient.reservationsList != null && !BistroClient.reservationsList.isEmpty()) {
     		for(Reservation res : BistroClient.reservationsList) {
     			if(res.getVerificationCode() != null && !res.getVerificationCode().isEmpty()) {
-    				if(!codes.contains(res.getVerificationCode())) {
+    				if(res.getGuest().getPhoneNumber() != null && !codes.contains(res.getVerificationCode())) {
+    					if(res.getGuest().getPhoneNumber().equals(phoneNumber))
     					codes.add(res.getVerificationCode());
     				}	
     			}
@@ -138,9 +141,12 @@ public class VisitIdentificationController implements Initializable {
     	if(BistroClient.waitingList != null && !BistroClient.waitingList.isEmpty()) {
     		for(Visit visit : BistroClient.waitingList) {
     			if(visit.getVerificationCode() != null && !visit.getVerificationCode().isEmpty()) {
-    				if(visit.getGuest().getPhoneNumber().equals(phoneNumber))
+    				if(visit.getGuest().getPhoneNumber() != null)
     					if(!codes.contains(visit.getVerificationCode())) {
-        					codes.add(visit.getVerificationCode());
+    						if(visit.getGuest().getPhoneNumber().equals(phoneNumber)) {
+    							codes.add(visit.getVerificationCode());
+    						}
+        					
         				}
     			}
     		}

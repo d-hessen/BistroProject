@@ -830,12 +830,14 @@ public class GetCommands {
 	        		Guest guest = new Guest(rs.getString("guest_full_name")
 	        							,rs.getString("guest_phone")
 	        							,rs.getString("email"));
+	        		Table table = new Table((Integer)rs.getObject("table_id"),null,false);
 	        		if(memberId != null) {
 	        			Member member = getMemberById(memberId,guiController);
 	        			toReturn = new Visit(member, null);
 	        		} else {
 	        			toReturn = new Visit(guest, null);
 	        		}
+	        		toReturn.setTable(table);
 	        		toReturn.setWaitingId(rs.getInt("waiting_id"));
 	        		toReturn.setVerificationCode(rs.getString("verification_code"));
 	        		toReturn.setPartySize(rs.getInt("number_of_guests"));

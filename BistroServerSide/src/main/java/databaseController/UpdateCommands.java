@@ -232,14 +232,10 @@ public class UpdateCommands {
      */
     public static Visit updateVisitInWaitingList(Visit toUpdate, ServerFrameController guiController) {
     	Connection conn = dbController.getInstance().getConnection();
-        String sql = "UPDATE waiting_list SET status = ?, notified_at = NOW() WHERE visit_id = ?";
+        String sql = "UPDATE waiting_list SET status = ?, notified_at = NOW() WHERE waiting_id = ?";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        	if(toUpdate.isActive()) {
-            	ps.setString(1, "seated");
-        	} else {
-        		ps.setObject(1, null);
-        	}
+        	ps.setString(1, "seated");
         	ps.setObject(2, toUpdate.getWaitingId());
             if(ps.executeUpdate() > 0) {
             	return GetCommands.getVisit(toUpdate.getVisitId(), guiController);            }

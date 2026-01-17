@@ -79,9 +79,6 @@ public class StaffDashboardController implements Initializable {
     /** Field for entering table number */
     @FXML private TextField tableNumberField;
 
-    /** ComboBox for selecting table status */
-    @FXML private ComboBox<String> statusComboBox;
-
     // -------- MEMBER REGISTRATION TAB --------
     /** Registration fields */
     @FXML private TextField regFullName, regPhone, regEmail;
@@ -395,16 +392,8 @@ public class StaffDashboardController implements Initializable {
             return;
         }
         
-        if(statusComboBox.getValue() == null) {
-            SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "You must choose table status");
-            return;
-        }
-        
-        Table toCreate = new Table(tableNum,capacity,false);
-        if (statusComboBox.getValue().equals("Available")) {
-            toCreate.setActive(true);
-            toCreate.setOccupied(false);
-        }
+        Table toCreate = new Table(tableNum,capacity,true);
+
         ClientUI.chat.accept(new BistroMessage(Action.ADD_TABLE,toCreate));
         if(BistroClient.operationSuccess) {
             BistroClient.operationSuccess = false;
