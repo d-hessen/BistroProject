@@ -35,7 +35,6 @@ import dataLayer.Member;
 import dataLayer.Table;
 import dataLayer.Visit;
 import javafx.util.Callback;
-import javafx.scene.control.TableCell;
 import javafx.scene.layout.HBox;
 
 /**
@@ -311,13 +310,13 @@ public class StaffDashboardController implements Initializable {
                        Parent root = loader.load();
                        
                        TableManagementController controller = loader.getController();
-                       controller.setTableDetails(table);
-                       
-                       Stage stage = new Stage();
-                       stage.setScene(new Scene(root));
-                       stage.setTitle("Manage Table " + table.getTableNumber());
-                       stage.show();
-                       
+                       boolean success = controller.setTableDetails(table);
+                       if(success) {
+                    	   Stage stage = new Stage();
+                           stage.setScene(new Scene(root));
+                           stage.setTitle("Manage Table " + table.getTableNumber());
+                           stage.show();
+                       } 
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

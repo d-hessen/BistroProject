@@ -296,6 +296,9 @@ public class VisitDetailsController {
     public void loadVisit(Visit visit) {
         if(visit == null) return;
         visitInstance = visit;
+        if(visitInstance.getStartTime() == null) {
+        	handleStartVisit();
+        }
         
         // If the UI is already loaded (controller initialized), update the state immediately.
         if (startVisitBtn != null) {

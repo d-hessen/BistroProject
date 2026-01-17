@@ -123,7 +123,7 @@ public class TableManagementController {
      *
      * @param table the table selected from the staff dashboard
      */
-    public void setTableDetails(Table table) {
+    public boolean setTableDetails(Table table) {
         TableManagementController.currentTable = table; //Table that was clicked
         tableNumberField.setText(String.valueOf(table.getTableNumber()));
         capacityField.setText(String.valueOf(table.getTableCapacity()));
@@ -143,8 +143,10 @@ public class TableManagementController {
             } else {
                 statusComboBox.setValue("Available");  
             }
+            return true;
         } catch(NullPointerException ex){
         	SceneLoader.showAlert(Alert.AlertType.ERROR, "Table Management", "This table is held for walk-in or not started yet. Wait and try again!");
+        	return false;
         }
 
     }

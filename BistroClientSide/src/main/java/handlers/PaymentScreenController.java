@@ -188,13 +188,7 @@ public class PaymentScreenController {
     private void handleBack(ActionEvent event) {
     	updateVisit = false;
     	if(BistroClient.staffInstance != null) {
-    		SceneLoader.switchScreen(event
-					,"/gui/TableManagement.fxml"
-					,"Manage Table " + visitToPay.getTable().getTableNumber()
-					,(TableManagementController controller) -> {
-						// This code runs after the controller is loaded
-						controller.setTableDetails(TableManagementController.currentTable);
-					});
+    		SceneLoader.closeWindow(event);
     	}
     	else {
     		SceneLoader.switchScreen(
