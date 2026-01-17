@@ -16,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 
 /**
  * MemberReservationsController manages the "My Reservations" screen for members.
@@ -108,7 +109,8 @@ public class MemberReservationsController {
     private void onReservationSelected(Reservation newSelection) {
         BistroClient.reservationInstance = newSelection;
         BistroClient.updateReservation = true;
-        SceneLoader.openNewWindow("/gui/ReservationDetails.fxml","Reservation Details");
+        Stage stage = (Stage) reservationsTable.getScene().getWindow();
+        SceneLoader.loadSceneAgain(stage, "/gui/ReservationDetails.fxml", "Reservation Details");
 	}
 
     /**

@@ -21,6 +21,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
+import java.util.StringTokenizer;
 
 /**
  * MakeReservationController manages the reservation creation screen.
@@ -125,12 +126,27 @@ public class MakeReservationController implements Initializable {
             errorLabel.setText("Please enter full name.");
             return;
         }
+        if(!fullName.matches("[a-zA-Z\\s]+")) {
+            errorLabel.setText("Full name must contain letters only.");
+            return;        	
+        }
+        else {
+        	StringTokenizer st = new StringTokenizer(fullName);
+        	if(st.countTokens() < 2) {
+                errorLabel.setText("Please enter first name and last name.");
+                return;        		
+        	}
+        }
         if (email.isEmpty() || !Pattern.compile(EMAIL_REGEX).matcher(email).matches()) {
             errorLabel.setText("Invalid email address.");
             return;
         }
         if (phone.isEmpty()) {
             errorLabel.setText("Please enter phone number.");
+            return;
+        }
+        if ((!phone.matches("\\d{9}")) || (!phone.matches("\\d{10}"))) {
+            errorLabel.setText("Phone number must contain exactly 9 or 10 digits.");
             return;
         }
         if (date == null) {

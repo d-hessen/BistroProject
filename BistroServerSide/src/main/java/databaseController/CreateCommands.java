@@ -88,7 +88,7 @@ public class CreateCommands {
 
 			ps.executeUpdate();
 			//Get the created member to confirm and get generated fields
-			Member createdMember = GetCommands.getMember(Integer.parseInt(memberToCreate.getPhoneNumber()), guiController);
+			Member createdMember = GetCommands.getMember(Long.parseLong(memberToCreate.getPhoneNumber()), guiController);
 			return new BistroMessage(Action.CREATE_MEMBER, createdMember);
 		} catch(SQLIntegrityConstraintViolationException e) {
 			return new BistroMessage(Action.MEMBER_NOT_CREATED, "User already exists");
