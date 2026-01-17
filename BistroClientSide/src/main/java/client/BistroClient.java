@@ -141,7 +141,7 @@ public class BistroClient extends AbstractClient
   /**
    * Handles messages received from the server.
    * <p>
-   * The method routes each response according to the {@link BistroMessage.Action}
+   * The method routes each response according to the received action.
    * and updates the relevant controllers and shared state.
    *
    * @param msg message object received from the server

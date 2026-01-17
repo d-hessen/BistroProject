@@ -161,8 +161,8 @@ public class ClientDashboardController implements Initializable {
      * Displays the appropriate UI sections depending on whether
      * the user is logged in as a member or as a guest.
      *
-     * @param location the location used to resolve relative paths
-     * @param resources the resources used to localize the root object
+     * @param arg0 the location used to resolve relative paths
+     * @param arg1 the resources used to localize the root object
      */
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {

@@ -84,8 +84,8 @@ public class VisitIdentificationController implements Initializable {
      * Initializes the controller after FXML loading.
      * Registers the controller instance and prepares UI state.
      *
-     * @param location  the location used to resolve relative paths
-     * @param resources the resources used to localize the root object
+     * @param arg0  the location used to resolve relative paths
+     * @param arg1 the resources used to localize the root object
      */
     @Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
