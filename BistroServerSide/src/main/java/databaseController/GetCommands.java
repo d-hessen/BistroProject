@@ -144,29 +144,28 @@ public class GetCommands {
 	}
     
     public static List<Reservation> getReservationsNotInTimeRange(LocalDate date, LocalTime start, LocalTime end, ServerFrameController guiController) {
-		Connection conn = dbController.getInstance().getConnection();
-		List<Reservation> upcoming = new ArrayList<>();
+        Connection conn = dbController.getInstance().getConnection();
+        List<Reservation> outsideRange = new ArrayList<>();
 
-		String sql = "SELECT * FROM reservation WHERE reservation_date = ? " +
-					 "AND reservation_time <= ? AND reservation_time <= ? AND status != 'CANCELLED'";
+        String sql = "SELECT * FROM reservation WHERE reservation_date = ? " +
+                     "AND (reservation_time < ? OR reservation_time > ?) " + 
+                     "AND status != 'CANCELLED'";
 
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			//ps.setString(1, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-			ps.setString(1, date.toString());
-			ps.setString(2, start.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-			ps.setString(3, end.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            ps.setString(2, start.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+            ps.setString(3, end.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
 
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					upcoming.add(mapRowToReservation(rs, guiController));
-				}
-			}
-		} catch (SQLException e) {
-			guiController.addToConsole("Error fetching reservations that should be cancled" + e.getMessage());
-		}
-		return upcoming;
-	}
-	
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    outsideRange.add(mapRowToReservation(rs, guiController));
+                }
+            }
+        } catch (SQLException e) {
+            guiController.addToConsole("Error fetching reservations outside range: " + e.getMessage());
+        }
+        return outsideRange;
+    }	
     /**
      * Get reservations by phone number
      * @param phoneNumber guest phone number
@@ -272,7 +271,7 @@ public class GetCommands {
     /**
      * Finds overlapping reservations for given time window. To check table availability
      * @param windowStart start of window time 
-     * @param windowEnd end of winfow time
+     * @param windowEnd end of window time
      * @param guiController logging controller
      * @return List of reservation objects or null on failure
      */
@@ -915,9 +914,11 @@ public class GetCommands {
         }
         return expired;
     }
-    // ======================================
-    //RETRIEVE ALL MEMBERS
-    // ======================================
+   /**
+    * 
+    * @param guiController
+    * @return
+    */
     public static List<Member> getAllMembers(ServerFrameController guiController) {
         List<Member> members = new ArrayList<>();
         Connection conn = dbController.getInstance().getConnection();

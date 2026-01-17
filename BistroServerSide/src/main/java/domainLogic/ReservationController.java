@@ -15,6 +15,7 @@ import java.security.SecureRandom;
 import java.util.stream.Collectors;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.TextStyle;
 
 import common.Action;
 import common.BistroMessage;
@@ -56,7 +57,7 @@ public class ReservationController {
 		RestaurantConfig bistroRestaurant = GetCommands.getRestaurantConfig(guiController);
 		
 		LocalDate dateForSpecialHours = LocalDate.parse(reservationDate.getDate());
-		String dateForRegularHours = LocalDate.parse(reservationDate.getDate()).getDayOfWeek().toString();
+		String dateForRegularHours = LocalDate.parse(reservationDate.getDate()).getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
 		
 		String openingHour = bistroRestaurant.getRegularHours().get(dateForRegularHours)[0];
 		String closingHour = bistroRestaurant.getRegularHours().get(dateForRegularHours)[1];
@@ -388,17 +389,18 @@ public class ReservationController {
 	    return new BistroMessage(Action.GET_ALL_RESERVATIONS, allReservations);
 	}
 	
-//	public static void ExistingReservationsNeedToBeCancled(ServerFrameController guiController) {
-//		List<Reservation> allReservations;
-//		RestaurantConfig config = GetCommands.getRestaurantConfig(guiController);
-//		HashMap<LocalDate, String[]> date = config.getSpecialHours();
-//		for(Map.Entry<LocalDate,String[]> entry:date.entrySet()) {
-//			allReservations = GetCommands.getReservationsNotInTimeRange(entry.getKey(), LocalTime.parse(entry.getValue()[0]), LocalTime.parse(entry.getValue()[1]), guiController);
-//			for(Reservation reservation : allReservations) {
-//				cancelReservation(reservation,guiController);
-//			}
-//		}
-//	}
+	public static void ExistingReservationsNeedToBeCancled(ServerFrameController guiController) {
+		List<Reservation> allReservations;
+		RestaurantConfig config = GetCommands.getRestaurantConfig(guiController);
+		HashMap<LocalDate, String[]> date = config.getSpecialHours();
+		
+		for(Map.Entry<LocalDate,String[]> entry:date.entrySet()) {
+			allReservations = GetCommands.getReservationsNotInTimeRange(entry.getKey(), LocalTime.parse(entry.getValue()[0]), LocalTime.parse(entry.getValue()[1]), guiController);
+			for(Reservation reservation : allReservations) {
+				cancelReservation(reservation,guiController);
+			}
+		}
+	}
 	
 	
 	
