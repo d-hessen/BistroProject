@@ -538,12 +538,12 @@ public class GetCommands {
 	
 	/**
 	 * Get member by phone number
-	 * @param phone member phone number
+	 * @param l member phone number
 	 * @param guiController logging controller
 	 * @return member object on success, null on failure
 	 */
-	public static Member getMember(Integer phone, ServerFrameController guiController) {
-        return getMemberByField("phone", phone, guiController);
+	public static Member getMember(long l, ServerFrameController guiController) {
+        return getMemberByField("phone", l, guiController);
     }
 	
 	/**

@@ -479,6 +479,7 @@ public class StaffDashboardController implements Initializable {
 
     /**
      * Handles new member registration.
+     * Validates input fields including full name, phone number, email, and password.
      */
     @FXML
     void handleRegisterMember(ActionEvent event) {
@@ -487,33 +488,48 @@ public class StaffDashboardController implements Initializable {
         String email = regEmail.getText().trim();
         String pass = showPasswordTick.isSelected() ? PasswordFieldVisible.getText() : PasswordField.getText();
 
+        // Check if any of the required fields are empty
         if (name.isEmpty() || phone.isEmpty() || email.isEmpty() || pass.isEmpty()) {
             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "All fields are required.");
             return;
         }
         
-        // Validate Phone Number: Must contain 9-10 digits only
-        if (!phone.matches("\\d{9,10}")) {
+        // Check if the phone number contains only digits
+        if (!phone.matches("\\d+")) {
             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Phone number must contain numbers only.");
             return;
         }
 
-        // Validate Email: Must follow standard email format
+        // Check if the phone number is of valid length (9 or 10 digits)
+        if (phone.length() < 9 || phone.length() > 10) {
+            SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Phone number must be 9-10 digits.");
+            return;
+        }
+
+        // Validate email format 
         if (!Pattern.compile(EMAIL_REGEX).matcher(email).matches()) {
             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Invalid email format.");
             return;
         }
+        
+        // Check if the name contains only English letters and spaces
+        if (!name.matches("[a-zA-Z\\s]+")) {
+             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Name must contain letters only.");
+             return;
+        }
 
-        // Validate Full Name: Must contain at least two words
+        // Ensure the full name consists of at least two words
         String[] nameParts = name.split("\\s+");
         if (nameParts.length < 2) {
             SceneLoader.showAlert(Alert.AlertType.ERROR, "Error", "Full name must contain at least two words.");
             return;
         }
 
+        // Create a new Member object and generate a random card code
         Member memberToCreate = new Member(name, phone, email, pass);
         memberToCreate.setCardCode("CARD-" + (int)(Math.random() * 9000 + 1000)); 
         
+        // Send the creation message to the server
         ClientUI.chat.accept(new BistroMessage(Action.CREATE_MEMBER, memberToCreate));
     }
     
