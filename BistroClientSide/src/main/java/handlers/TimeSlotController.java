@@ -80,8 +80,12 @@ public class TimeSlotController {
      * List of available time slots returned from the server.
      */
     private List<String> availableTimes = new ArrayList<String>();
-
+    
+    /**
+     *  Currently selected reservation
+     */
     public static Reservation newReservation = new Reservation(null,null,null,null);
+    
     /**
      * Initializes reservation data passed from the previous screen.
      *

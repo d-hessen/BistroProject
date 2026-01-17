@@ -118,6 +118,9 @@ public class BistroClient extends AbstractClient
   public static List<Visit> historyVisits;
   public static Boolean memberFoundStatus = null;
   
+  /**
+   * Flag indicating whether a reservation update is currently in progress.
+   */
   public static boolean updateReservation = false;
 
   /**

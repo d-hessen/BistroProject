@@ -9,15 +9,65 @@ import dataLayer.Visit;
 
 import dataLayer.Guest;
 
+/**
+ * Represents the restaurant waiting list.
+ * <p>
+ * This class manages walk-in customers who arrive without a reservation.
+ * It follows the Singleton design pattern and maintains a FIFO queue
+ * of waiting parties.
+ * <p>
+ * Responsibilities include:
+ * <ul>
+ *   <li>Adding and removing guests from the waiting list</li>
+ *   <li>Notifying the next party when a table is available</li>
+ *   <li>Validating arrival times and handling late arrivals</li>
+ *   <li>Providing waiting list data to the client</li>
+ * </ul>
+ */
 public final class WaitingList {  
 	
+	/**
+	 * Singleton instance of the waiting list.
+	 */
 	private static final WaitingList INSTANCE = new WaitingList();
-	public record Party(Integer waitingId, Guest guest, Integer partySize, Instant readyAt) {} // creates small class with fields and getters (id is validation code)
-	private final LinkedList <Party> queue= new LinkedList<>();  // Queue that represents the Waiting List
+	
+	/**
+	 * Represents a party waiting in the queue.
+	 *
+	 * @param waitingId unique verification code
+	 * @param guest the guest information
+	 * @param partySize number of people in the party
+	 * @param readyAt timestamp when the party was notified
+	 */
+	public record Party(Integer waitingId, Guest guest, Integer partySize, Instant readyAt) {} 
+	
+	/**
+	 * FIFO queue representing the waiting list.
+	 */
+	private final LinkedList <Party> queue= new LinkedList<>();
+	
+	/**
+	 * Private constructor to prevent external instantiation.
+	 */
 	private WaitingList() {}
+	
+	/**
+	 * Next unique waiting ID to be assigned.
+	 */
 	private int nextId = 1;
 	
-	public synchronized int join (Guest guest, Integer partySize) { // joining the queue one at a time and returns unique waitingId
+	/**
+	 * Adds a guest to the waiting list.
+	 * <p>
+	 * The guest must provide at least one contact detail (phone or email),
+	 * and cannot already exist in the waiting list.
+	 *
+	 * @param guest the arriving {@link Guest}
+	 * @param partySize number of people in the party
+	 * @return a unique waiting ID (verification code)
+	 * @throws IllegalArgumentException if input validation fails
+	 */
+	public synchronized int join (Guest guest, Integer partySize) { 
 		
 		if(guest == null) throw new IllegalArgumentException("guest is null");
 		if(partySize <= 0) throw new IllegalArgumentException("party sizee must be at least 1");
@@ -36,23 +86,48 @@ public final class WaitingList {
         return waitingId;
 
 	}
-	public static WaitingList getInstance() { // returns WaitingList INSTANCE
+	
+	/**
+	 * Returns the singleton instance of the waiting list.
+	 *
+	 * @return the {@link WaitingList} instance
+	 */
+	public static WaitingList getInstance() {
 		return INSTANCE; 
 	}
 	
-	public synchronized Party showParty() { // shows the next party in the queue
+	/**
+	 * Returns the next party in the queue without removing it.
+	 *
+	 * @return the next {@link Party} or {@code null} if the queue is empty
+	 */
+	public synchronized Party showParty() {
 		return queue.peekFirst();
 	}
 	
-	 public synchronized Party pop() { // returns next party and removes it from the queue
+	/**
+	 * Removes and returns the next party from the queue.
+	 *
+	 * @return the removed {@link Party} or {@code null} if empty
+	 */
+	 public synchronized Party pop() {
         return queue.pollFirst();
     }
-	 
-	 public synchronized void clear() { // clears entire queue
+	
+	/**
+	 * Clears the entire waiting list.
+	 */
+	public synchronized void clear() {
 	        queue.clear();
 	}
 	
-	 public synchronized boolean exitGuestFromList(int waitingId) { // if party wants to be removed from waitingList by verification code
+	/**
+	 * Removes a party from the waiting list using its verification code.
+	 *
+	 * @param waitingId the verification code
+	 * @return {@code true} if the party was removed successfully
+	 */
+	 public synchronized boolean exitGuestFromList(int waitingId) {
 		 for(int i = 0; i < queue.size(); i++) {
 			 if(queue.get(i).waitingId == waitingId) {
 				 queue.remove(i);
@@ -62,7 +137,16 @@ public final class WaitingList {
 		 return false;
 	 }
 	 
-	 public synchronized Guest notifyPartyHead() { // called when a table becomes available and notifies the next party
+	/**
+	 * Notifies the next party in the queue that a table is available.
+	 * <p>
+	 * Sets the notification timestamp if the party has not already
+	 * been notified.
+	 *
+	 * @return the {@link Guest} of the notified party,
+	 * or {@code null} if the queue is empty
+	 */
+	 public synchronized Guest notifyPartyHead() {
 		 Party head = queue.peekFirst();
 		 if (head == null) {return null;}
 		 
@@ -72,7 +156,17 @@ public final class WaitingList {
 		 queue.set(0, updatedParty); 
 		 return head.guest;
 	 }
-	// called when a customer arrives and provides their code and returns a party if arrival time is valid
+
+	 /**
+	 * Confirms the arrival of a party using its verification code.
+	 * <p>
+	 * The arrival must occur within the allowed late time limit.
+	 *
+	 * @param waitingId the verification code
+	 * @param maxLateMinutes maximum allowed lateness
+	 * @return the {@link Guest} if arrival is valid,
+	 *         or {@code null} otherwise
+	 */
 	 public synchronized Guest confirmArrival(int waitingId, int maxLateMinutes){ 
 		 
 		 removeExpiredTimeParty(maxLateMinutes);
@@ -92,6 +186,11 @@ public final class WaitingList {
 		 return null;
 	 }
 	 	
+	 /**
+	 * Removes all parties that exceeded the maximum allowed waiting time.
+	 *
+	 * @param maxLateMinutes maximum allowed lateness in minutes
+	 */
 	 public synchronized void removeExpiredTimeParty(int maxLateMinutes) { // removes for the queue any party that has exceeded the time limit in waiting list
 		 Instant now = Instant.now();
 		 Party party = null;
@@ -105,6 +204,13 @@ public final class WaitingList {
 		 }
 	 }
 	 
+	/**
+	 * Checks whether a guest already exists in the waiting list.
+	 *
+	 * @param phone guest phone number
+	 * @param email guest email address
+	 * @return {@code true} if the guest is already in the queue
+	 */
 	 private boolean isGuestInQueue(String phone, String email) {
 		boolean hasPhone = false , hasEmail = false;
 		if(phone != null && !phone.isBlank()) { hasPhone = true;} // not empty and not null
@@ -117,10 +223,13 @@ public final class WaitingList {
 		return false;
 	 }
 	 
-	 /**
-     * Returns the entire waiting list converted to a list of Visit objects.
-     * This is used to send the data to the client.
-     */
+	/**
+	 * Converts the waiting list to a list of {@link Visit} objects.
+	 * <p>
+	 * Used for transferring waiting list data to the client side.
+	 *
+	 * @return list of {@link Visit} representations of the waiting list
+	 */
 	 public synchronized List<Visit> getWaitingListAsVisits() {
 		 List<Visit> visits = new ArrayList<>();
         for (Party party : queue) {
