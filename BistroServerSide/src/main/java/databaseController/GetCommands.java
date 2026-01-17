@@ -143,6 +143,16 @@ public class GetCommands {
 		return upcoming;
 	}
     
+    /**
+     * Returns all reservations for the given date that are outside the provided time range
+     * while excluding cancelled reservations.
+     *
+     * @param date 	the reservation date to filter by.
+     * @param start the start time of the range.
+     * @param end   the end time of the range.
+     * @param guiController server GUI controller used for logging and for mapping DB rows.
+     * @return a list of reservations that are not in the given time range for the specified date.
+     */
     public static List<Reservation> getReservationsNotInTimeRange(LocalDate date, LocalTime start, LocalTime end, ServerFrameController guiController) {
         Connection conn = dbController.getInstance().getConnection();
         List<Reservation> outsideRange = new ArrayList<>();
@@ -506,10 +516,13 @@ public class GetCommands {
 		res.setDateOfPlacingReservation(rs.getString("created_at"));
 		return res;
 	}
-	//======================================
-	//GET GUEST
-	//======================================
-	//Get guest by waitingId from waiting_list
+	/**
+	 * Retrieves the guest details from the waiting list identified by the given waitingId.
+	 *
+	 * @param waitingId     the waiting list ID used to locate the guest record.
+	 * @param guiController server GUI controller used for logging in case of database errors.
+	 * @return a build from the waiting list record, or if no matching record is found.
+	 */
 	public static Guest getGuest(Integer waitingId, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		//Get guest by phone
@@ -1053,6 +1066,7 @@ public class GetCommands {
         return expired;
     }
    /**
+    * Retrieves all members
     * 
     * @param guiController
     * @return
@@ -1084,7 +1098,12 @@ public class GetCommands {
         }
         return members;
     }
-    
+    /**
+     * Loads the restaurant configuration from the database, including regular opening hours and special hours.
+     *
+     * @param guiController server GUI controller used for logging in case of database errors.
+     * @return a object populated with regular and special hours 
+     */
     public static RestaurantConfig getRestaurantConfig(ServerFrameController guiController) {
         RestaurantConfig config = new RestaurantConfig();
         Connection conn = dbController.getInstance().getConnection();
@@ -1117,9 +1136,12 @@ public class GetCommands {
         return config;
     }
     
-    // ======================================
-    //RETRIEVE ALL RESERVATIONS
-    // ======================================
+    /**
+     * Retrieves all reservations from the database, in descending order by reservation date and time.
+     *
+     * @param guiController server GUI controller used for logging in case of database errors.
+     * @return a list of all Reservation records in the system 
+     */
     public static List<Reservation> getAllReservations(ServerFrameController guiController) {
         List<Reservation> reservations = new ArrayList<>();
         Connection conn = dbController.getInstance().getConnection();
@@ -1158,12 +1180,17 @@ public class GetCommands {
         return reservations;
     }
     
-    // Get all reservations for a specific member by member ID
+    /**
+     * Retrieves all reservations associated with the given member ID, in descending order by reservation date and time.
+     *
+     * @param memberId the member ID used to filter reservations.
+     * @param guiController server GUI controller used for logging in case of database errors.
+     * @return a list of Reservation objects that belong to the specified member.
+     */
     public static List<Reservation> getReservationsByMemberId(Integer memberId, ServerFrameController guiController) {
         List<Reservation> reservations = new ArrayList<>();
         Connection conn = dbController.getInstance().getConnection();
         String sql = "SELECT * FROM reservation WHERE member_id = ? ORDER BY reservation_date DESC, reservation_time DESC";
-        // Retrieve all orders associated with this member id
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, memberId);
             try (ResultSet rs = ps.executeQuery()) {
