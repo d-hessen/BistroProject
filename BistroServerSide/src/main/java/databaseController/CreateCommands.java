@@ -101,15 +101,14 @@ public class CreateCommands {
 	//======================================
 	//STAFF CREATION
 	//======================================
+	
 	/**
-     * Creates a new Staff member
-     * @param username Staff username.
-     * @param password Staff password.
-     * @param fullName Staff full name.
-     * @param isManager True if manager, false if worker.
-     * @param guiController Controller for logging.
-     * @return true if creation was successful. false otherwise.
-     */
+	 * Creates a new staff member in the system.
+	 *
+	 * @param staffToCreate the staff object containing all staff details
+	 * @param guiController the server GUI controller used for status updates
+	 * @return true if the staff member was created successfully, false otherwise
+	 */
 	public boolean createStaff(Staff staffToCreate, ServerFrameController guiController) {
 		Connection conn = dbController.getInstance().getConnection();
 		String sql = "INSERT INTO staff (username, password, full_name, role) VALUES (?, ?, ?, ?)";

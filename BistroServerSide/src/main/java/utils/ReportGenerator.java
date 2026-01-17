@@ -37,7 +37,7 @@ public class ReportGenerator {
     private static final int STANDARD_DURATION_MIN = 120; 
     
     /**
-     * Generates a Time & Punctuality Report for a list of visits for a specific month/year.
+     * Generates a Time &amp; Punctuality Report for a list of visits for a specific month/year.
      * The report includes charts for punctuality and visit duration, and a detailed visit log.
      *
      * @param visits List of Visit objects to be included in the report
