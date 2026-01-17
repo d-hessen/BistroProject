@@ -105,29 +105,60 @@ public class PaymentScreenController {
     @FXML
     private void handleProcessPayment(ActionEvent event) {
 
+        // Read and trim user input from payment fields
         String cardNumber = cardNumberField.getText().trim();
         String expiryDate = expiryDateField.getText().trim();
         String cvv = cvvField.getText().trim();
         String idNumber = idNumberField.getText().trim();
 
-        // Basic validation
+        // Validate that all required fields are filled
         if (cardNumber.isEmpty() || expiryDate.isEmpty()
                 || cvv.isEmpty() || idNumber.isEmpty()) {
 
             showError("Please fill in all fields");
             return;
         }
-
+        
+        // Validate ID number: digits only, exactly 9 characters
+        if (!idNumber.matches("\\d{9}")) {
+            showError("ID number must contain exactly 9 digits");
+            return;
+        }
+        
+        // Validate credit card number: 16 digits
         if (!cardNumber.matches("\\d{16}")) {
             showError("Card number must be 16 digits");
             return;
         }
-
+        
+        // Validate expiry date format (MM/YY)
         if (!expiryDate.matches("\\d{2}/\\d{2}")) {
             showError("Expiry date must be MM/YY");
             return;
         }
+        
+        // Parse expiry month and year
+        String[] parts = expiryDate.split("/");
+        int month = Integer.parseInt(parts[0]);
+        int year = Integer.parseInt(parts[1]) + 2000;
+        
+        // Validate that the month value is in a valid range
+        if (month < 1 || month > 12) {
+            showError("Expiry month must be between 01 and 12");
+            return;
+        }
+        
+        // Compare expiry date with the current month/year
+        java.time.YearMonth expiry = java.time.YearMonth.of(year, month);
+        java.time.YearMonth current = java.time.YearMonth.now();
+        
+        // Reject expired credit cards
+        if (expiry.isBefore(current)) {
+            showError("Credit card has expired");
+            return;
+        }
 
+        // Validate CVV: exactly 3 digits
         if (!cvv.matches("\\d{3}")) {
             showError("CVV must be 3 digits");
             return;
