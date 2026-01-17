@@ -12,12 +12,21 @@ import dataLayer.Member;
 import dataLayer.Reservation;
 import dataLayer.Visit;
 
+/**
+ * Utility class for sending email and SMS notifications.
+ * Handles JavaMail sessions, asynchronous sending, and message content generation
+ * for various scenarios (reservations, reminders, bills, etc.).
+ */
 public class EmailSend {
 
     private static final String USERNAME = "Bistro310701@gmail.com";
     private static final String PASSWORD = "ngbm oeqa mvlt jfxi";
     
-    //Send verification codes to client
+    /**
+     * Sends a list of reservation codes to the client via Email and simulates SMS.
+     *
+     * @param reservations list of reservations containing the verification codes
+     */
     public static void sendReservationsTableByEmail(List<Reservation> reservations) {
         if (reservations == null || reservations.isEmpty()) return;
 
@@ -30,7 +39,12 @@ public class EmailSend {
         String smsContent = buildReservationsText(recipient.name, reservations);
         sendSMS(recipient, "Your Reservation Codes", smsContent);
     }
-    //Send reminder about upcoming reservation to client
+    
+    /**
+     * Sends a reminder email and SMS about an upcoming reservation (approx. 2 hours before).
+     *
+     * @param res the reservation object containing date, time, and guest details
+     */
     public static void sendReminder(Reservation res) {
         Recipient recipient = resolveRecipient(res);
         if (!recipient.isValid()) return;
@@ -46,7 +60,12 @@ public class EmailSend {
         System.out.println("Reminder sent to: " + recipient.email);
         sendSMS(recipient, "Reservation Reminder", content);
     }
-    //Send cancellation message (Late for more than 15 mins to reservation)
+    
+    /**
+     * Sends a cancellation notice when a guest is late by more than 15 minutes (No-Show).
+     *
+     * @param res the reservation that has been cancelled
+     */
     public static void sendCancellationNotice(Reservation res) {
         Recipient recipient = resolveRecipient(res);
         if (!recipient.isValid()) return;
@@ -61,7 +80,12 @@ public class EmailSend {
         System.out.println("Cancellation notice sent to: " + recipient.email);
         sendSMS(recipient, "Reservation Cancelled", content);
     }
-    //Send cancellation message (Special day has been informed)
+    
+    /**
+     * Sends a cancellation notice due to restaurant operational changes (e.g., special hours/closing).
+     *
+     * @param res the reservation that has been cancelled
+     */
     public static void sendCancellationInform(Reservation res) {
         Recipient recipient = resolveRecipient(res);
         if (!recipient.isValid()) return;
@@ -76,7 +100,13 @@ public class EmailSend {
         System.out.println("Cancellation notice sent to: " + recipient.email);
         sendSMS(recipient, "Reservation Cancelled", content);
     }
-    //Send message that table is ready to waiting visit
+    
+    /**
+     * Notifies a customer on the waiting list that their table is ready.
+     * Instructs them to return to the host stand within 15 minutes.
+     *
+     * @param visit the waiting list visit object
+     */
     public static void sendTableReadyNotification(Visit visit) {
         Recipient recipient = resolveRecipient(visit); 
         if (!recipient.isValid()) return;
@@ -90,7 +120,13 @@ public class EmailSend {
         System.out.println("Table ready notification sent to: " + recipient.email);
         sendSMS(recipient, "Table Ready", content);
     }
-    //Send that waiting visit is cancelled due to late for more than 15 mins
+    
+    /**
+     * Notifies a waiting list customer that their request was cancelled due to no-show 
+     * (more than 15 minutes after table ready notification).
+     *
+     * @param visit the waiting list visit object
+     */
     public static void sendWaitingListCancellation(Visit visit) {
         Recipient recipient = resolveRecipient(visit);
         if (!recipient.isValid()) return;
@@ -104,7 +140,12 @@ public class EmailSend {
         System.out.println("Waitlist cancellation notice sent to: " + recipient.email);
         sendSMS(recipient, "Waitlist Cancelled", content);
     }
-    //Send bill to client
+    
+    /**
+     * Sends the final bill summary to the client after a visit.
+     *
+     * @param visit the visit object containing bill details
+     */
     public static void sendBillNotification(Visit visit) {
         Recipient recipient = resolveRecipient(visit);
         if (!recipient.isValid()) return;
@@ -123,6 +164,11 @@ public class EmailSend {
         sendSMS(recipient, "Bill Notification", content);
     }
     
+    /**
+     * Sends welcome email with credentials to a newly created member.
+     *
+     * @param member the newly created member object
+     */
     public static void sendMembershipCreation(Member member) {
         Recipient recipient = resolveRecipient(member);
         if (!recipient.isValid()) return;
@@ -143,14 +189,33 @@ public class EmailSend {
         sendSMS(recipient, "Membership Created", content);
     }
     
+    /**
+     * Helper to send plain text email asynchronously.
+     * @param to recipient email
+     * @param subject email subject
+     * @param text body text
+     */
     private static void asyncSendText(String to, String subject, String text) {
         new Thread(() -> sendEmail(to, subject, text, false)).start();
     }
 
+    /**
+     * Helper to send HTML email asynchronously.
+     * @param to recipient email
+     * @param subject email subject
+     * @param html HTML content
+     */
     private static void asyncSendHtml(String to, String subject, String html) {
         new Thread(() -> sendEmail(to, subject, html, true)).start();
     }
 
+    /**
+     * Internal method to execute the JavaMail sending process.
+     * @param to recipient address
+     * @param subject subject line
+     * @param content content body
+     * @param isHtml true if content is HTML, false for plain text
+     */
     private static void sendEmail(String to, String subject, String content, boolean isHtml) {
         try {
             Session session = createSession();
@@ -174,11 +239,17 @@ public class EmailSend {
         }
     }
     
+    /**
+     * Simulates sending an SMS by printing to the console.
+     * @param recipient Recipient object containing phone number
+     * @param subject SMS subject/context
+     * @param content SMS body
+     */
     private static void sendSMS(Recipient recipient, String subject, String content) {
         if (recipient.phone == null || recipient.phone.isEmpty()) return;
 
         System.out.println("\n_________________________________________________");
-        System.out.println("           [SMS]           ");
+        System.out.println("           [SMS]            ");
         System.out.println("To:" + recipient.phone + " (" + recipient.name + ")");
         System.out.println("Subject: " + subject);
         System.out.println("Message: ");
@@ -186,6 +257,10 @@ public class EmailSend {
         System.out.println("_________________________________________________\n");
     }
 
+    /**
+     * Creates and configures the JavaMail Session with SMTP properties.
+     * @return configured Session object
+     */
     private static Session createSession() {
         Properties prop = new Properties();
         prop.put("mail.smtp.host", "smtp.gmail.com");
@@ -200,6 +275,9 @@ public class EmailSend {
         });
     }
     
+    /**
+     * Extracts recipient info from a Member object.
+     */
     private static Recipient resolveRecipient(Member member) {
         String email = member.getEmail();
         String name = member.getFullName();
@@ -207,6 +285,9 @@ public class EmailSend {
         return new Recipient(email, name, phone);
     }
 
+    /**
+     * Extracts recipient info from a Reservation object (checking Guest details).
+     */
     private static Recipient resolveRecipient(Reservation res) {
         String email = null;
         String name = "Guest";
@@ -221,6 +302,9 @@ public class EmailSend {
         return new Recipient(email, name, phone);
     }
     
+    /**
+     * Extracts recipient info from a Visit object (checking Guest details).
+     */
     private static Recipient resolveRecipient(Visit visit) {
         String email = null;
         String name = "Guest";
@@ -237,6 +321,9 @@ public class EmailSend {
         return new Recipient(email, name, phone);
     }
 
+    /**
+     * Builds an HTML table string for a list of reservations.
+     */
     private static String buildReservationsHtml(String name, List<Reservation> reservations) {
         StringBuilder sb = new StringBuilder();
 
@@ -268,6 +355,9 @@ public class EmailSend {
         return sb.toString();
     }
     
+    /**
+     * Builds a plain text string for a list of reservations.
+     */
     private static String buildReservationsText(String name, List<Reservation> reservations) {
         StringBuilder sb = new StringBuilder();
         sb.append("Hello ").append(name).append(",\n\n");
@@ -284,6 +374,9 @@ public class EmailSend {
         return sb.toString();
     }
 
+    /**
+     * Inner class helper to hold resolved contact details.
+     */
     private static class Recipient {
         String email;
         String name;
