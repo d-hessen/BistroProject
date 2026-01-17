@@ -15,8 +15,18 @@ import databaseController.DeleteCommands;
 import databaseController.GetCommands;
 import databaseController.UpdateCommands;
 
+/**
+ * Controller responsible for Staff-specific logic.
+ * Includes staff authentication, table management (CRUD), and verifying member arrival.
+ */
 public class StaffController {
 
+	/**
+	 * Authenticates a staff member.
+	 * * @param staffRecieved the staff object containing credentials
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the authenticated Staff object or an error
+	 */
 	public static BistroMessage staffIdentification(Staff staffRecieved, ServerFrameController guiController) {
 		Staff wantedStaff = GetCommands.getStaff(staffRecieved.getUsername(), guiController);
 		
@@ -35,11 +45,23 @@ public class StaffController {
 		return new BistroMessage(Action.STAFF_IDENTIFICATION, wantedStaff);
 	}
 	
+	/**
+	 * Retrieves all tables from the database.
+	 * * @param guiController reference to the server GUI controller
+	 * @return a BistroMessage containing an ArrayList of Table objects
+	 */
 	public static BistroMessage getAllTables(ServerFrameController guiController) {
         ArrayList<Table> tables = GetCommands.getAllTablesWithStatus(guiController);
         return new BistroMessage(Action.GET_ALL_TABLES, tables);
     }
 
+	/**
+	 * Verifies if a member with a specific code has arrived.
+	 * Handles logic for converting a reservation or waiting list entry into an active Visit.
+	 * * @param memberCode    the unique code provided by the member
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the created Visit or an error message
+	 */
 	public static BistroMessage verifyMemberArrival(String memberCode, ServerFrameController guiController) { 
         //Check if reservation exists for this member within 15 mins
         Reservation reservation = GetCommands.findUpcomingReservationByCode(memberCode, guiController);
@@ -77,6 +99,12 @@ public class StaffController {
         }
     }
 
+	/**
+	 * Adds a new table to the restaurant layout.
+	 * * @param tableRecieved the table object to create
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the created Table or an error
+	 */
 	public static BistroMessage addNewTable(Table tableRecieved, ServerFrameController guiController) {
 		Table created = CreateCommands.createTable(tableRecieved, guiController);
 		if(created != null) {
@@ -87,6 +115,12 @@ public class StaffController {
 		
 	}
 
+	/**
+	 * Deletes a table from the restaurant layout.
+	 * * @param tableToDelete the table object to delete
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage containing the deleted Table or an error
+	 */
 	public static BistroMessage deleteTable(Table tableToDelete, ServerFrameController guiController) {
 		boolean success = DeleteCommands.deleteTable(tableToDelete, guiController);
 		if(success) {
@@ -96,6 +130,12 @@ public class StaffController {
 		}
 	}
 
+	/**
+	 * Updates an existing table's details.
+	 * * @param tableToUpdate the table object with new details
+	 * @param guiController reference to the server GUI controller for logging
+	 * @return a BistroMessage with the updated Table or an error string
+	 */
 	public static Object updateTable(Table tableToUpdate, ServerFrameController guiController) {
 		Table updated = UpdateCommands.updateTable(tableToUpdate, guiController);
 		if(updated != null) {

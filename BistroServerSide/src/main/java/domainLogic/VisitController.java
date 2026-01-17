@@ -17,9 +17,20 @@ import databaseController.GetCommands;
 import databaseController.UpdateCommands;
 import utils.EmailSend;
 
+/**
+ * Controller responsible for managing active Visits (both seated and waiting).
+ * Handles logic for walk-ins, checking in reservations, billing, and waiting list management.
+ */
 public class VisitController {
     
-    // Method creates visit for random walk-in
+    /**
+     * Creates a visit for a walk-in customer. 
+     * If a table is available immediately, it creates a seated visit.
+     * Otherwise, it adds the customer to the waiting list.
+     * * @param toCreate      the Visit object to create
+     * @param guiController reference to the server GUI controller for logging
+     * @return a BistroMessage containing the Visit or a status message
+     */
     public static BistroMessage createWalkInVisit(Visit toCreate, ServerFrameController guiController) {
     	Action action = Action.VISIT_NOW;
     	if(toCreate.getVerificationCode() == null) {
@@ -60,7 +71,13 @@ public class VisitController {
         }
     }
 
-    //Logic to find if there is a table available NOW that does not conflict with reservations in the upcoming 2 hours.
+    /**
+     * Finds a table available NOW that does not conflict with reservations in the upcoming 2 hours.
+     * * @param allTables    list of all tables
+     * @param reservations list of upcoming reservations
+     * @param partySize    number of guests
+     * @return the table number if found, or null otherwise
+     */
     private static Integer findTable(List<Table> allTables, List<Reservation> reservations, Integer partySize) {
         
         //Filter tables that are currently FREE and fit the party size
@@ -86,6 +103,14 @@ public class VisitController {
         return null; // No table found that doesn't cause a conflict
     }
 
+    /**
+     * Simulation logic: Checks if all reservations can still be seated if a specific table is taken by a walk-in.
+     * Uses a greedy matching strategy on a simulated inventory of tables.
+     * * @param allTables          all tables
+     * @param reservations       reservations to fit
+     * @param tableTakenByWalkIn the candidate table to remove from inventory
+     * @return true if all reservations can fit, false otherwise
+     */
     private static boolean canAccommodateReservationsIfTableTaken(List<Table> allTables, List<Reservation> reservations, Table tableTakenByWalkIn) {
         if (reservations.isEmpty()) return true;
 
@@ -136,7 +161,13 @@ public class VisitController {
 
         return true; // All reservations fit!
     }
-    //Function will find table for visit
+    
+    /**
+     * Helper to find a suitable table for a visit considering current status and upcoming reservations.
+     * * @param visit         the visit object
+     * @param guiController server controller
+     * @return table ID or null
+     */
     private static Integer findTableForVisit(Visit visit, ServerFrameController guiController) {
         //Get all tables with their current occupied status (active visits)
         ArrayList<Table> allTables = GetCommands.getAllTablesWithStatus(guiController);
@@ -159,6 +190,12 @@ public class VisitController {
         return foundTableId;
     }
     
+    /**
+     * Creates a seated visit from an existing Reservation.
+     * * @param reservation   the existing reservation
+     * @param guiController server controller
+     * @return a BistroMessage with the created Visit or a status message
+     */
     public static BistroMessage createReservatedVisit(Reservation reservation, ServerFrameController guiController) {
     	Visit foundCreated = GetCommands.getVisitByVerificationCode(reservation.getVerificationCode(), guiController);
     	if(foundCreated != null) {
@@ -182,12 +219,25 @@ public class VisitController {
         }
     }
 
+    /**
+     * Updates general details of a visit.
+     * * @param toUpdate      BistroMessage containing the visit to update
+     * @param guiController server controller
+     * @return BistroMessage indicating success
+     */
 	public static BistroMessage updateVisit(BistroMessage toUpdate, ServerFrameController guiController) {
 		//Return true if successfully changed
 		//Return false if was an error
 		return new BistroMessage(Action.START_VISIT, UpdateCommands.updateVisit(toUpdate, guiController));
 	}
         
+	/**
+	 * Updates the bill amount for a visit. 
+	 * If the bill is paid, it notifies the user and checks the waiting list.
+	 * * @param toUpdate      BistroMessage containing the visit
+	 * @param guiController server controller
+	 * @return BistroMessage with the result
+	 */
 	public static BistroMessage updateBillOfVisit(BistroMessage toUpdate, ServerFrameController guiController) {
 		BistroMessage updateResult = new BistroMessage(toUpdate.getAction(), UpdateCommands.updateBillForVisit((Visit)toUpdate.getData(), guiController));
 		if(toUpdate.getAction() == Action.BILL_PAID && updateResult.getData() != null) {
@@ -198,6 +248,11 @@ public class VisitController {
 		return updateResult;
 	}
 	
+	/**
+	 * Checks if any waiting list groups can be seated now that a table has freed up.
+	 * If a match is found, notifies the user and reserves the table.
+	 * * @param guiController server controller
+	 */
     public static void checkWaitingListAndNotify(ServerFrameController guiController) {
         ArrayList<Table> allTables = GetCommands.getAllTablesWithStatus(guiController);
         
@@ -230,6 +285,10 @@ public class VisitController {
         }
     }
     
+    /**
+     * Background task to process waiting list entries that have expired.
+     * * @param guiController server controller
+     */
     public static void processWaitingListExpirations(ServerFrameController guiController) {
         List<Visit> expiredList = GetCommands.getExpiredWaitingListEntries(guiController);
         if (expiredList.isEmpty()) {
@@ -250,6 +309,10 @@ public class VisitController {
         }
     }
     
+    /**
+     * Background task to process auto-billing for visits.
+     * * @param guiController server controller
+     */
     public static void processAutoBilling(ServerFrameController guiController) {
         List<Visit> dueVisits = GetCommands.getVisitsDueForBilling(guiController);
         
