@@ -1,6 +1,7 @@
 package client;
 import java.io.*;
-import common.ChatIF;
+
+import client.common.ChatIF;
 
 /**
  * ClientController acts as the client-side entry point

@@ -2,7 +2,6 @@ package client;
 
 import ocsf.client.*;
 import common.BistroMessage;
-import common.ChatIF;
 import dataLayer.*;
 import handlers.MemberProfileController;
 import handlers.PaymentScreenController;
@@ -22,6 +21,8 @@ import handlers.SystemSettingsController;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import client.common.ChatIF;
 /**
  * BistroClient is the main client-side communication handler.
  * <p>

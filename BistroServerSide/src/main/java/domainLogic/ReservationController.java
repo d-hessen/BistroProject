@@ -95,7 +95,12 @@ public class ReservationController {
 		List<String> allTimeSlots;
 		boolean isToday = reservationDate.getDate().equals(LocalDate.now().toString());
 		if(isToday) {
-			allTimeSlots = generateTimeSlots(LocalDate.now().toString(), closingHour);
+			if(LocalTime.now().isAfter(LocalTime.parse(openingHour))) {
+				allTimeSlots = generateTimeSlots(LocalTime.now().toString(), closingHour);
+			} else {
+				allTimeSlots = generateTimeSlots(openingHour, closingHour);
+			}
+			
 		}
 		else {
 		 allTimeSlots = generateTimeSlots(openingHour, closingHour);
@@ -524,6 +529,16 @@ public class ReservationController {
 	    try {
 	        LocalTime start = LocalTime.parse(openTime); 
 	        LocalTime end = LocalTime.parse(closeTime);
+	        start = start.plusHours(1);
+	        int minute = start.getMinute();
+	        int second = start.getSecond();
+	        if (!((minute == 0 || minute == 30) && second == 0)) {
+	            if (minute < 30) {
+	                start = start.withMinute(30).withSecond(0).withNano(0);
+	            } else {
+	                start = start.plusHours(1).withMinute(0).withSecond(0).withNano(0);
+	            }
+	        }
 	        LocalTime current = start;
 	        while (!current.isAfter(end)) {
 	            timeSlots.add(current.toString()); // toString() automatically outputs "HH:mm" if seconds are 00

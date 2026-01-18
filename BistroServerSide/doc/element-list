@@ -1,5 +1,10 @@
+client
+client.common
+common
 databaseController
+dataLayer
 domain
 domainLogic
+handlers
 server
 utils
