@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="450.0" prefWidth="380.0" spacing="20.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.VisitIdentificationController">
+   <padding>
+      <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+   </padding>
+   <children>
+      <Label styleClass="header-label" text="Identify Visit" />
+      <Label style="-fx-text-fill: #666666;" text="Enter your verification code:" />
+      <VBox alignment="CENTER" spacing="10.0">
+         <TextField fx:id="visitCodeField" prefHeight="45.0" promptText="Verification Code" style="-fx-alignment: CENTER; -fx-font-size: 18px;" />
+         <ComboBox fx:id="codesComboBox" opacity="0.6" prefHeight="36.0" prefWidth="308.0" promptText="Codes" />
+         <TextField fx:id="phoneEmailField" prefHeight="45.0" promptText="Phone or email" style="-fx-alignment: CENTER; -fx-font-size: 18px;" />
+         <Hyperlink onAction="#handleForgotPassword" text="Forgot code? Send to Email/SMS" />
+      </VBox>
+      <Button fx:id="identifyButton" onAction="#handleIdentification" prefHeight="45.0" prefWidth="220.0" styleClass="primary-button" text="Identify Visit" />
+      <Button onAction="#handleBack" style="-fx-background-color: transparent;" text="Back" />
+      <Label fx:id="statusLabel" textAlignment="CENTER" wrapText="true" />
+   </children>
+</VBox>

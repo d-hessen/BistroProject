@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefWidth="480.0" spacing="25.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.TableManagementController">
+   <padding>
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+   </padding>
+   <children>
+      <Label styleClass="header-label" text="Table Management" /> <GridPane hgap="15.0" vgap="15.0">
+        <columnConstraints>
+          <ColumnConstraints halignment="RIGHT" minWidth="120.0" />
+          <ColumnConstraints halignment="LEFT" minWidth="200.0" />
+        </columnConstraints>
+        <children>
+           <Label text="Table Number:" /> <TextField fx:id="tableNumberField" editable="false" focusTraversable="false" mouseTransparent="true" style="-fx-background-color: #f0f0f0;" GridPane.columnIndex="1" /> <Label text="Capacity:" GridPane.rowIndex="1" /> <TextField fx:id="capacityField" GridPane.columnIndex="1" GridPane.rowIndex="1" /> <Label text="Status:" GridPane.rowIndex="2" /> <ComboBox fx:id="statusComboBox" prefWidth="200.0" promptText="Choose status" GridPane.columnIndex="1" GridPane.rowIndex="2" /> </children>
+         <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+         </rowConstraints>
+      </GridPane>
+
+      <HBox alignment="CENTER" spacing="15.0">
+         <children>
+            <Button onAction="#handleEdit" prefWidth="140.0" text="Edit Table" /> <Button fx:id="deleteTableButton" onAction="#handleDelete" prefWidth="140.0" styleClass="danger-button" text="Delete Table" /> </children>
+      </HBox>
+
+      <VBox fx:id="visitBox" spacing="15.0" style="-fx-padding: 20;" styleClass="card">
+         <children>
+            <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;" text="Current Visit Details" /> <Separator />
+            <GridPane hgap="15.0" vgap="12.0">
+               <columnConstraints>
+                  <ColumnConstraints halignment="RIGHT" minWidth="110.0" />
+                  <ColumnConstraints minWidth="180.0" />
+               </columnConstraints>
+               <children>
+                  <Label text="Visit Number:" /> <TextField fx:id="visitNumberField" editable="false" focusTraversable="false" mouseTransparent="true" style="-fx-background-color: #f0f0f0;" GridPane.columnIndex="1" /> <Label text="Party Size:" GridPane.rowIndex="1" /> <TextField fx:id="partySizeField" editable="false" focusTraversable="false" mouseTransparent="true" style="-fx-background-color: #f0f0f0;" GridPane.columnIndex="1" GridPane.rowIndex="1" /> <Label text="Start Time:" GridPane.rowIndex="2" /> <TextField fx:id="startTimeField" editable="false" focusTraversable="false" mouseTransparent="true" style="-fx-background-color: #f0f0f0;" GridPane.columnIndex="1" GridPane.rowIndex="2" /> <Label text="Current Bill:" GridPane.rowIndex="4" /> <TextField fx:id="billField" promptText="0.00" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label text="Discount:" GridPane.rowIndex="3" />
+                  <TextField fx:id="discountField" editable="false" focusTraversable="false" mouseTransparent="true" style="-fx-background-color: #f0f0f0;" GridPane.columnIndex="1" GridPane.rowIndex="3" /> </children>
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                  <RowConstraints />
+               </rowConstraints>
+            </GridPane>
+            
+            <HBox alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+                <Button onAction="#handlePay" prefHeight="40.0" prefWidth="180.0" style="-fx-background-color: #673AB7; -fx-text-fill: white; -fx-font-weight: bold;" text="Process Payment" /> </HBox>
+         </children>
+      </VBox>
+
+      <HBox alignment="CENTER" spacing="20.0">
+         <children>
+            <Button onAction="#handleSave" prefWidth="140.0" styleClass="primary-button" text="Save Changes" /> <Button onAction="#handleCancel" prefWidth="140.0" styleClass="danger-button" text="Cancel" /> </children>
+      </HBox>
+   </children>
+</VBox>

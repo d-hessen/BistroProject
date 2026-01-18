@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="400.0" prefWidth="350.0" spacing="20" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.MainPageController">
+    <Label styleClass="header-label" text="Welcome to the Bistro" /> 
+    <Label style="-fx-font-size: 16px;" text="Select your role:" /> 
+    <Button onAction="#openClientOptions" prefHeight="40.0" prefWidth="250.0" styleClass="primary-button" text="Join for Clients" />
+    <Button onAction="#openStaffOptions" prefHeight="40.0" prefWidth="250.0" text="Join for Staff" />
+</VBox>

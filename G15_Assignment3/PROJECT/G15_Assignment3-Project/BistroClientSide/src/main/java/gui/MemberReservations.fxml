@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="550.0" prefWidth="550.0" spacing="20.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.MemberReservationsController">
+   <padding>
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+   </padding>
+   <children>
+      <Label styleClass="header-label" text="My Future Reservations" /> <TableView fx:id="reservationsTable" prefHeight="380.0">
+        <columns>
+          <TableColumn fx:id="orderNumColumn" text="Order #" />
+          <TableColumn fx:id="dateColumn" text="Date and Time" />
+          <TableColumn fx:id="dinersColumn" text="Diners" /> 
+		  <TableColumn fx:id="statusColumn" text="Status" />
+        </columns>
+        <columnResizePolicy>
+      		<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+   		</columnResizePolicy>
+      </TableView>
+      <Button onAction="#handleBack" styleClass="primary-button" text="Back to Dashboard" /> </children>
+</VBox>

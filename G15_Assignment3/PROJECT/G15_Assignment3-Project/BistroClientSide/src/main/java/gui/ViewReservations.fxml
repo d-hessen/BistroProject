@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="1245.0" spacing="10.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ViewReservationsController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <Label style="-fx-font-size: 24px; -fx-font-weight: bold;" text="All Reservations" />
+    <TableView fx:id="reservationsTable" prefHeight="521.0" prefWidth="997.0" VBox.vgrow="ALWAYS">
+      <columns>
+          <TableColumn fx:id="resIdCol" prefWidth="50.0" text="ID" />
+          <TableColumn fx:id="dateCol" prefWidth="150.0" text="Date &amp; Time" />
+          <TableColumn fx:id="guestsCol" prefWidth="60.0" text="Guests" />
+          <TableColumn fx:id="verifyCodeCol" prefWidth="70.0" text="Code" />
+          <TableColumn fx:id="createdDateCol" prefWidth="120.0" text="Created At" />
+          <TableColumn fx:id="nameCol" prefWidth="120.0" text="Full Name" />
+          <TableColumn fx:id="phoneCol" prefWidth="100.0" text="Phone" />
+          <TableColumn fx:id="emailCol" prefWidth="150.0" text="Email" />
+          <TableColumn fx:id="statusCol" prefWidth="80.0" text="Status" />
+          <TableColumn fx:id="isMemberCol" prefWidth="71.0" text="Member?" />
+      </columns>
+      <columnResizePolicy>
+          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+      </columnResizePolicy>
+    </TableView>
+</VBox>

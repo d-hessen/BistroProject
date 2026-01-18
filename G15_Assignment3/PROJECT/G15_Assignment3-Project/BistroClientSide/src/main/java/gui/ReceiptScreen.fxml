@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="500" prefWidth="450" spacing="20" styleClass="card" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="handlers.ReceiptScreenController">
+
+    <padding>
+        <Insets bottom="30" left="40" right="40" top="30" />
+    </padding>
+
+    <Label styleClass="header-label" stylesheets="@style.css" text="Payment Receipt" />
+
+    <Label style="-fx-font-size: 16px;" stylesheets="@style.css" text="Thank you for your payment!" />
+
+    <Label fx:id="reservationIdLabel" stylesheets="@style.css" text="Reservation ID: " />
+
+    <Label fx:id="tableIdLabel" stylesheets="@style.css" text="Table Number: " />
+
+    <Label fx:id="amountLabel" styleClass="header-label" stylesheets="@style.css" text="Total Paid: ₪0.00" />
+
+    <Button onAction="#handleFinish" prefHeight="40" prefWidth="200" styleClass="primary-button" stylesheets="@style.css" text="Finish" />
+
+</VBox>
